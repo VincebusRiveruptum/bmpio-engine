@@ -1,20 +1,33 @@
 # Compile with Watcom 10.6 or OpenWatcom
 
 CC = wcc386
-CFLAGS = -imact /4r /s /otexan
-OBJS = main.obj bmp.obj data.obj vgaregs.obj video.obj
+CFLAGS = -iCORE /4r /s /otexan
+OBJDIR = BIN
 
+# Object files in BIN
+OBJS = $(OBJDIR)\main.obj $(OBJDIR)\bmp.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj
+
+# Final executable
 bmpio.exe: $(OBJS)
 	wlink system dos4g name bmpio file { $(OBJS) }
 
-# Generic rule: compile .c to .obj
-.c.obj:
-	$(CC) $(CFLAGS) $<
+# Compile rules for each .c -> .obj in BIN
+$(OBJDIR)\main.obj: main.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
 
-# Dependencies (optional, but useful)
-main.obj: main.c
-bmp.obj: bmp.c
-data.obj: data.c
-vgaregs.obj: vgaregs.c
-video.obj: video.c
+$(OBJDIR)\bmp.obj: CORE\bmp.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
 
+$(OBJDIR)\data.obj: CORE\data.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\vgaregs.obj: CORE\vgaregs.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\video.obj: CORE\video.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<

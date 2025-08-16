@@ -11,7 +11,7 @@
 
 */
 
-#include "bmp.h"
+#include "CORE/BMP.H"
 
 // Main loop
 
