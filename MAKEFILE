@@ -1,0 +1,20 @@
+# Compile with Watcom 10.6 or OpenWatcom
+
+CC = wcc386
+CFLAGS = -imact /4r /s /otexan
+OBJS = main.obj bmp.obj data.obj vgaregs.obj video.obj
+
+bmpio.exe: $(OBJS)
+	wlink system dos4g name bmpio file { $(OBJS) }
+
+# Generic rule: compile .c to .obj
+.c.obj:
+	$(CC) $(CFLAGS) $<
+
+# Dependencies (optional, but useful)
+main.obj: main.c
+bmp.obj: bmp.c
+data.obj: data.c
+vgaregs.obj: vgaregs.c
+video.obj: video.c
+

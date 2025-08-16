@@ -3,6 +3,7 @@
 */
 
 #include "bmp.h"
+#include <math.h>
 
 BMPfile *loadBMPfile(char *fileName){
 	FILE *fp = NULL;
@@ -145,3 +146,51 @@ void setPalette(Color *palette){
 		setPal(i, palette[i].r >> 2, palette[i].g >> 2, palette[i].b >> 2);
 	}
 }
+
+int round(float x) {
+    return (int)(x + 0.5f);
+}
+
+/* This will draw an image on the screen*/
+void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor, int angle){
+	long i, j;
+	unsigned char color = 0;
+	unsigned char **bmp = (*bmpData)->bmp;
+	unsigned int width = (*bmpData)->width;
+	unsigned int height = (*bmpData)->height;
+
+	//unsigned float degr = PI / 6; // 30°
+	float xp, yp;
+	int nearestX, nearestY;
+
+	// sin( pi / 6 ) = 0.5
+	// cos( pi / 6 ) = 0.8660
+
+	float rad = (PI * angle ) / 180;
+	float angcos = cos(rad);
+	float angsin = sin(rad);
+
+	float halfx = width / 2;
+	float halfy = height / 2;
+
+	if (bmp != NULL){
+		for (i = 0; i < height; i++){
+			for (j = 0; j < width; j++){
+				color = bmp[i][j];
+				if (color != maskcolor){
+
+					xp = (angcos * (j - halfy) + ( angsin * (i - halfx))) + (x + (160));
+					yp = (- 1 * angsin * (j - halfy) + ( angcos * (i - halfx))) + (y + 100);
+					
+					nearestX = (int) round(xp);
+					nearestY = (int) round(yp);
+
+					if((nearestX < 320 && nearestX >= 0) && (nearestY < 200 && nearestY >= 0)){
+						putPixelX(nearestX, nearestY, color);
+					}
+				}
+			}
+		}
+	}
+}
+

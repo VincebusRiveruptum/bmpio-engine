@@ -36,6 +36,8 @@ void drawPalette();
 #define PAGE_SIZE 16000
 #define NUM_PAGES 4
 
+#define ENABLE_PAGE_FLIPPING 1
+
 extern unsigned char currentPage = 0;
 extern unsigned char nextPage = 1;
 
