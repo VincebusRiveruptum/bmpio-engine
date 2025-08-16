@@ -3,4 +3,6 @@ old
 *.exe
 *.obj
 .DS_STORE
+assets
+bin
 errors.txt
