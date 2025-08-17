@@ -1,8 +1,13 @@
-/* ENV/CFG handling by Vincebus - 2025 */
+/* ENV/CFG handling by Vincebus - 2025
+
+As in August 2025. the Configuration entries are hardcoded and if you want more
+settings you have to modify the Config data structure, displayConf and the
+loadEnv method.
+
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <string.h>
 
 #include "TYPES.H"
@@ -14,82 +19,124 @@
 
 #define STRING_MAX_LENGTH 255
 
-int findIndex(char *str){
-    if(!str) return -1;
+Config *conf;
 
-    int i, index = 0;
-    int length;
+int findIndex(char *str) {
+  int i = 0;
+  int index = 0;
+  int length;
 
-    length = strlen(str);
-
-    for(i=0; i< length; i++){
-        if(str[i] == "=") return i;
-    }
+  if (!str)
     return -1;
+
+  length = strlen(str);
+
+  for (i = 0; i < length; i++) {
+    if (str[i] == '=')
+      return i;
+  }
+
+  return -1;
 }
 
-void *parseValue(char *str, int type){
-    void *value = NULL;
-    int index = 0;
-    
-    if(!str) return NULL;
-    
-    if((index = findIndex(str) == -1)) return NULL;
-    
-    char *buffer = str + index + 1;
+void *parseValue(char *str, int type) {
+  void *value = NULL;
+  int index = 0;
+  char *buffer;
 
-    while (*buffer && isspace(*buffer)) buffer++;
+  if (!str)
+    return NULL;
 
-    strncpy(buffer, str + index, strlen(str) + index);
+  if (((index = findIndex(str)) == -1))
+    return NULL;
 
-    if(type == STRING){
-        value = malloc(STRING_MAX_LENGTH);
-        
-        sscanf(value, "%s", buffer);
-    }
-    if(type == INT){;                    
-        int *v = malloc(sizeof(int));
-        sscanf(value, "%d", buffer);
-        value = v;
-    }
+  printf("\n%d", index);
+  buffer = str + (index + 1);
 
-    return value;
+  while (*buffer && isspace(*buffer)) {
+    buffer++;
+  }
 
+  if (type == STRING) {
+    char *v = malloc(STRING_MAX_LENGTH);
+    sscanf(buffer, "%s", v);
+    value = v;
+  }
+
+  if (type == INT) {
+    int *v = malloc(sizeof(int));
+    sscanf(buffer, "%d", v);
+    value = v;
+  }
+
+  return value;
 }
 
 int findValue(const char *key, const char *line) {
-    if (!key || !line) return 0;
-    size_t keyLen = strlen(key);
+  int keyLen = 0;
 
-    return (strncmp(line, key, keyLen) == 0 && line[keyLen] == '=') ? 1 : 0;
+  if (!key || !line)
+    return 0;
+
+  keyLen = strlen(key);
+
+  return (strncmp(line, key, keyLen) == 0 && line[keyLen] == '=') ? 1 : 0;
 }
 
-Config * loadEnv(){
-    // Look for a .env file in the current directory
-    // Parse the contents of the .env
-    // Return the Config type object
+Config *loadEnv() {
+  // Look for a .env file in the current directory
+  // Parse the contents of the .env
+  // Return the Config type object
 
-    FILE *fp = fopen("../../.ENV", "r");
-    char tmpBuffer[64];
-    Config *newConfig;
+  FILE *fp = fopen(".env", "r");
+  char tmpBuffer[64];
+  Config *newConfig;
 
-    newConfig = (Config *)malloc(sizeof(Config));
-    newConfig->assetsPath = (char**)calloc(255, sizeof(char*));
-    newConfig->playerName = (char**)calloc(32, sizeof(char*));
+  newConfig = (Config *)malloc(sizeof(Config));
+  newConfig->assetsPath = (char *)calloc(255, sizeof(char));
+  newConfig->playerName = (char *)calloc(32, sizeof(char));
 
-    if(!fp){
-        printf("No config file found.");
-        free(newConfig);
-        return NULL;
+  if (!fp) {
+    printf("No config file found.");
+    free(newConfig);
+    return NULL;
+  }
+
+  while (fgets(tmpBuffer, sizeof(tmpBuffer), fp) != NULL) {
+    if (findValue("ASSETS_PATH", tmpBuffer)) {
+      newConfig->assetsPath = (char *)parseValue(tmpBuffer, STRING);
     }
-
-    while(fgets(tmpBuffer, sizeof(tmpBuffer), fp) != NULL){
-        if(findValue("ASSETS_PATH", tmpBuffer)){
-            newConfig->assetsPath = (char*) parseValue(tmpBuffer, STRING);
-        }
+    if (findValue("PLAYER_NAME", tmpBuffer)) {
+      newConfig->playerName = (char *)parseValue(tmpBuffer, STRING);
     }
+  }
 
-    fclose(fp);
+  fclose(fp);
 
-    return newConfig;
+  return newConfig;
 }
+
+void displayConf(Config *conf) {
+  printf("\nConfiguration content:\n");
+
+  printf("\nASSET_PATH:%s", conf->assetsPath);
+  printf("\nPLAYER_NAME:%s", conf->playerName);
+}
+
+#ifdef STANDALONE
+int main() {
+  printf("\n\n.ENV/CFG File reader");
+  printf("\nVincebus Riveruptum, 2025.");
+
+  conf = loadEnv();
+
+  if (conf == NULL) {
+    printf("\nNo ENV/CFG file found!.");
+    return 0;
+  }
+
+  displayConf(conf);
+
+  return 0;
+}
+#endif
