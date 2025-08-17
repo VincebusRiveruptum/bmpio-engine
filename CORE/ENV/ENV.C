@@ -50,7 +50,6 @@ void *parseValue(char *str, int type) {
   if (((index = findIndex(str)) == -1))
     return NULL;
 
-  printf("\n%d", index);
   buffer = str + (index + 1);
 
   while (*buffer && isspace(*buffer)) {
