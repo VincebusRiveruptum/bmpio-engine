@@ -3,17 +3,9 @@
 #ifndef DATA_H
 #define DATA_H
 
-typedef struct Node{
-    void *data;
-    struct Node *prev;
-    struct Node *next;
-} Node;
+#pragma once
 
-typedef struct List{
-    struct Node *firstNode;
-    struct Node *lastNode;
-    int length;
-} List;
+#include "TYPES.H"
 
 void addToList(List **list, Node *newNode);
 Node *createNode(void *data);

@@ -6,18 +6,7 @@ loadEnv method.
 
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "TYPES.H"
-
-#define STRING 1
-#define INT 2
-#define UINT 3
-#define FLOAT 4
-
-#define STRING_MAX_LENGTH 255
+#include "ENV.H"
 
 Config *conf;
 
