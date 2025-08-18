@@ -2,7 +2,7 @@
 	This file handles bmp file operations
 */
 
-#include "bmp.h"
+#include "APP.H"
 #include <math.h>
 
 BMPfile *loadBMPfile(char *fileName){

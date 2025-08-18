@@ -2,6 +2,7 @@
 old
 *.exe
 *.obj
+*.err
 .DS_STORE
 assets
 bin

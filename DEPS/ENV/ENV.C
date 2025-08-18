@@ -71,15 +71,15 @@ void *parseValue(char *str, int type) {
   return value;
 }
 
-int findValue(const char *key, const char *line) {
+bool findValue(const char *key, const char *line) {
   int keyLen = 0;
 
   if (!key || !line)
-    return 0;
+    return false;
 
   keyLen = strlen(key);
 
-  return (strncmp(line, key, keyLen) == 0 && line[keyLen] == '=') ? 1 : 0;
+  return (strncmp(line, key, keyLen) == 0 && line[keyLen] == '=') ? true : false;
 }
 
 Config *loadEnv() {
@@ -108,6 +108,22 @@ Config *loadEnv() {
     if (findValue("PLAYER_NAME", tmpBuffer)) {
       newConfig->playerName = (char *)parseValue(tmpBuffer, STRING);
     }
+    if (findValue("LOGS", tmpBuffer)) {
+      char *logType = (char *)parseValue(tmpBuffer, STRING);
+      
+      printf("\n%s", logType);
+      if(!strcmp(logType, "file")){
+        newConfig->logType = 1;
+      }
+      if(!strcmp(logType, "console")){
+        newConfig->logType = 2;
+      }
+      if(!strcmp(logType, "both")){
+        newConfig->logType = 3;
+      }
+    }else{
+        newConfig->logType = 0;
+    }
   }
 
   fclose(fp);
@@ -120,6 +136,7 @@ void displayConf(Config *conf) {
 
   printf("\nASSET_PATH:%s", conf->assetsPath);
   printf("\nPLAYER_NAME:%s", conf->playerName);
+  printf("\nLOGS:%d", conf->logType);
 }
 
 #ifdef STANDALONE

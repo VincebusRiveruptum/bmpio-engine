@@ -14,7 +14,7 @@
 #include "CORE/BMP.H"
 
 // Main loop
-
+}
 int main(int argc, char *argv[]){
 
     // BMP list loading,,,
