@@ -3,7 +3,16 @@
 */
 
 #include "APP.H"
-#include <math.h>
+
+bool checkConfig(){
+	if(gameConfig){
+		if( gameConfig->assetsPath &&
+			gameConfig->logType && 
+			gameConfig->playerName	
+		)	return true;
+	}
+	return false;
+}
 
 BMPfile *loadBMPfile(char *fileName){
 	FILE *fp = NULL;

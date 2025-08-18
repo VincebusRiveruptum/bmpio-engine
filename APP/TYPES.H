@@ -1,7 +1,6 @@
-#ifndef TYPES_H
-#define TYPES_H
-
 #define PI 3.14159
+
+#pragma once
 
 #define true 1
 #define false 0
@@ -77,5 +76,3 @@ typedef struct Asset{
 #define FILE_CONSOLE_LOGGING 3
 
 // ======
-
-#endif

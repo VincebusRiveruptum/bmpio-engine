@@ -6,25 +6,29 @@
     - Activity registering
 
 */
+#include "LOG.H"
 
-#import "TYPES.H"
-
-void logError(char *message, unsigned long line, unsigned char module){
+void logToFile(char *message, unsigned long line, unsigned char module){
     time_t now = time(NULL);
     
     FILE *fp = fopen("logs.txt", "wr");
-
+    char *errorMsgLine;
     if(!fp){
         printf("\nError trying to log to file.");
         return;
     }
 
-    char *errorMsgLine;
-
-    sprintf(&errorMsgLine, "\n%s [ERROR] : %s \n\t At line %s on \"%s\"", now, message, line, module);
+    sprintf(errorMsgLine, "\n%s [ERROR] : %s \n\t At line %s on \"%s\"", now, message, line, module);
     fputs(errorMsgLine, fp);
 
     fclose(fp);
+}
+
+void logToConsole(char *message, unsigned long line, unsigned char module){
+    time_t now = time(NULL);
+    char *errorMsgLine;
+
+    printf("\n%s [ERROR] : %s \n\t At line %s on \"%s\"", now, message, line, module);
 }
 
 void logError(char *message, unsigned long line, unsigned char module){
@@ -42,3 +46,10 @@ void logError(char *message, unsigned long line, unsigned char module){
         // Default logging
     }
 }
+
+#ifdef STANDALONE
+int main(){
+    printf("\nThis module is not standalone, but this main placeholder is for testing purposes.");
+    return 0;
+}
+#endif
