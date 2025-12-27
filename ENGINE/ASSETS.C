@@ -18,7 +18,6 @@ bool checkConfig(){
 	return false;
 }
 
-
 BMPfile *loadBMPfile(char *fileName){
 	FILE *fp = NULL;
 	BMPfile *newFile = NULL;
@@ -122,7 +121,35 @@ void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor
 			}
 		}
 	}
-	
+}
+
+/* Optimized Plane-batched drawing */
+void drawBitmapPlaneBatch(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor){
+	long i, j, plane;
+	unsigned char color = 0;
+	unsigned char **bmp = (*bmpData)->bmp;
+	unsigned int width = (*bmpData)->width;
+	unsigned int height = (*bmpData)->height;
+    unsigned long page_offs = pageOffsets[nextPage];
+    unsigned long row_offs;
+
+	if (bmp != NULL){
+        for (plane = 0; plane < 4; plane++) {
+            // Set VGA Map Mask for this plane
+            outPortb(SEQU_ADDR, 0x02);
+            outPortb(SEQU_ADDR + 1, 0x01 << plane);
+
+            for (i = 0; i < height; i++) {
+                row_offs = page_offs + (unsigned long)(i + y) * 80;
+                for (j = plane; j < width; j += 4) {
+                    color = bmp[i][j];
+                    if (color != maskcolor) {
+                        putPixelASM(row_offs + ((j + x) >> 2), color);
+                    }
+                }
+            }
+        }
+	}
 }
 
 void addBMPtoList(List **bmpList, BMPdata *bmpData){
@@ -165,7 +192,22 @@ int round(float x) {
     return (int)(x + 0.5f);
 }
 
-/* This will draw an image on the screen*/
+/* Precomputed Trig Tables for performance */
+static long sintable[360];
+static long costable[360];
+static int trigInitialized = 0;
+
+void initTrig() {
+    int i;
+    for (i = 0; i < 360; i++) {
+        float rad = (PI * i) / 180.0f;
+        sintable[i] = (long)(sin(rad) * 256.0f);
+        costable[i] = (long)(cos(rad) * 256.0f);
+    }
+    trigInitialized = 1;
+}
+
+/* This will draw an image distorted/rotated using Fixed Point Math (8.8) */
 void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor, int angle){
 	long i, j;
 	unsigned char color = 0;
@@ -173,34 +215,51 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
 	unsigned int width = (*bmpData)->width;
 	unsigned int height = (*bmpData)->height;
 
-	//unsigned float degr = PI / 6; // 30°
-	float xp, yp;
-	int nearestX, nearestY;
+    long angcos, angsin;
+    long halfx, halfy;
+    unsigned long page_offs = pageOffsets[nextPage];
+    
+    // Normalize angle
+    angle %= 360;
+    if (angle < 0) angle += 360;
 
-	// sin( pi / 6 ) = 0.5
-	// cos( pi / 6 ) = 0.8660
+    if (!trigInitialized) initTrig();
 
-	float rad = (PI * angle ) / 180;
-	float angcos = cos(rad);
-	float angsin = sin(rad);
+    angcos = costable[angle];
+    angsin = sintable[angle];
 
-	float halfx = width / 2;
-	float halfy = height / 2;
+	halfx = (long)width << 7;  // width / 2 << 8
+	halfy = (long)height << 7; // height / 2 << 8
 
 	if (bmp != NULL){
 		for (i = 0; i < height; i++){
+            long i_fixed = (long)i << 8;
 			for (j = 0; j < width; j++){
 				color = bmp[i][j];
 				if (color != maskcolor){
+                    long j_fixed = (long)j << 8;
+                    
+                    long dx = j_fixed - halfx;
+                    long dy = i_fixed - halfy;
 
-					xp = (angcos * (j - halfy) + ( angsin * (i - halfx))) + (x + (160));
-					yp = (- 1 * angsin * (j - halfy) + ( angcos * (i - halfx))) + (y + 100);
+                    // 8.8 * 8.8 = 16.16, shift right by 8 to get 8.8
+                    long xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + ((long)(x + 160) << 8);
+                    long yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + ((long)(y + 100) << 8);
 					
-					nearestX = (int) round(xp);
-					nearestY = (int) round(yp);
+					int nearestX = (int)(xp >> 8);
+					int nearestY = (int)(yp >> 8);
 
 					if((nearestX < 320 && nearestX >= 0) && (nearestY < 200 && nearestY >= 0)){
-						putPixelX(nearestX, nearestY, color);
+						// Only switch plane if it actually changed to save I/O cycles
+                        unsigned char target_plane = 0x01 << (nearestX & 3);
+                        static unsigned char last_plane = 0xFF;
+                        
+                        if (target_plane != last_plane) {
+                            outPortb(SEQU_ADDR, 0x02);
+                            outPortb(SEQU_ADDR + 1, target_plane);
+                            last_plane = target_plane;
+                        }
+                        putPixelASM(page_offs + (unsigned long)nearestY * 80 + (nearestX >> 2), color);
 					}
 				}
 			}

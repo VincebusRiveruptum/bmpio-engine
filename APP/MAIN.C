@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     while (!checkAppEnd()){
         initInput();
 
-        drawRect(0,0,320,200,index);
+        fastFillRect(0,0,320,200,index);
         drawBitmapDistorted(&(getNodeByIndex(&bmpList, 1)->data), 55, 50, 15, index);
 
         if (index == 255){
