@@ -10,56 +10,48 @@ char *keyboardInput = NULL;
 char lastKey = 0;
 
 // BIOS Data Area (BDA) addresses for 32-bit protected mode
-#define BDA_SEG   0x40
-#define KBD_HEAD  0x1A
-#define KBD_TAIL  0x1C
-#define KBD_START 0x1E
-#define KBD_END   0x3E
 
 #define ESC_KEY 27
 
+
+extern int keyAvailableASM(void);
+#pragma aux keyAvailableASM = \
+    "mov ah, 01h"             \
+    "int 16h"                 \
+    "mov eax, 0"              \
+    "jz no_key"               \
+    "inc eax"                 \
+    "no_key:"                 \
+    value [eax]               \
+    modify [ah];
+
+static int keyAvailable(void)
+{
+    return keyAvailableASM();
+}
+
+extern unsigned short readKeyASM(void);
+#pragma aux readKeyASM = \
+    "mov ah, 00h"         \
+    "int 16h"             \
+    value [ax]            \
+    modify [ax];
+
+static unsigned short readKey(void)
+{
+    return readKeyASM();
+}
+
 unsigned char kbd_ascii, kbd_scan;
 
-unsigned short *head_ptr = NULL;
-unsigned short *tail_ptr = NULL;
-unsigned short *start_ptr = NULL;
-unsigned short *end_ptr = NULL;
-
 void initInput(){
-    unsigned short head, tail, start, end;
-
-    head_ptr = (unsigned short*)MK_FP(BDA_SEG, KBD_HEAD);
-    tail_ptr = (unsigned short*)MK_FP(BDA_SEG, KBD_TAIL);
-    start_ptr = (unsigned short*)MK_FP(BDA_SEG, KBD_START);
-    end_ptr = (unsigned short*)MK_FP(BDA_SEG, KBD_END);
-
-    // Reset current frame's key
-    kbd_ascii = 0;
-    kbd_scan = 0;
-
-    head = *head_ptr;
-    
-    // The buffer stores ASCII and Scan code as a 16-bit word at 0x40:head
-    // In linear 32-bit: 0x400 + head
-    if (head != tail) {
-        unsigned char *buf = (unsigned char *)MK_FP(BDA_SEG, head);
-
-        kbd_ascii = buf[0];
-        kbd_scan  = buf[1];
-
-        start = *(unsigned short *)MK_FP(BDA_SEG, KBD_START);
-        end   = *(unsigned short *)MK_FP(BDA_SEG, KBD_END);
-
-        head += 2;
-        if (head >= end)
-            head = start;
-
-        *head_ptr = head;
-    }
+    //readKey();
 }
 
 bool checkAppEnd(){
-    // Use kbd_ascii for checking exit
-    if(kbd_ascii == ESC_KEY) return true;
+    if(keyAvailable()){
+        kbd_ascii = readKey() & 0xFF;
+        if(kbd_ascii == ESC_KEY) return true;
+    }
     return false;
 }
