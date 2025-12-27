@@ -47,14 +47,12 @@ int main(int argc, char *argv[]){
     
     loadAnimationFrames(renamonJumping, renamonFrames);
     addAnimationToTable(renamonJumping);   
-    setPalette(renamonFile->bmpData->palette);
-
 
     loadSprite(renamonStanding, "..\\assets\\jump\\FRAME1.bmp", createCoordinates(100, 100, 0), 0);
     addSpriteToTable(renamonStanding);
     
-    
     set200pxMode();
+    setPalette(renamonFile->bmpData->palette);
     //setPalette(firstFile->bmpData->palette);
     while (!checkAppEnd()){
         initInput();

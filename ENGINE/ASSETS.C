@@ -55,7 +55,7 @@ Animation *createAnimation(){
 	newAnimation->frameDelay = 0;
 	newAnimation->loop = false;
 	newAnimation->coordinates = createCoordinates(0, 0, 0);
-	newAnimation->maskColor = 0;
+	newAnimation->maskColor = 255;
 	return newAnimation;
 }
 
@@ -63,7 +63,7 @@ Sprite *createSprite(){
 	Sprite *newSprite = (Sprite*)malloc(sizeof(Sprite));
 	newSprite->bmpData = NULL;
 	newSprite->coordinates = createCoordinates(0, 0, 0);
-	newSprite->maskColor = 0;
+	newSprite->maskColor = 255;
 	return newSprite;
 }
 
@@ -76,12 +76,14 @@ bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsign
 		return false;
 	}
 
-	if(!coordinates){
-		coordinates = createCoordinates(0, 0, 0);
+	if(coordinates){
+		if(sprite->coordinates) free(sprite->coordinates);
+		sprite->coordinates = coordinates;
+	} else if (!sprite->coordinates) {
+		sprite->coordinates = createCoordinates(0, 0, 0);
 	}
 	
 	sprite->bmpData = loadedFrame->bmpData;
-	sprite->coordinates = coordinates;
 	sprite->maskColor = maskColor;
 	
 	free(loadedFrame);
@@ -161,8 +163,8 @@ void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 	for(i = 0; i < spriteTable->animationIndex ; i++){
 		animation = spriteTable->animations[i];
 		
-		if(animation == NULL){
-			printf("\nAnimation %ld is NULL", i);
+		if(animation == NULL || animation->length <= 0){
+			printf("\nAnimation %ld is NULL or empty", i);
 			continue;
 		}
 
@@ -231,7 +233,7 @@ BMPfile *loadBMPfile(char *fileName){
 
 	fp = fopen(fileName, "rb");
 
-	if (!(fp = fopen(fileName, "rb"))){
+	if (!fp){
 		printf("\nError, file not found!");
 		return NULL;
 	}
@@ -287,7 +289,7 @@ BMPfile *loadBMPfile(char *fileName){
 	};
 
 	for (y = (int) newFile->ih.y - 1; y >= 0; y--){
-		newFile->bmpData->bmp[y] = (unsigned char *)malloc(sizeof(unsigned char) * (newFile->ih.x));
+		newFile->bmpData->bmp[y] = (unsigned char *)malloc(sizeof(unsigned char) * (newFile->ih.x + padding));
 
 		if (newFile->bmpData->bmp[y] == NULL)
 		{
@@ -317,7 +319,9 @@ void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor
 
 	if (bmp != NULL){
 		for (i = 0; i < height; i++){
+			if (y + i >= 200) continue; 
 			for (j = 0; j < width; j++){
+				if (x + j >= 320) continue;
 				color = bmp[i][j];
 				if (color != maskcolor){
 					putPixelX(j + x, i + y, color);

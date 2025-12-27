@@ -130,12 +130,15 @@ List *invertList(List **list){
 
 
 Node *getNodeByIndex(List **list, int index){
-    Node *rec = (*list)->firstNode;
+    Node *rec;
     int i=0;
 
-    if((index - 1) < (*list)->length){
+    if (list == NULL || *list == NULL) return NULL;
+    rec = (*list)->firstNode;
+
+    if(index < (*list)->length){
         while(rec != NULL){
-            if(i == (index - 1)){
+            if(i == index){
                 return rec;
             }
             rec = rec->next;
