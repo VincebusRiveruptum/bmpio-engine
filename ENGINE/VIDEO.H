@@ -12,6 +12,7 @@ void putPixelX(int, int, char);
 unsigned char getPixelX(int, int);
 void setPal(char color, unsigned char r, unsigned char g, unsigned char b);
 void drawPalette();
+void waitVsync();
 
 #pragma aux clearScreen =                                   \
     "mov eax, 0x00"    /* Zero-fill the register */          \
@@ -24,12 +25,17 @@ void drawPalette();
     "cld"                    \
     "mov ax, 0x0013",        \
     "int 0x10";
-
 #pragma aux setTXTModeASM =    \
-        "xor ax, ax",       \ 
-        "int 0x16",         \
         "mov ax, 0x03",     \
         "int 0x10";
+
+#pragma aux waitVsync = \
+    "mov dx, 0x3da"     \
+    "wait_retrace:"     \
+    "in al, dx"         \
+    "test al, 0x08"     \
+    "jz wait_retrace"   \
+    modify [eax edx];
 
 void drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
 void flipPage();

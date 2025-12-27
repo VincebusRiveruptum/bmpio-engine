@@ -1,5 +1,9 @@
 #include "ASSETS.H"
 
+/*
+	I've been thinking of making this ASSETS.C file as the 'glue' for everything, however,
+	at which point the glue will be so thick that it will be a mess.
+*/
 Config *gameConfig = NULL;
 List *bmpList = NULL;
 Color *globalPalette = NULL;
@@ -13,6 +17,7 @@ bool checkConfig(){
 	}
 	return false;
 }
+
 
 BMPfile *loadBMPfile(char *fileName){
 	FILE *fp = NULL;

@@ -151,8 +151,9 @@ void freeList(List **list){
     while(current != NULL){
         temp = current;
         current = current->next;
-        free(temp->data);
+        if(temp->data) free(temp->data);
         free(temp);
     }
     free(*list);
+    *list = NULL;
 }

@@ -19,6 +19,10 @@
 #include "PROTO.H"
 #include "VIDEO.H"
 
+// ENGINE
+
+#include "INPUT.H"
+
 // GLOBAL VARS & TYPES
 #include "VARS.H"
 

@@ -26,35 +26,34 @@ int main(int argc, char *argv[]){
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
 
-    getch();
-
     set200pxMode();
 
     setPalette(firstFile->bmpData->palette);
 
-    while (gameTicks < 600){
-            drawRect(0,0,320,200,index);
-            drawBitmapDistorted(&(getNodeByIndex(&bmpList, 1)->data), 55, 50, 15, index);
+    while (!checkAppEnd()){
+        initInput();
 
-            if (index == 255){
-                index = 0;
-            }else
-            {
-                index++;
-            }
-            if(ENABLE_PAGE_FLIPPING == 1){
-                flipPage(); 
-            }
+        drawRect(0,0,320,200,index);
+        drawBitmapDistorted(&(getNodeByIndex(&bmpList, 1)->data), 55, 50, 15, index);
+
+        if (index == 255){
+            index = 0;
+        }else
+        {
+            index++;
+        }
+        if(ENABLE_PAGE_FLIPPING == 1){
+            flipPage(); 
+        }
         gameTicks++;
     }
-
-    getch();
 
     setTXTMode();
 
     printf("\n96 Tears...");
 
-    free(bmpList);
-    free(globalPalette);
+    if(bmpList) freeList(&bmpList);
+    if(globalPalette) free(globalPalette);
+    
     return 0;
 }

@@ -69,6 +69,7 @@ void setPage(unsigned char page) {
     
 
 void flipPage() {
+    waitVsync();
     currentPage = nextPage;
     setPage(currentPage); // Perform the page flip
     nextPage = (nextPage + 1) % NUM_PAGES;
