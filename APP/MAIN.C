@@ -60,9 +60,18 @@ int main(int argc, char *argv[]){
         render2d(gameTicks);
         //TODO: Move this background rendering to a separate funciton inside "render2d" method
         
-        /*
-        fastFillRect(0,0,320,200,index);
         drawBitmapDistorted(&(getNodeByIndex(&bmpList, 1)->data), 55, 50, 15, index);
+        /*
+            This is literally a sprite that gets rotated a step each game tick. So, this 
+            could be considered an animation or static animation? Which is a single sprite
+            with a transformation animaiton applied to it. So, an animation need new atributs:
+
+            void static_animation which is a object that specifies the transformaiton object,
+                - rotaiton object
+                - scale object
+                - translation object    
+            
+        */
         
         if (index == 255){
             index = 0;
@@ -70,7 +79,7 @@ int main(int argc, char *argv[]){
         {
             index++;
         }
-        */
+        
     
         // ======================================
         if(ENABLE_PAGE_FLIPPING == 1){
