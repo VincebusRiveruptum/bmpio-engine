@@ -1,5 +1,5 @@
-#ifndef PROTO_H
-#define PROTO_H
+#ifndef ENGINE_PROTO_H
+#define ENGINE_PROTO_H
 
 #include "VARS.H"
 

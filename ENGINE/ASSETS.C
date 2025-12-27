@@ -1,6 +1,4 @@
-#ifndef APP_H
-#include "APP.H"
-#endif
+#include "ASSETS.H"
 
 Config *gameConfig = NULL;
 List *bmpList = NULL;

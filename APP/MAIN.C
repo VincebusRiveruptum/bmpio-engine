@@ -11,7 +11,7 @@
 
 */
 
-#include "APP/APP.H"
+#include "ASSETS.H"
 
 // Main loop
 int main(int argc, char *argv[]){

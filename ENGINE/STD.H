@@ -1,5 +1,5 @@
-#ifndef STD_H
-#define STD_H
+#ifndef ENGINE_STD_H
+#define ENGINE_STD_H
 
 #include <stdio.h>
 #include <stdlib.h>

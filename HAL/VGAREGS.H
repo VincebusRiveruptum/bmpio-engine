@@ -1,3 +1,5 @@
+#ifndef HAL_VGAREGS_H
+#define HAL_VGAREGS_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,3 +45,4 @@ extern unsigned int inPortw(int);
     parm [dx] [ax];
 
 
+#endif

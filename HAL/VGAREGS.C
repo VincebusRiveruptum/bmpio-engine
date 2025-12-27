@@ -1,7 +1,4 @@
-#ifndef VGAREGS_H
-#define VGAREGS_H
-
-#include "vgaregs.h"
+#include "VGAREGS.H"
 
 
 void unProtectCRTC(void) {
@@ -77,5 +74,3 @@ void registerOut(int controller, char index, unsigned char value) {
 
     outPortb(ATTR_ADDR, 0x20);  // Allow screen writes
 }
-
-#endif

@@ -2,8 +2,8 @@
 	This file handles bmp file operations
 */
 
-#ifndef APP_H
-#define APP_H
+#ifndef ENGINE_ASSETS_H
+#define ENGINE_ASSETS_H
 
 // STD IMPORTS
 #include "STD.H"

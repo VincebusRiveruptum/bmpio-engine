@@ -1,5 +1,5 @@
-#ifndef APP_TYPES_H
-#define APP_TYPES_H
+#ifndef ENGINE_TYPES_H
+#define ENGINE_TYPES_H
 
 #include "STD.H"
 

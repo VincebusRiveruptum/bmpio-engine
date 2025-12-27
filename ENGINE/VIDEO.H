@@ -1,8 +1,8 @@
-#ifndef VIDEO_H
-#define VIDEO_H
+#ifndef ENGINE_VIDEO_H
+#define ENGINE_VIDEO_H
 
 #include "STD.H"
-#include "vgaregs.h"
+#include "VGAREGS.H"
 
 void clearScreen();
 void setVideoMode13();
