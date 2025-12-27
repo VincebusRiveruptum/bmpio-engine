@@ -73,3 +73,103 @@ typedef struct Asset{
 #define FILE_CONSOLE_LOGGING 3
 
 #endif
+
+
+// ==================================================================================
+// ACTOR
+// ==================================================================================
+
+/*
+	Action triggeres could be 
+		- External Eavents
+		- User Input (keyboard, mouse, etc)
+		- Time (timers, etc)
+		- AI (AI, etc)
+
+	Depending on the trigger and action type, the game executes an specific method which uses context data from the 
+	environment, involved actors, user, time, etc.
+
+	Example: Renamon is an actor that can be controleld by the user. if the action is 'jump', which is an input triggered by:
+		- User Input (keyboard, mouse, etc)
+		- AI (AI, etc)
+	If the trigger was the USER, then depending on the actor's coordinates, the function for jumping is executed and the character 
+	movement follows the user input (keyboard, mouse, etc).
+
+	If the trigger was AI, then depending if the actor reacted due to collision from another actor, the function for jumping is executed and the character jumps over the other actor.
+
+	Actor lifecycle:
+		- Initialize
+		- Load	
+			Load Actor assets
+				Sprites
+				Sounds
+				Actions
+				Triggers
+		- Update
+			Check type
+				User
+					Check User's input
+				AI
+					Check AI's logic
+						Check timers
+						Check conditions
+						Check environment
+							Check collision
+							Check distance
+							Check visibility		
+		- Render
+			Render on screen visibility portal
+			Hide if not visible
+		- Free
+			Free memory
+			Free environment
+			Free actions
+			Free stats
+			Free coordinates
+			Free actor
+
+	Instance Actor in Main Loop:
+		
+		Actor actor;
+		
+		createActor(&actor);
+		
+		main loop:	
+			drawEnv();
+			drawActors();
+*/
+
+typedef struct Actor{
+    char id[32];
+    char name[32];
+    Action *actions;
+    Stats *stats;
+	Coordinates *coordinates;
+}Actor;
+
+typedef struct Action{
+	char name[32];
+	List *triggers;	// List of action triggers
+				
+	List *frames;	// List of frames BMP for now...
+}Action;
+
+typedef struct Stats{
+	int health;
+	int maxHealth;
+	int attack;
+	int defense;
+	int speed;
+	int intelligence;
+	int agility;
+	int luck;
+	int experience;
+	int level;
+}Stats;
+
+typedef struct Coordinates{
+	int x;
+	int y;
+	int z;
+}Coordinates;
+	

@@ -1,3 +1,5 @@
+// THIS IS 16-BIT use Borland C for testing
+
 #include <dos.h>
 #include <stdio.h>
 

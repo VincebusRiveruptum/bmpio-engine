@@ -21,13 +21,10 @@ int main(int argc, char *argv[]){
     unsigned long gameTicks = 0;
     unsigned long index = 0;
 
-    Node *popped = NULL;
-
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
 
     set200pxMode();
-
     setPalette(firstFile->bmpData->palette);
 
     while (!checkAppEnd()){
