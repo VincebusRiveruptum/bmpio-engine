@@ -13,4 +13,9 @@ typedef struct List{
     int length;
 } List;
 
+typedef unsigned char bool;
+
+#define true 1
+#define false 0
+
 #endif

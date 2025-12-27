@@ -45,6 +45,22 @@ typedef struct BMPdata{                     // Raw bmp data
     long height;
 }BMPdata;
 
+typedef struct Animation{
+	struct List *frames;
+	int length;
+	int frameDelay;
+	bool loop;
+
+	struct Coordinates *coordinates;
+	char maskColor;
+}Animation;
+
+typedef struct Sprite{
+	struct BMPdata *bmpData;
+	struct Coordinates *coordinates;
+	char maskColor;
+}Sprite;
+
 // ==================================================================================
 // ASSET TYPES
 // ==================================================================================
@@ -72,7 +88,6 @@ typedef struct Asset{
 #define CONSOLE_LOGGING 2
 #define FILE_CONSOLE_LOGGING 3
 
-#endif
 
 
 // ==================================================================================
@@ -139,20 +154,8 @@ typedef struct Asset{
 			drawActors();
 */
 
-typedef struct Actor{
-    char id[32];
-    char name[32];
-    Action *actions;
-    Stats *stats;
-	Coordinates *coordinates;
-}Actor;
-
-typedef struct Action{
-	char name[32];
-	List *triggers;	// List of action triggers
-				
-	List *frames;	// List of frames BMP for now...
-}Action;
+// Forward declarations for pointers
+struct List; 
 
 typedef struct Stats{
 	int health;
@@ -167,9 +170,44 @@ typedef struct Stats{
 	int level;
 }Stats;
 
+// SPACE COORDINATES
 typedef struct Coordinates{
-	int x;
-	int y;
+	long x;     // 16.16 Fixed Point
+	long y;     // 16.16 Fixed Point
 	int z;
 }Coordinates;
+
+// SCREEN COORDINATES
+typedef struct ScreenCoordinates{
+	unsigned int x;
+	unsigned int y;
+}ScreenCoordinates;
+
+typedef struct Action{
+	char name[32];
+	struct List *triggers;	// List of action triggers
+	struct List *frames;	// List of frames BMP for now...
+    
+    void (*onTrigger)(struct Actor *self); // logic for this action
+}Action;
+
+#define ACTOR_FLAG_ACTIVE     0x01
+#define ACTOR_FLAG_VISIBLE    0x02
+#define ACTOR_FLAG_COLLIDABLE 0x04
+
+typedef struct Actor{
+    char id[32];
+    char name[32];
+    
+    struct Action *actions;  // Array or list of possible actions
+    struct Stats *stats;
+	struct Coordinates *coordinates;
+
+    // State
+    struct Action *currentAction;
+    int frameIndex;
+    unsigned int flags;
+}Actor;
+
+#endif
 	

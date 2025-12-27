@@ -157,3 +157,27 @@ void freeList(List **list){
     free(*list);
     *list = NULL;
 }
+
+//
+bool includes(float val, float *arr, size_t n) {
+    size_t i = 0;
+    for(i = 0; i < n; i++) {
+        if(arr[i] == val)
+            return true;
+    }
+    return false;
+}
+
+bool checkId(unsigned long id, unsigned long *array){
+	return includes(id, array, 65536);
+}
+/*
+unsigned long addId(unsigned long id, unsigned long *array){
+	if(checkId(id, array)){
+		return id;
+	}
+	array[index] = id;
+	index++;
+	return id;
+}
+*/

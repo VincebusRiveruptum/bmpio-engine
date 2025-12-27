@@ -26,4 +26,7 @@
 // GLOBAL VARS & TYPES
 #include "VARS.H"
 
+extern unsigned long gameTicks;
+extern unsigned long index;
+
 #endif

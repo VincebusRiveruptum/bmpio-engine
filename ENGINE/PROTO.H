@@ -3,6 +3,7 @@
 
 #include "VARS.H"
 
+
 bool checkConfig();
 BMPfile *loadBMPfile(char *fileName);
 void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor);
@@ -11,5 +12,17 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
 void addBMPtoList(List **bmpList, BMPdata *bmpData);
 void drawList(List *list);
 void setPalette(Color *palette);
+
+Animation *createAnimation();
+void loadAnimationFrames(Animation *animation, char **frameArray);
+Sprite *createSprite();
+void loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor);
+void render2d(unsigned long gametick);
+void addAnimationToTable(Animation *animation);
+
+// TODO: MOVE TO ITS OWN MATH.C AND MATH.H MODULE
+Coordinates *createCoordinates(long x, long y, int z);
+ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y);
+
 
 #endif

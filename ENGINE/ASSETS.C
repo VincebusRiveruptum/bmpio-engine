@@ -8,6 +8,20 @@ Config *gameConfig = NULL;
 List *bmpList = NULL;
 Color *globalPalette = NULL;
 
+unsigned long gameTicks = 0;
+unsigned long index = 0;
+
+// This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen
+typedef struct SpriteTable{
+	Animation *animations[65536];
+	unsigned long animationIndex;
+	
+	Sprite *sprites[65536];
+	unsigned long spriteIndex;
+} SpriteTable;
+
+SpriteTable *spriteTable = NULL;
+
 bool checkConfig(){
 	if(gameConfig){
 		if( gameConfig->assetsPath &&
@@ -17,6 +31,199 @@ bool checkConfig(){
 	}
 	return false;
 }
+
+Coordinates *createCoordinates(long x, long y, int z){
+	Coordinates *newCoordinates = (Coordinates*)malloc(sizeof(Coordinates));
+	newCoordinates->x = x;
+	newCoordinates->y = y;
+	newCoordinates->z = z;
+	return newCoordinates;
+}
+
+ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y){
+	ScreenCoordinates *newScreenCoordinates = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
+	newScreenCoordinates->x = x;
+	newScreenCoordinates->y = y;
+	return newScreenCoordinates;
+}
+
+/* Animation Methods */
+Animation *createAnimation(){
+	Animation *newAnimation = (Animation*)malloc(sizeof(Animation));
+	newAnimation->frames = NULL;
+	newAnimation->length = 0;
+	newAnimation->frameDelay = 0;
+	newAnimation->loop = false;
+	newAnimation->coordinates = createCoordinates(0, 0, 0);
+	newAnimation->maskColor = 0;
+	return newAnimation;
+}
+
+Sprite *createSprite(){
+	Sprite *newSprite = (Sprite*)malloc(sizeof(Sprite));
+	newSprite->bmpData = NULL;
+	newSprite->coordinates = createCoordinates(0, 0, 0);
+	newSprite->maskColor = 0;
+	return newSprite;
+}
+
+void loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor){
+	BMPfile *loadedFrame = NULL;
+	loadedFrame = loadBMPfile(fileName);
+	
+	if(!loadedFrame){
+		printf("\nError loading sprite %s", fileName);
+		return;
+	}
+
+	if(!coordinates){
+		coordinates = createCoordinates(0, 0, 0);
+	}
+	
+	sprite->bmpData = loadedFrame->bmpData;
+	sprite->coordinates = coordinates;
+	sprite->maskColor = maskColor;
+	
+	printf("\nSprite loaded successfully");
+	free(loadedFrame);
+}
+
+void loadAnimationFrames(Animation *animation, char **frameArray){
+	BMPfile *loadedFrame = NULL;
+	int i;
+
+	if (!frameArray) return;
+	if (frameArray[0] == NULL) return;
+
+	if(animation == NULL){
+		animation = createAnimation();
+	}
+	
+	for(i = 0; frameArray[i] != NULL; i++){
+		loadedFrame = loadBMPfile(frameArray[i]);
+
+		if(!loadedFrame){
+			printf("\nError loading frame %s", frameArray[i]);
+			continue;
+		}
+		addBMPtoList(&animation->frames, loadedFrame->bmpData);
+		animation->length++;
+
+		printf("\nLoaded frame %s", frameArray[i]);
+	}
+}
+
+SpriteTable *initSpriteTable(){
+	SpriteTable *newSpriteTable = (SpriteTable *) malloc(sizeof(SpriteTable));
+	newSpriteTable->animationIndex = 0;
+	newSpriteTable->spriteIndex = 0;
+	return newSpriteTable;
+}
+ 
+void addAnimationToTable(Animation *animation){
+	if(!animation) return;
+	
+	if(spriteTable == NULL){
+		spriteTable = initSpriteTable();
+	}
+
+	spriteTable->animations[spriteTable->animationIndex] = animation;
+	spriteTable->animationIndex++;
+
+	printf("\nAnimation added to table succesfully");
+}
+
+void addSpriteToTable(Sprite *sprite){
+	if(!sprite) return;
+	
+	if(spriteTable == NULL){
+		spriteTable = initSpriteTable();
+	}
+
+	spriteTable->sprites[spriteTable->spriteIndex] = sprite;
+	spriteTable->spriteIndex++;
+
+	printf("\nSprite added to table succesfully");
+}
+
+void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
+	unsigned long frameToRender = 0;
+	unsigned long i;
+	Animation *animation = NULL;
+	Node *animationFrameNode = NULL;
+	BMPdata *animationFrame = NULL;
+	
+	if(spriteTable == NULL){
+		printf("\nSprite table is NULL");
+		return;
+	}
+
+	/*
+		For each animation in the sprite table, we render the current frame	
+	*/
+	for(i = 0; i < spriteTable->animationIndex ; i++){
+		animation = spriteTable->animations[i];
+		
+		if(animation == NULL){
+			printf("\nAnimation %ld is NULL", i);
+			continue;
+		}
+
+		frameToRender = gametick % animation->length;
+		animationFrameNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
+		
+		if(animationFrameNode == NULL){
+			printf("\nAnimation frame node %ld is NULL", frameToRender);
+			continue;
+		}
+
+		animationFrame = (BMPdata *)animationFrameNode->data;
+		
+		if(animationFrame == NULL){
+			printf("\nAnimation frame data %ld is NULL", frameToRender);
+			continue;
+		}
+		
+		printf("\nDrawing animation frame %ld", frameToRender);
+		//drawBitmap(&animationFrame, (unsigned int)animation->coordinates->x, (unsigned int)animation->coordinates->y, (int)animation->maskColor);
+	}
+}
+
+void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
+	unsigned long i;
+	Sprite *sprite = NULL;
+	
+	if(spriteTable == NULL){
+		printf("\nSprite table is NULL");
+		return;
+	}
+	
+	/*
+		For each sprite in the sprite table, we render it
+	*/
+	for(i = 0; i < spriteTable->spriteIndex ; i++){
+		sprite = spriteTable->sprites[i];
+		
+		if(sprite == NULL){
+			printf("\nSprite %ld is NULL", i);
+			continue;
+		}
+		
+		printf("\nDrawing sprite %ld", i);
+		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
+	}
+}
+
+void render2d(unsigned long gametick){
+	if(spriteTable == NULL){
+		printf("\nSprite table is NULL");
+		return;
+	}
+	
+	//drawAnimation(spriteTable, gametick); // HERE IS THE ISSUE
+	drawSprites(spriteTable, gametick); 
+}
+// ================================================================
 
 BMPfile *loadBMPfile(char *fileName){
 	FILE *fp = NULL;
@@ -219,6 +426,11 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
     long halfx, halfy;
     unsigned long page_offs = pageOffsets[nextPage];
     
+    long i_fixed, j_fixed, dx, dy, xp, yp;
+    int nearestX, nearestY;
+    unsigned char target_plane;
+    static unsigned char last_plane = 0xFF;
+
     // Normalize angle
     angle %= 360;
     if (angle < 0) angle += 360;
@@ -233,26 +445,25 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
 
 	if (bmp != NULL){
 		for (i = 0; i < height; i++){
-            long i_fixed = (long)i << 8;
+            i_fixed = (long)i << 8;
 			for (j = 0; j < width; j++){
 				color = bmp[i][j];
 				if (color != maskcolor){
-                    long j_fixed = (long)j << 8;
+                    j_fixed = (long)j << 8;
                     
-                    long dx = j_fixed - halfx;
-                    long dy = i_fixed - halfy;
+                    dx = j_fixed - halfx;
+                    dy = i_fixed - halfy;
 
                     // 8.8 * 8.8 = 16.16, shift right by 8 to get 8.8
-                    long xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + ((long)(x + 160) << 8);
-                    long yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + ((long)(y + 100) << 8);
+                    xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + ((long)(x + 160) << 8);
+                    yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + ((long)(y + 100) << 8);
 					
-					int nearestX = (int)(xp >> 8);
-					int nearestY = (int)(yp >> 8);
+					nearestX = (int)(xp >> 8);
+					nearestY = (int)(yp >> 8);
 
 					if((nearestX < 320 && nearestX >= 0) && (nearestY < 200 && nearestY >= 0)){
 						// Only switch plane if it actually changed to save I/O cycles
-                        unsigned char target_plane = 0x01 << (nearestX & 3);
-                        static unsigned char last_plane = 0xFF;
+                        target_plane = 0x01 << (nearestX & 3);
                         
                         if (target_plane != last_plane) {
                             outPortb(SEQU_ADDR, 0x02);
