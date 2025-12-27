@@ -17,7 +17,7 @@
 int main(int argc, char *argv[]){
 
     // BMP list loading,,,
-    BMPfile *firstFile = loadBMPfile(".\\sk256.bmp");
+    BMPfile *firstFile = loadBMPfile("..\\assets\\sk256.bmp");
     unsigned long gameTicks = 0;
     unsigned long index = 0;
 
