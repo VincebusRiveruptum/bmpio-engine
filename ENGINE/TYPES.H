@@ -46,7 +46,7 @@ typedef struct BMPdata{                     // Raw bmp data
 }BMPdata;
 
 typedef struct Animation{
-	struct List *frames;
+	struct List *frames;			// SPRITE LIST
 	int length;
 	int frameDelay;
 	bool loop;

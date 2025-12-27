@@ -67,13 +67,13 @@ Sprite *createSprite(){
 	return newSprite;
 }
 
-void loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor){
+bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor){
 	BMPfile *loadedFrame = NULL;
 	loadedFrame = loadBMPfile(fileName);
 	
 	if(!loadedFrame){
 		printf("\nError loading sprite %s", fileName);
-		return;
+		return false;
 	}
 
 	if(!coordinates){
@@ -84,12 +84,12 @@ void loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsign
 	sprite->coordinates = coordinates;
 	sprite->maskColor = maskColor;
 	
-	printf("\nSprite loaded successfully");
 	free(loadedFrame);
+	return true;
 }
 
 void loadAnimationFrames(Animation *animation, char **frameArray){
-	BMPfile *loadedFrame = NULL;
+	Sprite *sprite = NULL; 
 	int i;
 
 	if (!frameArray) return;
@@ -100,13 +100,14 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	}
 	
 	for(i = 0; frameArray[i] != NULL; i++){
-		loadedFrame = loadBMPfile(frameArray[i]);
-
-		if(!loadedFrame){
-			printf("\nError loading frame %s", frameArray[i]);
+		sprite = createSprite();
+		if(!loadSprite(sprite, frameArray[i], NULL, 0)){
+			printf("\nError loading frame sprite %s", frameArray[i]);
+			free(sprite);
 			continue;
 		}
-		addBMPtoList(&animation->frames, loadedFrame->bmpData);
+
+		addGenericNode(&animation->frames, (void*)sprite);
 		animation->length++;
 
 		printf("\nLoaded frame %s", frameArray[i]);
@@ -129,8 +130,6 @@ void addAnimationToTable(Animation *animation){
 
 	spriteTable->animations[spriteTable->animationIndex] = animation;
 	spriteTable->animationIndex++;
-
-	printf("\nAnimation added to table succesfully");
 }
 
 void addSpriteToTable(Sprite *sprite){
@@ -142,16 +141,14 @@ void addSpriteToTable(Sprite *sprite){
 
 	spriteTable->sprites[spriteTable->spriteIndex] = sprite;
 	spriteTable->spriteIndex++;
-
-	printf("\nSprite added to table succesfully");
 }
 
 void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
 	Animation *animation = NULL;
-	Node *animationFrameNode = NULL;
-	BMPdata *animationFrame = NULL;
+	Node *animationSpriteNode = NULL;
+	Sprite *animationSprite = NULL;
 	
 	if(spriteTable == NULL){
 		printf("\nSprite table is NULL");
@@ -170,22 +167,22 @@ void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 		}
 
 		frameToRender = gametick % animation->length;
-		animationFrameNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
+		animationSpriteNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
 		
-		if(animationFrameNode == NULL){
-			printf("\nAnimation frame node %ld is NULL", frameToRender);
+		if(animationSpriteNode == NULL){
+			printf("\nAnimation sprite node %ld is NULL", frameToRender);
 			continue;
 		}
 
-		animationFrame = (BMPdata *)animationFrameNode->data;
+		animationSprite = (Sprite *)animationSpriteNode->data;
 		
-		if(animationFrame == NULL){
-			printf("\nAnimation frame data %ld is NULL", frameToRender);
+		if(animationSprite == NULL){
+			printf("\nAnimation sprite data %ld is NULL", frameToRender);
 			continue;
 		}
 		
-		printf("\nDrawing animation frame %ld", frameToRender);
-		//drawBitmap(&animationFrame, (unsigned int)animation->coordinates->x, (unsigned int)animation->coordinates->y, (int)animation->maskColor);
+		//printf("\nDrawing animation sprite %ld", frameToRender);
+		drawBitmap(&animationSprite->bmpData, (unsigned int)animation->coordinates->x, (unsigned int)animation->coordinates->y, (int)animation->maskColor);
 	}
 }
 
@@ -209,7 +206,7 @@ void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
 			continue;
 		}
 		
-		printf("\nDrawing sprite %ld", i);
+		//printf("\nDrawing sprite %ld", i);
 		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
 	}
 }
@@ -220,8 +217,8 @@ void render2d(unsigned long gametick){
 		return;
 	}
 	
-	//drawAnimation(spriteTable, gametick); // HERE IS THE ISSUE
-	drawSprites(spriteTable, gametick); 
+	drawAnimation(spriteTable, gametick);
+	drawSprites(spriteTable, gametick);  // ISSUE
 }
 // ================================================================
 
@@ -366,6 +363,16 @@ void addBMPtoList(List **bmpList, BMPdata *bmpData){
 	newNode->prev = NULL;
 
 	addToList(bmpList, newNode);
+}
+
+// GENERIC
+void addGenericNode(List **list, void *data){
+	Node *newNode = (Node *)malloc(sizeof(Node));
+	newNode->data = data;
+	newNode->next = NULL;
+	newNode->prev = NULL;
+
+	addToList(list, newNode);
 }
 
 void drawList(List *list){

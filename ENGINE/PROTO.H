@@ -16,9 +16,10 @@ void setPalette(Color *palette);
 Animation *createAnimation();
 void loadAnimationFrames(Animation *animation, char **frameArray);
 Sprite *createSprite();
-void loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor);
+bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor);
 void render2d(unsigned long gametick);
 void addAnimationToTable(Animation *animation);
+void addGenericNode(List **list, void *data);
 
 // TODO: MOVE TO ITS OWN MATH.C AND MATH.H MODULE
 Coordinates *createCoordinates(long x, long y, int z);

@@ -37,22 +37,25 @@ int main(int argc, char *argv[]){
 
     // BMP list loading,,,
     BMPfile *firstFile = loadBMPfile("..\\assets\\sk256.bmp");
+    BMPfile *renamonFile = loadBMPfile("..\\assets\\jump\\FRAME1.bmp");
+
     Animation *renamonJumping = createAnimation(); 
     Sprite *renamonStanding = createSprite();
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
 
     
-    //loadAnimationFrames(renamonJumping, renamonFrames);
-    //addAnimationToTable(renamonJumping);   
+    loadAnimationFrames(renamonJumping, renamonFrames);
+    addAnimationToTable(renamonJumping);   
+    setPalette(renamonFile->bmpData->palette);
 
 
-    loadSprite(renamonStanding, "..\\assets\\jump\\FRAME1.bmp", createCoordinates(0, 0, 0), 0);
+    loadSprite(renamonStanding, "..\\assets\\jump\\FRAME1.bmp", createCoordinates(100, 100, 0), 0);
     addSpriteToTable(renamonStanding);
     
     
     set200pxMode();
-    setPalette(firstFile->bmpData->palette);
+    //setPalette(firstFile->bmpData->palette);
     while (!checkAppEnd()){
         initInput();
         
@@ -70,6 +73,7 @@ int main(int argc, char *argv[]){
             index++;
         }
         */
+    
         // ======================================
         if(ENABLE_PAGE_FLIPPING == 1){
             flipPage(); 
