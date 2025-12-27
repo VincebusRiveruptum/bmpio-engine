@@ -1,11 +1,8 @@
-#define PI 3.14159
+#ifndef APP_TYPES_H
+#define APP_TYPES_H
 
-#pragma once
+#include "STD.H"
 
-#define true 1
-#define false 0
-
-typedef unsigned char bool;
 typedef struct FileHeader{
 	unsigned char id[2];
 	long size;
@@ -75,4 +72,4 @@ typedef struct Asset{
 #define CONSOLE_LOGGING 2
 #define FILE_CONSOLE_LOGGING 3
 
-// ======
+#endif

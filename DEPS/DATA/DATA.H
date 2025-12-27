@@ -3,7 +3,8 @@
 #ifndef DATA_H
 #define DATA_H
 
-#pragma once
+#include <stdlib.h>
+#include <stddef.h>
 
 #include "TYPES.H"
 

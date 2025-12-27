@@ -17,6 +17,7 @@
 
 // PROTOTYPES
 #include "PROTO.H"
+#include "VIDEO.H"
 
 // GLOBAL VARS & TYPES
 #include "VARS.H"

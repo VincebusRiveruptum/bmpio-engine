@@ -1,5 +1,5 @@
-// Generic Simple doubly linked list by vincebus riveruptum. 
-#pragma once
+#ifndef DATA_TYPES_H
+#define DATA_TYPES_H
 
 typedef struct Node{
     void *data;
@@ -12,3 +12,5 @@ typedef struct List{
     struct Node *lastNode;
     int length;
 } List;
+
+#endif

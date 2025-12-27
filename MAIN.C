@@ -11,7 +11,7 @@
 
 */
 
-#include "CORE/BMP.H"
+#include "APP/APP.H"
 
 // Main loop
 int main(int argc, char *argv[]){

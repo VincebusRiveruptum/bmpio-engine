@@ -1,11 +1,11 @@
 # Compile with Watcom 10.6 or OpenWatcom
 
 CC = wcc386
-CFLAGS = -iCORE /4r /s /otexan
+CFLAGS = -iAPP -iDEPS\DATA -iDEPS\ENV /4r /s /otexan
 OBJDIR = BIN
 
 # Object files in BIN
-OBJS = $(OBJDIR)\main.obj $(OBJDIR)\bmp.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj
+OBJS = $(OBJDIR)\main.obj $(OBJDIR)\app.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj
 
 # Final executable
 bmpio.exe: $(OBJS)
@@ -16,18 +16,23 @@ $(OBJDIR)\main.obj: main.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\bmp.obj: CORE\bmp.c
+$(OBJDIR)\app.obj: APP\APP.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\data.obj: CORE\data.c
+$(OBJDIR)\data.obj: DEPS\DATA\DATA.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\vgaregs.obj: CORE\vgaregs.c
+$(OBJDIR)\vgaregs.obj: APP\VGAREGS.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\video.obj: CORE\video.c
+$(OBJDIR)\video.obj: APP\VIDEO.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\env.obj: DEPS\ENV\ENV.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+

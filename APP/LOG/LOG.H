@@ -1,11 +1,8 @@
-
 #ifndef LOG_H
 #define LOG_H
 
-#include "../STD.H"
-#include "../VARS.H"
-#include "../PROTO.H"
-
-// TODO: Here's the place for this module's internal types
+// LOG.H should ideally only contain logging-related things.
+// Including VARS.H and PROTO.H here is likely causing circular issues.
+// Let's only include what's absolutely necessary.
 
 #endif

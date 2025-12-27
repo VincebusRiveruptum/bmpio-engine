@@ -8,5 +8,14 @@
 #include <math.h>
 #include <dos.h>
 #include <time.h>
+#include <ctype.h>
+
+#ifndef __cplusplus
+typedef unsigned char bool;
+#define true 1
+#define false 0
+#endif
+
+#define PI 3.14159
 
 #endif

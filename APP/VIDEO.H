@@ -1,9 +1,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <dos.h>
+#include "STD.H"
 #include "vgaregs.h"
 
 void clearScreen();
@@ -33,12 +31,15 @@ void drawPalette();
         "mov ax, 0x03",     \
         "int 0x10";
 
+void drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
+void flipPage();
+
 #define PAGE_SIZE 16000
 #define NUM_PAGES 4
 
 #define ENABLE_PAGE_FLIPPING 1
 
-extern unsigned char currentPage = 0;
-extern unsigned char nextPage = 1;
+extern unsigned char currentPage;
+extern unsigned char nextPage;
 
 #endif

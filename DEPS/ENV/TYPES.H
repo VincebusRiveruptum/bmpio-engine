@@ -1,9 +1,5 @@
-#pragma once
-
-typedef unsigned char bool;
-
-#define true 1
-#define false 0
+#ifndef ENV_TYPES_H
+#define ENV_TYPES_H
 
 #define STRING 1
 #define INT 2
@@ -17,3 +13,5 @@ typedef struct Config{
     char *playerName;
     unsigned char logType;
 } Config;
+
+#endif

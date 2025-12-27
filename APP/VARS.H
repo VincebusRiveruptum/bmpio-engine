@@ -1,11 +1,9 @@
 #ifndef VARS_H
 #define VARS_H
 
-#pragma once
-
+#include "STD.H"
 #include "../DEPS/DATA/TYPES.H"
 #include "../DEPS/ENV/TYPES.H"
-
 #include "TYPES.H"
 
 extern Config *gameConfig;

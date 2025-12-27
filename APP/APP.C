@@ -1,8 +1,10 @@
-/*
-	This file handles bmp file operations
-*/
-
+#ifndef APP_H
 #include "APP.H"
+#endif
+
+Config *gameConfig = NULL;
+List *bmpList = NULL;
+Color *globalPalette = NULL;
 
 bool checkConfig(){
 	if(gameConfig){

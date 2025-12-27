@@ -1,5 +1,7 @@
-
 #include "video.h"
+
+unsigned char currentPage = 0;
+unsigned char nextPage = 1;
 
     
 void setTXTMode(){
