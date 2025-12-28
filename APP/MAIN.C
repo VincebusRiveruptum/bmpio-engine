@@ -36,16 +36,30 @@ const char *renamonFrames[] = {
 int main(int argc, char *argv[]){
 
     // BMP list loading,,,
-    char *assetsPath = getEnv("ASSETS_PATH");
+    char *assetsPath = NULL;
     
-    char *sk256Path = sprintf("%s\\sk256.bmp", assetsPath);
-    char *renamonPath = sprintf("%s\\jump\\FRAME1.bmp", assetsPath);
+    char sk256Path[32] = {0};
+    char renamonPath[32] = {0};
     
-    BMPfile *firstFile = loadBMPfile(sk256Path);
-    BMPfile *renamonFile = loadBMPfile(renamonPath);
+    BMPfile *firstFile = NULL;
+    BMPfile *renamonFile = NULL;
 
-    Animation *renamonJumping = createAnimation(); 
-    Sprite *renamonStanding = createSprite();
+    Animation *renamonJumping = NULL; 
+    Sprite *renamonStanding = NULL;
+    
+    loadEnv();
+    
+    assetsPath = (char*)getEnv("ASSETS_PATH");
+    
+    sprintf(&sk256Path, "%s\\sk256.bmp", assetsPath);
+    sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
+
+    firstFile = loadBMPfile(sk256Path);
+    renamonFile = loadBMPfile(renamonPath);
+
+    renamonJumping = createAnimation(); 
+    renamonStanding = createSprite();
+
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
 
@@ -100,5 +114,8 @@ int main(int argc, char *argv[]){
     if(bmpList) freeList(&bmpList);
     if(globalPalette) free(globalPalette);
     
+    printf("\n%s", assetsPath);
+    printf("\n%s", sk256Path);
+    printf("\n%s", renamonPath);
     return 0;
 }
