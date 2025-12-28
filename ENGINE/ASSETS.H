@@ -20,7 +20,7 @@
 #include "VIDEO.H"
 
 // ENGINE
-
+#include "MATH.H"
 #include "INPUT.H"
 
 // GLOBAL VARS & TYPES
@@ -28,5 +28,6 @@
 
 extern unsigned long gameTicks;
 extern unsigned long index;
+extern SpriteTable *spriteTable;
 
 #endif

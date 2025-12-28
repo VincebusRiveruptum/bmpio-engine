@@ -6,20 +6,11 @@
 */
 List *bmpList = NULL;
 Color *globalPalette = NULL;
+// This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen
+SpriteTable *spriteTable = NULL;
 
 unsigned long gameTicks = 0;
 unsigned long index = 0;
-
-// This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen
-typedef struct SpriteTable{
-	Animation *animations[65536];
-	unsigned long animationIndex;
-	
-	Sprite *sprites[65536];
-	unsigned long spriteIndex;
-} SpriteTable;
-
-SpriteTable *spriteTable = NULL;
 
 // Refactor pending
 bool checkConfig(){
@@ -403,24 +394,6 @@ void setPalette(Color *palette){
 	}
 }
 
-int round(float x) {
-    return (int)(x + 0.5f);
-}
-
-/* Precomputed Trig Tables for performance */
-static long sintable[360];
-static long costable[360];
-static int trigInitialized = 0;
-
-void initTrig() {
-    int i;
-    for (i = 0; i < 360; i++) {
-        float rad = (PI * i) / 180.0f;
-        sintable[i] = (long)(sin(rad) * 256.0f);
-        costable[i] = (long)(cos(rad) * 256.0f);
-    }
-    trigInitialized = 1;
-}
 
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) */
 void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor, int angle){
