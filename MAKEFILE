@@ -1,20 +1,51 @@
 # Compile with Watcom 10.6 or OpenWatcom
 
 CC = wcc386
-CFLAGS = -imact /4r /s /otexan
-OBJS = main.obj bmp.obj data.obj vgaregs.obj video.obj
+CFLAGS = -iAPP -iENGINE -iHAL -iDEPS\DATA -iDEPS\ENV /4r /s /otexan
+OBJDIR = BIN
 
+# Object files in BIN
+OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj
+
+# Linker directive file
+LNK = $(OBJDIR)\bmpio.lnk
+
+# Final executable
 bmpio.exe: $(OBJS)
-	wlink system dos4g name bmpio file { $(OBJS) }
+	@%create $(LNK)
+	@%append $(LNK) system dos4g
+	@%append $(LNK) name bmpio
+	@for %i in ($(OBJS)) do @%append $(LNK) file %i
+	wlink @$(LNK)
 
-# Generic rule: compile .c to .obj
-.c.obj:
-	$(CC) $(CFLAGS) $<
+# Compile rules for each .c -> .obj in BIN
+$(OBJDIR)\main.obj: APP\MAIN.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
 
-# Dependencies (optional, but useful)
-main.obj: main.c
-bmp.obj: bmp.c
-data.obj: data.c
-vgaregs.obj: vgaregs.c
-video.obj: video.c
+$(OBJDIR)\assets.obj: ENGINE\ASSETS.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\data.obj: DEPS\DATA\DATA.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\vgaregs.obj: HAL\VGAREGS.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\video.obj: ENGINE\VIDEO.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\env.obj: DEPS\ENV\ENV.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\input.obj: ENGINE\INPUT.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+
 

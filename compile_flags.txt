@@ -1,0 +1,9 @@
+-xc
+-std=c89
+-I"D:/WATCOM/h"
+-I"D:/WATCOM/h/dos"
+-I"D:/WATCOM/h/nt"
+-I"D:/WATCOM/lh"
+-D__WATCOMC__
+-D__386__
+-D__DOS__
