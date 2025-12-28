@@ -13,8 +13,7 @@ loadEnv method.
 */
 #include "ENV.H"
 
-ConfigEntry *configEntries = NULL;
-int configEntriesCount = 0;
+Config *config = NULL;
 
 int findIndex(char *str) {
   int i = 0;
@@ -182,6 +181,26 @@ Config *loadEnv() {
     return NULL;
   }
 
+  // We get the numeber of attributes in the config file
+  while (fgets(tmpBuffer, sizeof(tmpBuffer), fp) != NULL) {
+    i++;
+  }
+  
+  config = (Config *)malloc(sizeof(Config));
+  if(!config) return NULL;
+
+  config->entries = (ConfigEntry *)malloc(sizeof(ConfigEntry) * i);
+  if(!config->entries) {
+    free(config);
+    return NULL;
+  }
+  config->length = i;
+  
+  // We reset the file pointer to the beginning
+  i=0;
+  rewind(fp);
+  
+  // We parse the config file
   while (fgets(tmpBuffer, sizeof(tmpBuffer), fp) != NULL) {
     if (tmpBuffer[0] == '#' || tmpBuffer[0] == '\n' || tmpBuffer[0] == '\r') continue;
     
@@ -197,17 +216,17 @@ Config *loadEnv() {
     type = getConfigType(value);
 
     // Add to global configEntries
-    configEntries = realloc(configEntries, sizeof(ConfigEntry) * (i + 1));
-    configEntries[i].key = key;
-    configEntries[i].value = value;
-    configEntries[i].type = type;
+    //    config->entries = realloc(config->entries, sizeof(ConfigEntry) * (i + 1));
+    config->entries[i].key = key;
+    config->entries[i].value = value;
+    config->entries[i].type = type;
     i++;
   }
 
-  configEntriesCount = i;
+  config->length = i;
   fclose(fp);
 
-  return configEntries;
+  return config;
 }
 
 void displayConf(Config *conf) {
@@ -215,8 +234,8 @@ void displayConf(Config *conf) {
 
   printf("\nConfiguration content:\n");
 
-  for(i=0; i< configEntriesCount; i++) {
-    printf("%s: %s\n", configEntries[i].key, configEntries[i].value); 
+  for(i=0; i< conf->length; i++) {
+    printf("%s: %s\n", conf->entries[i].key, conf->entries[i].value); 
   }
 }
 
@@ -224,21 +243,20 @@ void freeConf(Config *conf) {
   int i=0;
   if (!conf) return;
 
-  for(i=0; i< configEntriesCount; i++) {
-    free(conf[i].key);
-    free(conf[i].value);
+  for(i=0; i< conf->length; i++) {
+    free(conf->entries[i].key);
+    free(conf->entries[i].value);
   }
+  free(conf->entries);
   free(conf);
-  configEntries = NULL;
-  configEntriesCount = 0;
 }
 
 void *getEnv(char *key){
   int i=0;
 
-  for(i=0; i< configEntriesCount; i++) {
-    if (strcmp(configEntries[i].key, key) == 0) {
-      return configEntries[i].value;
+  for(i=0; i< config->length; i++) {
+    if (strcmp(config->entries[i].key, key) == 0) {
+      return config->entries[i].value;
     }
   }
 
@@ -250,16 +268,15 @@ int main() {
   printf("\n\n.ENV/CFG File reader");
   printf("\nVincebus Riveruptum, 2025.");
 
-  configEntries = loadEnv();
+  config = loadEnv();
 
-  if (configEntries == NULL) {
+  if (config == NULL) {
     printf("\nNo ENV/CFG file found!.");
     return 0;
   }
- 
   /*
-  printf("\n\ASSETS_PATH: %s", (char*)getEnv("ASSETS_PATH"));
-  printf("\n\ENV_PATH: %s", (char*)getEnv("ENV_PATH"));
+  printf("\nASSETS_PATH: %s", (char*)getEnv("ASSETS_PATH"));
+  printf("\nENV_PATH: %s", (char*)getEnv("ENV"));
   */
 
   return 0;

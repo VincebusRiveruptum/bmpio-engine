@@ -11,7 +11,13 @@ typedef struct ConfigEntry{
   char *key;
   char *type;
   void *value;
-} ConfigEntry, Config;
+} ConfigEntry;
+
+typedef struct Config {
+  ConfigEntry *entries;
+  int length;
+} Config;
+
 #define STRING_MAX_LENGTH 255
 
 #define true 1

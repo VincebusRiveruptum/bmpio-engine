@@ -11,4 +11,9 @@
 
 #include "TYPES.H"
 
+Config *loadEnv();
+void displayConf(Config *conf);
+void freeConf(Config *conf);
+void *getEnv(char *key);
+
 #endif
