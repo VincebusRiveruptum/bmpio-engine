@@ -22,12 +22,10 @@ typedef struct SpriteTable{
 
 SpriteTable *spriteTable = NULL;
 
+// Refactor pending
 bool checkConfig(){
 	if(gameConfig){
-		if( gameConfig->assetsPath &&
-			gameConfig->logType && 
-			gameConfig->playerName	
-		)	return true;
+		return true;
 	}
 	return false;
 }

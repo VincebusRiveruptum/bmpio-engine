@@ -36,15 +36,19 @@ const char *renamonFrames[] = {
 int main(int argc, char *argv[]){
 
     // BMP list loading,,,
-    BMPfile *firstFile = loadBMPfile("..\\assets\\sk256.bmp");
-    BMPfile *renamonFile = loadBMPfile("..\\assets\\jump\\FRAME1.bmp");
+    char *assetsPath = getEnv("ASSETS_PATH");
+    
+    char *sk256Path = sprintf("%s\\sk256.bmp", assetsPath);
+    char *renamonPath = sprintf("%s\\jump\\FRAME1.bmp", assetsPath);
+    
+    BMPfile *firstFile = loadBMPfile(sk256Path);
+    BMPfile *renamonFile = loadBMPfile(renamonPath);
 
     Animation *renamonJumping = createAnimation(); 
     Sprite *renamonStanding = createSprite();
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
 
-    
     loadAnimationFrames(renamonJumping, renamonFrames);
     addAnimationToTable(renamonJumping);   
 
