@@ -3,6 +3,7 @@
 
 #include "STD.H"
 
+/* BMP STUFF ===================================================================================*/
 typedef struct FileHeader{
 	unsigned char id[2];
 	long size;
@@ -24,17 +25,10 @@ typedef struct InfoHeader{
 	long numImportantColors;
 }InfoHeader;
 
-typedef struct Color{
-	unsigned char b;
-	unsigned char g;
-	unsigned char r;
-	unsigned char i;
-}Color;
 
 typedef struct BMPfile{
 	struct FileHeader fh;
 	struct InfoHeader ih;
-	//unsigned char **bmp;
     struct BMPdata *bmpData;
 }BMPfile;
 
@@ -44,6 +38,14 @@ typedef struct BMPdata{                     // Raw bmp data
     long width;
     long height;
 }BMPdata;
+/* END BMP STUFF ===========================================================================*/
+
+typedef struct Color{
+	unsigned char b;
+	unsigned char g;
+	unsigned char r;
+	unsigned char i;
+}Color;
 
 typedef struct Animation{
 	struct List *frames;			// SPRITE LIST
@@ -61,33 +63,14 @@ typedef struct Sprite{
 	char maskColor;
 }Sprite;
 
-// ==================================================================================
-// ASSET TYPES
-// ==================================================================================
-
-#define IMAGE 1
-#define SOUND 2
-#define TEXT 3
-
-typedef struct Asset{
-	unsigned long int id;
-    char *name;
-    char *path;
-    unsigned int type;
-    bool lazy;
-    void *data;                 // Is this a good idea? Dunno
-} Asset;
-
-
-// ==================================================================================
-//	AUDIT TYPES
-// ==================================================================================
-
-#define NO_LOGGING 0
-#define FILE_LOGGING 1
-#define CONSOLE_LOGGING 2
-#define FILE_CONSOLE_LOGGING 3
-
+// The sprite table is for storing all the sprites that are going to be rendered on screen 
+typedef struct SpriteTable{
+	Animation *animations[65536];
+	unsigned long animationIndex;
+	
+	Sprite *sprites[65536];
+	unsigned long spriteIndex;
+} SpriteTable;
 
 
 // ==================================================================================

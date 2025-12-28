@@ -5,7 +5,7 @@ CFLAGS = -iAPP -iENGINE -iHAL -iDEPS\DATA -iDEPS\ENV /4r /s /otexan
 OBJDIR = BIN
 
 # Object files in BIN
-OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj $(OBJDIR)\log.obj
+OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj $(OBJDIR)\log.obj $(OBJDIR)\math.obj
 
 # Linker directive file
 LNK = $(OBJDIR)\bmpio.lnk
@@ -51,5 +51,8 @@ $(OBJDIR)\input.obj: ENGINE\INPUT.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
+$(OBJDIR)\math.obj: ENGINE\MATH.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
 
 
