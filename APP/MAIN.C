@@ -38,8 +38,9 @@ int main(int argc, char *argv[]){
     // BMP list loading,,,
     char *assetsPath = NULL;
     
-    char sk256Path[32] = {0};
-    char renamonPath[32] = {0};
+    char sk256Path[128] = {0};
+    char renamonPath[128] = {0};
+    char *logType = NULL;
     
     BMPfile *firstFile = NULL;
     BMPfile *renamonFile = NULL;
@@ -48,11 +49,13 @@ int main(int argc, char *argv[]){
     Sprite *renamonStanding = NULL;
     
     loadEnv();
+
+    logger("ENV loaded!");
     
     assetsPath = (char*)getEnv("ASSETS_PATH");
     
-    sprintf(&sk256Path, "%s\\sk256.bmp", assetsPath);
-    sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
+    sprintf(sk256Path, "%s\\sk256.bmp", assetsPath);
+    sprintf(renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
 
     firstFile = loadBMPfile(sk256Path);
     renamonFile = loadBMPfile(renamonPath);
@@ -107,7 +110,6 @@ int main(int argc, char *argv[]){
     }
     
     setTXTMode();
-    
 
     printf("\n96 Tears...");
 
@@ -117,5 +119,8 @@ int main(int argc, char *argv[]){
     printf("\n%s", assetsPath);
     printf("\n%s", sk256Path);
     printf("\n%s", renamonPath);
+
+    logger("What did you expect?");
+
     return 0;
 }

@@ -4,7 +4,6 @@
 	I've been thinking of making this ASSETS.C file as the 'glue' for everything, however,
 	at which point the glue will be so thick that it will be a mess.
 */
-Config *gameConfig = NULL;
 List *bmpList = NULL;
 Color *globalPalette = NULL;
 
@@ -24,7 +23,7 @@ SpriteTable *spriteTable = NULL;
 
 // Refactor pending
 bool checkConfig(){
-	if(gameConfig){
+	if(config){
 		return true;
 	}
 	return false;
