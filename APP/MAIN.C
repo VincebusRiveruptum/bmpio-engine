@@ -49,32 +49,35 @@ int main(int argc, char *argv[]){
     Sprite *renamonStanding = NULL;
     
     loadEnv();
-
     logger("ENV loaded!");
+    
+    /* DEBUGGING STUFF =============*/
     
     assetsPath = (char*)getEnv("ASSETS_PATH");
     
-    sprintf(sk256Path, "%s\\sk256.bmp", assetsPath);
-    sprintf(renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
-
+    sprintf(&sk256Path, "%s\\sk256.bmp", assetsPath);
+    sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
+    
     firstFile = loadBMPfile(sk256Path);
     renamonFile = loadBMPfile(renamonPath);
 
     renamonJumping = createAnimation(); 
     renamonStanding = createSprite();
-
+    
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
-
+    
     loadAnimationFrames(renamonJumping, renamonFrames);
     addAnimationToTable(renamonJumping);   
-
+    
     loadSprite(renamonStanding, "..\\assets\\jump\\FRAME1.bmp", createCoordinates(100, 100, 0), 0);
     addSpriteToTable(renamonStanding);
     
+    /* ==========================*/
+    
     set200pxMode();
     setPalette(renamonFile->bmpData->palette);
-    //setPalette(firstFile->bmpData->palette);
+
     while (!checkAppEnd()){
         initInput();
         
@@ -115,10 +118,6 @@ int main(int argc, char *argv[]){
 
     if(bmpList) freeList(&bmpList);
     if(globalPalette) free(globalPalette);
-    
-    printf("\n%s", assetsPath);
-    printf("\n%s", sk256Path);
-    printf("\n%s", renamonPath);
 
     logger("What did you expect?");
 

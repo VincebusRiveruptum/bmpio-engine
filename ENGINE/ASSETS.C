@@ -69,7 +69,7 @@ bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsign
 	loadedFrame = loadBMPfile(fileName);
 	
 	if(!loadedFrame){
-		printf("\nError loading sprite %s", fileName);
+		logger("\nError loading sprite %s", fileName);
 		return false;
 	}
 
@@ -101,7 +101,7 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	for(i = 0; frameArray[i] != NULL; i++){
 		sprite = createSprite();
 		if(!loadSprite(sprite, frameArray[i], NULL, 0)){
-			printf("\nError loading frame sprite %s", frameArray[i]);
+			logger("\nError loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
 		}
@@ -109,7 +109,7 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 		addGenericNode(&animation->frames, (void*)sprite);
 		animation->length++;
 
-		printf("\nLoaded frame %s", frameArray[i]);
+		logger("\nLoaded frame %s", frameArray[i]);
 	}
 }
 
@@ -150,7 +150,7 @@ void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 	Sprite *animationSprite = NULL;
 	
 	if(spriteTable == NULL){
-		printf("\nSprite table is NULL");
+		logger("\nSprite table is NULL");
 		return;
 	}
 
@@ -161,7 +161,7 @@ void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 		animation = spriteTable->animations[i];
 		
 		if(animation == NULL || animation->length <= 0){
-			printf("\nAnimation %ld is NULL or empty", i);
+			logger("\nAnimation %ld is NULL or empty", i);
 			continue;
 		}
 
@@ -169,18 +169,18 @@ void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 		animationSpriteNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
 		
 		if(animationSpriteNode == NULL){
-			printf("\nAnimation sprite node %ld is NULL", frameToRender);
+			logger("\nAnimation sprite node %ld is NULL", frameToRender);
 			continue;
 		}
 
 		animationSprite = (Sprite *)animationSpriteNode->data;
 		
 		if(animationSprite == NULL){
-			printf("\nAnimation sprite data %ld is NULL", frameToRender);
+			logger("\nAnimation sprite data %ld is NULL", frameToRender);
 			continue;
 		}
 		
-		//printf("\nDrawing animation sprite %ld", frameToRender);
+		//logger("\nDrawing animation sprite %ld", frameToRender);
 		drawBitmap(&animationSprite->bmpData, (unsigned int)animation->coordinates->x, (unsigned int)animation->coordinates->y, (int)animation->maskColor);
 	}
 }
@@ -190,7 +190,7 @@ void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
 	Sprite *sprite = NULL;
 	
 	if(spriteTable == NULL){
-		printf("\nSprite table is NULL");
+		logger("\nSprite table is NULL");
 		return;
 	}
 	
@@ -201,18 +201,18 @@ void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
 		sprite = spriteTable->sprites[i];
 		
 		if(sprite == NULL){
-			printf("\nSprite %ld is NULL", i);
+			logger("\nSprite %ld is NULL", i);
 			continue;
 		}
 		
-		//printf("\nDrawing sprite %ld", i);
+		//logger("\nDrawing sprite %ld", i);
 		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
 	}
 }
 
 void render2d(unsigned long gametick){
 	if(spriteTable == NULL){
-		printf("\nSprite table is NULL");
+		logger("\nSprite table is NULL");
 		return;
 	}
 	
@@ -231,11 +231,11 @@ BMPfile *loadBMPfile(char *fileName){
 	fp = fopen(fileName, "rb");
 
 	if (!fp){
-		printf("\nError, file not found!");
+		logger("\nError, file not found!");
 		return NULL;
 	}
 
-	printf("\nLoading %s ", fileName);
+	logger("\nLoading %s ", fileName);
 
 	newFile = (BMPfile *)malloc(sizeof(BMPfile));
 	newFile->bmpData = (BMPdata *)malloc(sizeof(BMPdata));
@@ -243,17 +243,17 @@ BMPfile *loadBMPfile(char *fileName){
 	newFile->bmpData->palette = (Color *)malloc(256 * sizeof(Color));
 
 	if (newFile == NULL || newFile->bmpData == NULL || newFile->bmpData->palette == NULL){
-		printf("Memory allocation failed\n");
+		logger("Memory allocation failed\n");
 		return NULL;
 	}
 
 	fread(id, 2, 1, fp);
 
-	printf("%s", id);
+	logger("%s", id);
 
 	if (strcmp(id, "BM") != 0){
 		/* El archivo es invalido no se crea la bmp */
-		printf("\nInvalid file. %s", id);
+		logger("\nInvalid file. %s", id);
 		free(newFile);
 		return NULL;
 	}
@@ -263,7 +263,7 @@ BMPfile *loadBMPfile(char *fileName){
 	fread(&(newFile->fh), 12, 1, fp);
 	fread(&(newFile->ih), 40, 1, fp);
 
-	printf("[ X : %ld, Y : %ld ]", newFile->ih.x, newFile->ih.y);
+	logger("[ X : %ld, Y : %ld ]", newFile->ih.x, newFile->ih.y);
 
 	newFile->bmpData->width = newFile->ih.x;
 	newFile->bmpData->height = newFile->ih.y;
@@ -277,7 +277,7 @@ BMPfile *loadBMPfile(char *fileName){
 	newFile->bmpData->bmp = (unsigned char **)malloc(sizeof(unsigned char *) * newFile->ih.y);
 
 	if (newFile->bmpData->bmp == NULL){
-		printf("\nCould not allocate bmp height.");
+		logger("\nCould not allocate bmp height.");
 		return 0;
 	}
 
@@ -290,7 +290,7 @@ BMPfile *loadBMPfile(char *fileName){
 
 		if (newFile->bmpData->bmp[y] == NULL)
 		{
-			printf("\nCould not allocate bitmap width on loop index : %d", y);
+			logger("\nCould not allocate bitmap width on loop index : %d", y);
 			return 0;
 		}
 		else
