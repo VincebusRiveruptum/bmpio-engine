@@ -6,9 +6,14 @@ loadEnv method.
 
 */
 
+/*
+  - Config should be a global variable
+  - Should be a 2d
+
+*/
 #include "ENV.H"
 
-Config *conf;
+Config *config = NULL;
 
 int findIndex(char *str) {
   int i = 0;
@@ -28,38 +33,6 @@ int findIndex(char *str) {
   return -1;
 }
 
-void *parseValue(char *str, int type) {
-  void *value = NULL;
-  int index = 0;
-  char *buffer;
-
-  if (!str)
-    return NULL;
-
-  if (((index = findIndex(str)) == -1))
-    return NULL;
-
-  buffer = str + (index + 1);
-
-  while (*buffer && isspace(*buffer)) {
-    buffer++;
-  }
-
-  if (type == STRING) {
-    char *v = malloc(STRING_MAX_LENGTH);
-    sscanf(buffer, "%s", v);
-    value = v;
-  }
-
-  if (type == INT) {
-    int *v = malloc(sizeof(int));
-    sscanf(buffer, "%d", v);
-    value = v;
-  }
-
-  return value;
-}
-
 bool findValue(const char *key, const char *line) {
   int keyLen = 0;
 
@@ -71,61 +44,223 @@ bool findValue(const char *key, const char *line) {
   return (strncmp(line, key, keyLen) == 0 && line[keyLen] == '=') ? true : false;
 }
 
+char *getConfigKey(char *line) {
+  int index = 0;
+  char *key; 
+  if (!line)
+    return NULL;
+
+  if (((index = findIndex(line)) == -1))
+    return NULL;
+
+  key = (char *)malloc(index + 1);
+  if (!key) return NULL;
+  strncpy(key, line, index);
+  key[index] = '\0';
+
+  return key;
+}
+
+char *getConfigValue(char *line) {
+  int index = 0;
+  char *val; 
+  int valLen;
+  if (!line)
+    return NULL;
+
+  if (((index = findIndex(line)) == -1))
+    return NULL;
+
+  valLen = strlen(line) - index - 1;
+  val = (char *)malloc(valLen + 1);
+  if (!val) return NULL;
+  strncpy(val, line + index + 1, valLen);
+  val[valLen] = '\0';
+  
+  // Strip trailing newline if any
+  if (valLen > 0 && val[valLen-1] == '\n') val[valLen-1] = '\0';
+  if (valLen > 1 && val[valLen-2] == '\r') val[valLen-2] = '\0';
+
+  return val;
+}
+
+bool isfloat(const char *str) {
+    bool has_digit = false;
+    bool has_dot = false;
+    int i = 0;
+
+    if (str == NULL || *str == '\0') {
+        return false;
+    }
+    
+    // Check for optional sign
+    if (str[i] == '+' || str[i] == '-') {
+        i++;
+    }
+    
+    // Check digits and decimal point
+    while (str[i] != '\0') {
+        if (isdigit(str[i])) {
+            has_digit = true;
+        } else if (str[i] == '.') {
+            if (has_dot) {
+                return false;  // Multiple dots
+            }
+            has_dot = true;
+        } else {
+            return false;  // Invalid character
+        }
+        i++;
+    }
+    
+    return has_digit;
+}
+
+char *getConfigType(char *value) {
+  if (!value)
+    return NULL;
+
+  if (isdigit(value[0]))
+    return INT;
+
+  if (value[0] == 't' || value[0] == 'f')
+    return BOOL;
+
+  if (isfloat(value))
+    return FLOAT;
+
+  if(isalpha(value[0]))
+    return STRING;
+
+  return NULL;
+}
+
+bool parseConfigValue(char *key, char *type, char *value) {
+  ConfigEntry *entry;
+
+  if (!key || !type || !value)
+    return false;
+
+  entry = (ConfigEntry *)malloc(sizeof(ConfigEntry));
+
+  entry->key = strdup(key);
+ 
+  if (strcmp(type, INT) == 0) {
+    entry->value = (void *)strdup(value);
+  }
+
+  if (strcmp(type, BOOL) == 0) {
+    entry->value = (void *)strdup(value);
+  }
+
+  if (strcmp(type, FLOAT) == 0) {
+    entry->value = (void *)strdup(value);
+  }
+
+  if (strcmp(type, STRING) == 0) {
+    entry->value = (void *)strdup(value);
+  }
+
+  return true;
+}
+
 Config *loadEnv() {
   // Look for a .env file in the current directory
   // Parse the contents of the .env
   // Return the Config type object
 
   FILE *fp = fopen(".env", "r");
-  char tmpBuffer[64];
-  Config *newConfig;
-
-  newConfig = (Config *)malloc(sizeof(Config));
-  newConfig->assetsPath = (char *)calloc(255, sizeof(char));
-  newConfig->playerName = (char *)calloc(32, sizeof(char));
+  char tmpBuffer[256];
+  char *key;
+  char *value;
+  char *type;
+  int i = 0;
 
   if (!fp) {
     printf("No config file found.");
-    free(newConfig);
     return NULL;
   }
 
+  // We get the numeber of attributes in the config file
   while (fgets(tmpBuffer, sizeof(tmpBuffer), fp) != NULL) {
-    if (findValue("ASSETS_PATH", tmpBuffer)) {
-      newConfig->assetsPath = (char *)parseValue(tmpBuffer, STRING);
+    i++;
+  }
+  
+  config = (Config *)malloc(sizeof(Config));
+  if(!config) return NULL;
+
+  config->entries = (ConfigEntry *)malloc(sizeof(ConfigEntry) * i);
+  if(!config->entries) {
+    free(config);
+    return NULL;
+  }
+  config->length = i;
+  
+  // We reset the file pointer to the beginning
+  i=0;
+  rewind(fp);
+  
+  // We parse the config file
+  while (fgets(tmpBuffer, sizeof(tmpBuffer), fp) != NULL) {
+    if (tmpBuffer[0] == '#' || tmpBuffer[0] == '\n' || tmpBuffer[0] == '\r') continue;
+    
+    key = getConfigKey(tmpBuffer);
+    if (!key) continue;
+    
+    value = getConfigValue(tmpBuffer);
+    if (!value) {
+        free(key);
+        continue;
     }
-    if (findValue("PLAYER_NAME", tmpBuffer)) {
-      newConfig->playerName = (char *)parseValue(tmpBuffer, STRING);
-    }
-    if (findValue("LOGS", tmpBuffer)) {
-      char *logType = (char *)parseValue(tmpBuffer, STRING);
-      
-      printf("\n%s", logType);
-      if(!strcmp(logType, "file")){
-        newConfig->logType = 1;
-      }
-      if(!strcmp(logType, "console")){
-        newConfig->logType = 2;
-      }
-      if(!strcmp(logType, "both")){
-        newConfig->logType = 3;
-      }
-    }else{
-        newConfig->logType = 0;
-    }
+    
+    type = getConfigType(value);
+
+    // Add to global configEntries
+    //    config->entries = realloc(config->entries, sizeof(ConfigEntry) * (i + 1));
+    config->entries[i].key = key;
+    config->entries[i].value = value;
+    config->entries[i].type = type;
+    i++;
   }
 
+  config->length = i;
   fclose(fp);
 
-  return newConfig;
+  return config;
 }
 
 void displayConf(Config *conf) {
+  int i=0;
+
   printf("\nConfiguration content:\n");
 
-  printf("\nASSET_PATH:%s", conf->assetsPath);
-  printf("\nPLAYER_NAME:%s", conf->playerName);
-  printf("\nLOGS:%d", conf->logType);
+  for(i=0; i< conf->length; i++) {
+    printf("%s: %s\n", conf->entries[i].key, conf->entries[i].value); 
+  }
+}
+
+void freeConf(Config *conf) {
+  int i=0;
+  if (!conf) return;
+
+  for(i=0; i< conf->length; i++) {
+    free(conf->entries[i].key);
+    free(conf->entries[i].value);
+  }
+  free(conf->entries);
+  free(conf);
+}
+
+void *getEnv(char *key){
+  int i=0;
+
+  for(i=0; i< config->length; i++) {
+    if (strcmp(config->entries[i].key, key) == 0) {
+      return config->entries[i].value;
+    }
+  }
+
+  return NULL;
 }
 
 #ifdef STANDALONE
@@ -133,14 +268,16 @@ int main() {
   printf("\n\n.ENV/CFG File reader");
   printf("\nVincebus Riveruptum, 2025.");
 
-  conf = loadEnv();
+  config = loadEnv();
 
-  if (conf == NULL) {
+  if (config == NULL) {
     printf("\nNo ENV/CFG file found!.");
     return 0;
   }
-
-  displayConf(conf);
+  /*
+  printf("\nASSETS_PATH: %s", (char*)getEnv("ASSETS_PATH"));
+  printf("\nENV_PATH: %s", (char*)getEnv("ENV"));
+  */
 
   return 0;
 }

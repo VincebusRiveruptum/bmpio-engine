@@ -11,3 +11,5 @@ To getting it run you need:
     - Watcom C 10.6/Openwatcom
     
 It has a "build.bat" for managing the make process and the compiled binaries easier.
+
+For testing libraries independently. Use the -dSTANDALONE flag in WCL386

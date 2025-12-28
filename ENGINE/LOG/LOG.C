@@ -8,42 +8,47 @@
 */
 #include "LOG.H"
 
-void logToFile(char *message, unsigned long line, unsigned char module){
-    time_t now = time(NULL);
-    
-    FILE *fp = fopen("logs.txt", "wr");
-    char *errorMsgLine;
+void logToFile(char *outputString){
+    FILE *fp = fopen("logs.txt", "a+");
     if(!fp){
         printf("\nError trying to log to file.");
         return;
     }
 
-    sprintf(errorMsgLine, "\n%s [ERROR] : %s \n\t At line %s on \"%s\"", now, message, line, module);
-    fputs(errorMsgLine, fp);
-
+    fputs(outputString, fp);
     fclose(fp);
 }
 
-void logToConsole(char *message, unsigned long line, unsigned char module){
-    time_t now = time(NULL);
-    char *errorMsgLine;
-
-    printf("\n%s [ERROR] : %s \n\t At line %s on \"%s\"", now, message, line, module);
+void logToConsole(char *outputString){
+    printf("\n%s",outputString);
 }
 
-void logError(char *message, unsigned long line, unsigned char module){
+void logger(char *outputString){
+    char *logType = NULL;
+    char *logString = NULL;
+    char dateString[255];
+    
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    
+    logType = (char*)getEnv("LOGS");
+    
+    sprintf(dateString, "[%d-%d-%d %d:%d:%d]", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+    logString = (char *)malloc(strlen(dateString) + strlen(outputString) + 2);
+    sprintf(logString, "%s %s\n", dateString, outputString);
 
     if(checkConfig()){
         // Use config logging
-        if(gameConfig->logType == FILE_LOGGING || gameConfig->logType == FILE_CONSOLE_LOGGING ){
-            logToFile(message,line,module);
+        if(strcmp(logType, "file") == 0 || strcmp(logType, "fileConsole") == 0){
+            logToFile(logString);
         }
-        if(gameConfig->logType == CONSOLE_LOGGING || gameConfig->logType == FILE_CONSOLE_LOGGING ){
-            logToConsole(message,line,module);
-        }
+        if(strcmp(logType, "console") == 0 || strcmp(logType, "fileConsole") == 0){
+            logToConsole(logString);
+        }       
     }else{
-        logToFile(message,line,module);
         // Default logging
+        logToFile(logString);
     }
 }
 

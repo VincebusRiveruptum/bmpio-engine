@@ -7,12 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
+#include <ctype.h>
 
 #include "TYPES.H"
 
-#define true 1
-#define false 0
+Config *loadEnv();
+void displayConf(Config *conf);
+void freeConf(Config *conf);
+void *getEnv(char *key);
 
-typedef unsigned char bool;
+extern Config *config;
 
 #endif

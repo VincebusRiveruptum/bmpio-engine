@@ -1,17 +1,28 @@
 #ifndef ENV_TYPES_H
 #define ENV_TYPES_H
 
-#define STRING 1
-#define INT 2
-#define UINT 3
-#define FLOAT 4
+#define STRING "STRING"
+#define INT "INT"
+#define BOOL "BOOL"
+#define FLOAT "FLOAT"
+#define PATH "PATH"
+
+typedef struct ConfigEntry{
+  char *key;
+  char *type;
+  void *value;
+} ConfigEntry;
+
+typedef struct Config {
+  ConfigEntry *entries;
+  int length;
+} Config;
 
 #define STRING_MAX_LENGTH 255
 
-typedef struct Config{
-    char *assetsPath;
-    char *playerName;
-    unsigned char logType;
-} Config;
+#define true 1
+#define false 0
+
+typedef unsigned char bool;
 
 #endif

@@ -36,15 +36,36 @@ const char *renamonFrames[] = {
 int main(int argc, char *argv[]){
 
     // BMP list loading,,,
-    BMPfile *firstFile = loadBMPfile("..\\assets\\sk256.bmp");
-    BMPfile *renamonFile = loadBMPfile("..\\assets\\jump\\FRAME1.bmp");
+    char *assetsPath = NULL;
+    
+    char sk256Path[128] = {0};
+    char renamonPath[128] = {0};
+    char *logType = NULL;
+    
+    BMPfile *firstFile = NULL;
+    BMPfile *renamonFile = NULL;
 
-    Animation *renamonJumping = createAnimation(); 
-    Sprite *renamonStanding = createSprite();
+    Animation *renamonJumping = NULL; 
+    Sprite *renamonStanding = NULL;
+    
+    loadEnv();
+
+    logger("ENV loaded!");
+    
+    assetsPath = (char*)getEnv("ASSETS_PATH");
+    
+    sprintf(sk256Path, "%s\\sk256.bmp", assetsPath);
+    sprintf(renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
+
+    firstFile = loadBMPfile(sk256Path);
+    renamonFile = loadBMPfile(renamonPath);
+
+    renamonJumping = createAnimation(); 
+    renamonStanding = createSprite();
+
     addBMPtoList(&bmpList, firstFile->bmpData);
     //invertList(&bmpList);
 
-    
     loadAnimationFrames(renamonJumping, renamonFrames);
     addAnimationToTable(renamonJumping);   
 
@@ -89,12 +110,17 @@ int main(int argc, char *argv[]){
     }
     
     setTXTMode();
-    
 
     printf("\n96 Tears...");
 
     if(bmpList) freeList(&bmpList);
     if(globalPalette) free(globalPalette);
     
+    printf("\n%s", assetsPath);
+    printf("\n%s", sk256Path);
+    printf("\n%s", renamonPath);
+
+    logger("What did you expect?");
+
     return 0;
 }
