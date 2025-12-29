@@ -15,6 +15,7 @@ void set200pxMode(){
     setVideoMode13(); // Call the BIOS to set mode 13h
 
     // Set VGA registers (these remain the same as in Borland C)
+    outPortw(CRTC_ADDR, 0x0011); // Unprotect CRTC registers
     outPortw(SEQU_ADDR, 0x0604);
     outPortw(CRTC_ADDR, 0xE317);
     outPortw(CRTC_ADDR, 0x0014);
@@ -47,14 +48,14 @@ void putPixelX(int x, int y, char color){
 
 // Page buffering functions
 void setPage(unsigned char page) {
-    unsigned long start_addr = pageOffsets[page];
+    unsigned short start_addr = (unsigned short)pageOffsets[page];
 
-    // Atomic update of high and low bytes of start address
+    // Standard VGA practice: Write Start Address High then Low
     // Register 0x0C: Start Address High, Register 0x0D: Start Address Low
-    // outPortw expects index in low byte, value in high byte
     outPortw(CRTC_ADDR, (unsigned short)(0x0C | (start_addr & 0xFF00)));
-    outPortw(CRTC_ADDR, (unsigned short)(0x0D | ((start_addr & 0x00FF) << 8)));
+    outPortw(CRTC_ADDR, (unsigned short)(0x0D | ((start_addr << 8) & 0xFF00)));
 }
+
 
 #pragma aux clearPage =    \
     "mov edi, 0xA0000" /* VGA memory segment for mode 13h */ \
@@ -65,14 +66,15 @@ void setPage(unsigned char page) {
     parm[eax][ebx]                                               \
     modify[eax ebx ecx edi];
 
+
 #pragma aux fastFill = \
     
 
 void flipPage() {
     waitVsync();
-    currentPage = nextPage;
-    setPage(currentPage); // Perform the page flip
-    nextPage = (nextPage + 1) % NUM_PAGES;
+    setPage(nextPage);      // Show the page we just finished drawing
+    currentPage = nextPage; // This is now the visible page
+    nextPage = (currentPage + 1) % NUM_PAGES; // Target the next one for drawing
 }
 
 void setPal(char color, unsigned char r, unsigned char g, unsigned char b){

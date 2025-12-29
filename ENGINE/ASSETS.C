@@ -192,14 +192,11 @@ void drawAnimations(unsigned long gametick){
 		if(animation->transformationList != NULL){
 			transformationLength = animation->transformationList->length;
 
-			logger("\nAnimation %ld transformation list length: %d", i, transformationLength);
 			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
 				Node *node = getNodeByIndex(&(animation->transformationList), transformationIndex);
 				if(node == NULL) continue;
 				transformation = (Transformation *)node->data;
 				if(transformation == NULL) continue;
-
-				logger("\nProcessing transformation type: %s", transformation->type);
 
 				if (strcmp(transformation->type, TR_ROTATION) == 0){
 					rot = (RotationTransformation *)transformation->data;
@@ -213,16 +210,13 @@ void drawAnimations(unsigned long gametick){
 
 					totalAngle += rot->current;
 				}
-				// Movement simplified out for now
 			}
 		}
 
 		// Optimization: Use standard draw if effectively not rotated
 		if (totalAngle % 360 != 0) {
-			logger("\nDrawing distorted, %d", totalAngle);
 			drawBitmapDistorted(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animation->maskColor, totalAngle);
 		} else {
-			logger("\nDrawing standard");
 			drawBitmap(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animation->maskColor);
 		}
 	}
@@ -352,8 +346,7 @@ BMPfile *loadBMPfile(char *fileName){
 	return newFile;
 }
 
-/* This will draw an image on the screen*/
-void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor){
+void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
 	long i, j;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
@@ -362,9 +355,9 @@ void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor
 
 	if (bmp != NULL){
 		for (i = 0; i < height; i++){
-			if (y + i >= 200) continue; 
+			if (y + i < 0 || y + i >= 200) continue; 
 			for (j = 0; j < width; j++){
-				if (x + j >= 320) continue;
+				if (x + j < 0 || x + j >= 320) continue;
 				color = bmp[i][j];
 				if (color != maskcolor){
 					putPixelX(j + x, i + y, color);
@@ -375,7 +368,7 @@ void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor
 }
 
 /* Optimized Plane-batched drawing */
-void drawBitmapPlaneBatch(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor){
+void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 	long i, j, plane;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
@@ -386,13 +379,14 @@ void drawBitmapPlaneBatch(BMPdata **bmpData, unsigned int x, unsigned int y, int
 
 	if (bmp != NULL){
         for (plane = 0; plane < 4; plane++) {
-            // Set VGA Map Mask for this plane
             outPortb(SEQU_ADDR, 0x02);
             outPortb(SEQU_ADDR + 1, 0x01 << plane);
 
             for (i = 0; i < height; i++) {
+                if (y + i < 0 || y + i >= 200) continue;
                 row_offs = page_offs + (unsigned long)(i + y) * 80;
                 for (j = plane; j < width; j += 4) {
+                    if (x + j < 0 || x + j >= 320) continue;
                     color = bmp[i][j];
                     if (color != maskcolor) {
                         putPixelASM(row_offs + ((j + x) >> 2), color);
@@ -450,85 +444,72 @@ void setPalette(Color *palette){
 }
 
 
-/* This will draw an image distorted/rotated using Fixed Point Math (8.8) */
-void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor, int angle){
-	long i, j;
-	unsigned char color = 0;
-	unsigned char **bmp = (*bmpData)->bmp;
-	unsigned int width = (*bmpData)->width;
-	unsigned int height = (*bmpData)->height;
-
-    long angcos, angsin;
-    long halfx, halfy;
+/* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
+   OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
+void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
+    unsigned char **bmp = (*bmpData)->bmp;
+    unsigned int width = (*bmpData)->width;
+    unsigned int height = (*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
     
-    long i_fixed, j_fixed, dx, dy, xp, yp;
-    int nearestX, nearestY;
-    unsigned char target_plane;
-    static unsigned char last_plane = 0xFF;
-    unsigned long pixelsDrawn = 0;
+    long angcos, angsin;
+    long halfw = (long)width << 7;
+    long halfh = (long)height << 7;
+    int screen_x, screen_y, plane;
+    long dx, dy, u_fixed, v_fixed;
+    long du, dv;
+    int u, v;
+    unsigned char color;
+    
+    // Bounding Box (A bit loose for rotation safety)
+    int min_x = (int)x - (int)(width >> 1);
+    int max_x = (int)x + (int)width + (int)(width >> 1);
+    int min_y = (int)y - (int)(height >> 1);
+    int max_y = (int)y + (int)height + (int)(height >> 1);
 
-    // Normalize angle
+    if (min_x < 0) min_x = 0;
+    if (max_x > 320) max_x = 320;
+    if (min_y < 0) min_y = 0;
+    if (max_y > 200) max_y = 200;
+
     angle %= 360;
     if (angle < 0) angle += 360;
-
-    if (!trigInitialized) {
-        logger("\nInitializing trig tables...");
-        initTrig();
-    }
-
     angcos = costable[angle];
     angsin = sintable[angle];
 
-    if (angcos == -2147483648L || angsin == -2147483648L) {
-        logger("\n[CRITICAL ERROR] Trig tables contain invalid values for angle %d! Skipping draw.", angle);
-        last_plane = 0xFF;
-        return;
+    if (angcos == -2147483648L || angsin == -2147483648L) return;
+
+    du = angcos << 2;
+    dv = -angsin << 2;
+
+    for (plane = 0; plane < 4; plane++) {
+        int start_x = min_x + ((plane - (min_x % 4) + 4) % 4);
+        outPortb(SEQU_ADDR, 0x02);
+        outPortb(SEQU_ADDR + 1, 0x01 << plane);
+        
+        for (screen_y = min_y; screen_y < max_y; screen_y++) {
+            dy = ((long)screen_y - ((long)y + (height >> 1))) << 8;
+            dx = ((long)start_x - ((long)x + (width >> 1))) << 8;
+            
+            // Calculate initial u, v for the start of the row
+            u_fixed = ((dx * angcos + dy * angsin) >> 8) + halfw;
+            v_fixed = ((-dx * angsin + dy * angcos) >> 8) + halfh;
+            
+            for (screen_x = start_x; screen_x < max_x; screen_x += 4) {
+                u = (int)(u_fixed >> 8);
+                v = (int)(v_fixed >> 8);
+                
+                if (u >= 0 && u < width && v >= 0 && v < height) {
+                    color = bmp[v][u];
+                    if (color != maskcolor) {
+                        putPixelASM(page_offs + (unsigned long)screen_y * 80 + (screen_x >> 2), color);
+                    }
+                }
+                u_fixed += du;
+                v_fixed += dv;
+            }
+        }
     }
-
-    halfx = (long)width << 7;  // width / 2 << 8
-    halfy = (long)height << 7; // height / 2 << 8
-
-    logger("\nDistorted Draw: Pos[%u, %u] Size[%u, %u] Angle[%d] Cos[%ld] Sin[%ld] Cent[%ld, %ld]", x, y, width, height, angle, angcos, angsin, halfx, halfy);
-
-    last_plane = 0xFF; // Ensure we start fresh
-
-	if (bmp != NULL){
-		for (i = 0; i < height; i++){
-            i_fixed = (long)i << 8;
-			for (j = 0; j < width; j++){
-				color = bmp[i][j];
-				if (color != maskcolor){
-                    j_fixed = (long)j << 8;
-                    
-                    dx = j_fixed - halfx;
-                    dy = i_fixed - halfy;
-
-                    // xp = (cos * dx + sin * dy) / 256 + centX_fixed
-                    xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + (((long)x << 8) + halfx);
-                    yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + (((long)y << 8) + halfy);
-					
-					nearestX = (int)(xp >> 8);
-					nearestY = (int)(yp >> 8);
-
-					if((nearestX < 320 && nearestX >= 0) && (nearestY < 200 && nearestY >= 0)){
-						// Only switch plane if it actually changed to save I/O cycles
-                        target_plane = 0x01 << (nearestX & 3);
-                        
-                        if (target_plane != last_plane) {
-                            outPortb(SEQU_ADDR, 0x02);
-                            outPortb(SEQU_ADDR + 1, target_plane);
-                            last_plane = target_plane;
-                        }
-                        putPixelASM(page_offs + (unsigned long)nearestY * 80 + (nearestX >> 2), color);
-                        pixelsDrawn++;
-					}
-				}
-			}
-		}
-	}
-    logger("\nDistorted Draw Complete. Pixels drawn: %ld", pixelsDrawn);
-	last_plane = 0xFF; // Reset for next call
 }
 
 bool addTransformation(Animation *animation, void *transformation){

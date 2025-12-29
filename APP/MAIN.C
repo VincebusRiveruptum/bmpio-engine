@@ -96,6 +96,7 @@ int main(int argc, char *argv[]){
     
     /* WHOLE LOOP!==========================*/
     while (!checkAppEnd()){
+        //fillScreen(0);
         initInput();
         
         render2d(gameTicks);

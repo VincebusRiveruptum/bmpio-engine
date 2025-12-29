@@ -16,19 +16,21 @@ void drawPalette();
 void waitVsync();
 
 #pragma aux clearScreen =                                   \
-    "mov eax, 0x00"    /* Zero-fill the register */          \
-    "mov ecx, 16000"   /* 64000 bytes / 4 = 16000 dwords */  \
-    "mov edi, 0xA0000" /* VGA memory segment for mode 13h */ \
-    "rep stosd"        /* Fill VGA memory with zeros */      \
-    modify[eax ecx edi];
+    "mov dx, 0x3C4"        \
+    "mov ax, 0x0F02"       \
+    "out dx, ax"           \
+    "mov eax, 0x00"        \
+    "mov ecx, 16000"       \
+    "mov edi, 0xA0000"     \
+    "rep stosd"            \
+    modify[eax ecx edi edx];
 
-#pragma aux putPixelASM =                                    \
-    "mov edi, 0xA0000" /* Set edi to VGA memory segment */ \
-    "add edi, eax"     /* Add the offset to edi */         \
-    "mov al, dl"       /* Move color into al */            \
-    "stosb"            /* Store byte at VGA memory */      \
-    parm[eax][dl]      /* eax for offset, dl for color */  \
-    modify[edi al];    /* Registers modified */
+#pragma aux putPixelASM =                                  \
+    "mov edi, 0xA0000"     \
+    "add edi, eax"         \
+    "mov [edi], dl"        \
+    parm[eax][dl]          \
+    modify[edi];
 
 #pragma aux clearPageASM = \
     "mov edi, 0xA0000"     \
@@ -56,15 +58,15 @@ void waitVsync();
         "int 0x10";
 
 #pragma aux waitVsync = \
-    "mov dx, 3dah"      \
-    "wait_end:"         \
+    "mov dx, 0x3DA"     \
+    "v_wait1:"          \
     "in al, dx"         \
-    "test al, 08h"      \
-    "jnz wait_end"      \
-    "wait_start:"       \
+    "test al, 0x08"     \
+    "jnz v_wait1"       \
+    "v_wait2:"          \
     "in al, dx"         \
-    "test al, 08h"      \
-    "jz wait_start"     \
+    "test al, 0x08"     \
+    "jz v_wait2"        \
     modify [eax edx];
 
 void drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
@@ -73,7 +75,7 @@ void memsetVGAASM(unsigned long offset, unsigned char color, unsigned int count)
 void flipPage();
 
 #define PAGE_SIZE 16000
-#define NUM_PAGES 4
+#define NUM_PAGES 3
 
 extern unsigned long pageOffsets[NUM_PAGES];
 
