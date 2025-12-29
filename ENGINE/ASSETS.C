@@ -36,14 +36,20 @@ ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y){
 }
 
 /* Animation Methods */
-Animation *createAnimation(){
+Animation *createAnimation(Coordinates *coordinates){
 	Animation *newAnimation = (Animation*)malloc(sizeof(Animation));
 	newAnimation->frames = NULL;
 	newAnimation->length = 0;
 	newAnimation->frameDelay = 0;
 	newAnimation->loop = false;
-	newAnimation->coordinates = createCoordinates(0, 0, 0);
+
+	if(coordinates){
+		newAnimation->coordinates = coordinates;
+	} else {
+		newAnimation->coordinates = createCoordinates(0, 0, 0);
+	}
 	newAnimation->maskColor = 255;
+	newAnimation->transformationList = NULL;
 	return newAnimation;
 }
 
@@ -86,7 +92,7 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	if (frameArray[0] == NULL) return;
 
 	if(animation == NULL){
-		animation = createAnimation();
+		animation = createAnimation(createCoordinates(0, 0, 0));
 	}
 	
 	for(i = 0; frameArray[i] != NULL; i++){
@@ -133,21 +139,29 @@ void addSpriteToTable(Sprite *sprite){
 	spriteTable->spriteIndex++;
 }
 
-void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
+void drawAnimations(unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
 	Animation *animation = NULL;
 	Node *animationSpriteNode = NULL;
 	Sprite *animationSprite = NULL;
 	
+	Transformation *transformation = NULL;
+	int transformationLength = 0;
+	int transformationIndex = 0;
+	
+	int totalAngle = 0;
+	long totalOffsetX = 0;
+	long totalOffsetY = 0;
+	RotationTransformation *rot = NULL;
+	MovementTransformation *mov = NULL;
+	
 	if(spriteTable == NULL){
 		logger("\nSprite table is NULL");
 		return;
 	}
 
-	/*
-		For each animation in the sprite table, we render the current frame	
-	*/
+	// Per each animation
 	for(i = 0; i < spriteTable->animationIndex ; i++){
 		animation = spriteTable->animations[i];
 		
@@ -171,12 +185,50 @@ void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
 			continue;
 		}
 		
-		//logger("\nDrawing animation sprite %ld", frameToRender);
-		drawBitmap(&animationSprite->bmpData, (unsigned int)animation->coordinates->x, (unsigned int)animation->coordinates->y, (int)animation->maskColor);
+		totalAngle = 0;
+		totalOffsetX = animation->coordinates->x + animationSprite->coordinates->x;
+		totalOffsetY = animation->coordinates->y + animationSprite->coordinates->y;
+
+		if(animation->transformationList != NULL){
+			transformationLength = animation->transformationList->length;
+
+			logger("\nAnimation %ld transformation list length: %d", i, transformationLength);
+			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
+				Node *node = getNodeByIndex(&(animation->transformationList), transformationIndex);
+				if(node == NULL) continue;
+				transformation = (Transformation *)node->data;
+				if(transformation == NULL) continue;
+
+				logger("\nProcessing transformation type: %s", transformation->type);
+
+				if (strcmp(transformation->type, TR_ROTATION) == 0){
+					rot = (RotationTransformation *)transformation->data;
+					
+					// Every frame we add the 'angle' step to 'current'
+					rot->current += rot->angle;
+					
+					// Keep it bounded 0-359
+					if (rot->current >= 360) rot->current %= 360;
+					if (rot->current < 0) rot->current = (rot->current % 360) + 360;
+
+					totalAngle += rot->current;
+				}
+				// Movement simplified out for now
+			}
+		}
+
+		// Optimization: Use standard draw if effectively not rotated
+		if (totalAngle % 360 != 0) {
+			logger("\nDrawing distorted, %d", totalAngle);
+			drawBitmapDistorted(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animation->maskColor, totalAngle);
+		} else {
+			logger("\nDrawing standard");
+			drawBitmap(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animation->maskColor);
+		}
 	}
 }
 
-void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
+void drawSprites(unsigned long gametick){
 	unsigned long i;
 	Sprite *sprite = NULL;
 	
@@ -200,6 +252,9 @@ void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
 		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
 	}
 }
+// ================================================================
+// MAIN LOOP'S 2d RENDERING =======================================
+// ================================================================
 
 void render2d(unsigned long gametick){
 	if(spriteTable == NULL){
@@ -207,8 +262,8 @@ void render2d(unsigned long gametick){
 		return;
 	}
 	
-	drawAnimation(spriteTable, gametick);
-	drawSprites(spriteTable, gametick);  // ISSUE
+	drawAnimations(gametick);
+	drawSprites(gametick);  // ISSUE
 }
 // ================================================================
 
@@ -411,18 +466,32 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
     int nearestX, nearestY;
     unsigned char target_plane;
     static unsigned char last_plane = 0xFF;
+    unsigned long pixelsDrawn = 0;
 
     // Normalize angle
     angle %= 360;
     if (angle < 0) angle += 360;
 
-    if (!trigInitialized) initTrig();
+    if (!trigInitialized) {
+        logger("\nInitializing trig tables...");
+        initTrig();
+    }
 
     angcos = costable[angle];
     angsin = sintable[angle];
 
-	halfx = (long)width << 7;  // width / 2 << 8
-	halfy = (long)height << 7; // height / 2 << 8
+    if (angcos == -2147483648L || angsin == -2147483648L) {
+        logger("\n[CRITICAL ERROR] Trig tables contain invalid values for angle %d! Skipping draw.", angle);
+        last_plane = 0xFF;
+        return;
+    }
+
+    halfx = (long)width << 7;  // width / 2 << 8
+    halfy = (long)height << 7; // height / 2 << 8
+
+    logger("\nDistorted Draw: Pos[%u, %u] Size[%u, %u] Angle[%d] Cos[%ld] Sin[%ld] Cent[%ld, %ld]", x, y, width, height, angle, angcos, angsin, halfx, halfy);
+
+    last_plane = 0xFF; // Ensure we start fresh
 
 	if (bmp != NULL){
 		for (i = 0; i < height; i++){
@@ -435,9 +504,9 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
                     dx = j_fixed - halfx;
                     dy = i_fixed - halfy;
 
-                    // 8.8 * 8.8 = 16.16, shift right by 8 to get 8.8
-                    xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + ((long)(x + 160) << 8);
-                    yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + ((long)(y + 100) << 8);
+                    // xp = (cos * dx + sin * dy) / 256 + centX_fixed
+                    xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + (((long)x << 8) + halfx);
+                    yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + (((long)y << 8) + halfy);
 					
 					nearestX = (int)(xp >> 8);
 					nearestY = (int)(yp >> 8);
@@ -452,10 +521,39 @@ void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int 
                             last_plane = target_plane;
                         }
                         putPixelASM(page_offs + (unsigned long)nearestY * 80 + (nearestX >> 2), color);
+                        pixelsDrawn++;
 					}
 				}
 			}
 		}
 	}
+    logger("\nDistorted Draw Complete. Pixels drawn: %ld", pixelsDrawn);
+	last_plane = 0xFF; // Reset for next call
+}
+
+bool addTransformation(Animation *animation, void *transformation){
+	Node *newNode = NULL;
+
+	if(!animation || !transformation) return false;
+	
+	newNode = (Node *)malloc(sizeof(Node));
+	if(!newNode) {
+		logger("\nCould not allocate memory for new node");
+		return false;
+	}
+	newNode->data = transformation;
+	newNode->next = NULL;
+	newNode->prev = NULL;
+	
+	addToList(&animation->transformationList, newNode);
+	logger("\nAdded transformation. New list length: %d", animation->transformationList->length);
+	return true;
+}
+
+bool removeTransformation(Animation *animation, int index){
+	if(!animation || !index) return false;
+
+	deleteNodeByIndex(&animation->transformationList, index);
+	return true;
 }
 

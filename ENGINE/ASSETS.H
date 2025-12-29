@@ -30,4 +30,7 @@ extern unsigned long gameTicks;
 extern unsigned long index;
 extern SpriteTable *spriteTable;
 
+#define TR_ROTATION "ROTATION"
+#define TR_MOVEMENT "MOVEMENT"
+
 #endif

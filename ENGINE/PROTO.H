@@ -10,7 +10,8 @@ void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor
 void drawBitmapPlaneBatch(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor);
 void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor, int angle);
 void addBMPtoList(List **bmpList, BMPdata *bmpData);
-void drawList(List *list);
+void drawAnimations(unsigned long gametick);
+void drawSprites(unsigned long gametick);
 void setPalette(Color *palette);
 
 Animation *createAnimation();

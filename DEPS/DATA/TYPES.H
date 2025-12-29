@@ -10,7 +10,7 @@ typedef struct Node{
 typedef struct List{
     struct Node *firstNode;
     struct Node *lastNode;
-    int length;
+    int length; 
 } List;
 
 typedef unsigned char bool;

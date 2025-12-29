@@ -55,12 +55,31 @@ typedef struct Animation{
 
 	struct Coordinates *coordinates;
 	char maskColor;
+
+	struct List *transformationList;		// An animation can have many transformations at the same time.
 }Animation;
 
+typedef struct Transformation {
+	char *type;				// ROTATION, MOVEMENT, etc
+	void *data;				// Data for the transformation
+}Transformation;
+
+typedef struct RotationTransformation{
+	int angle;		// angle step per tick
+	int current;    // current angle
+}RotationTransformation;
+
+typedef struct MovementTransformation{
+	struct Coordinates *speed;
+	int elapsed;
+}MovementTransformation;
+
+/* SPRITE ===================================================================================*/
 typedef struct Sprite{
 	struct BMPdata *bmpData;
 	struct Coordinates *coordinates;
 	char maskColor;
+	void *transformation[];
 }Sprite;
 
 // The sprite table is for storing all the sprites that are going to be rendered on screen 
