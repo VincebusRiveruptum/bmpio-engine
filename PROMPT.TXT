@@ -1,0 +1,14 @@
+Ok, the next challenges are:
+
+1. There is a sprite and animation order issue. Where sprites are rendered before 
+animation due how the sprite and animation table is designed by separate arrays.
+We need to unify both or think on a way sprites and animations have a z-index.
+
+2. Use of Coordinates and ScreenCoordinates is a bit of a mess. A solution to the z-index issue
+is to use the Coordinates object, and before rendering we need to convert it to ScreenCoordinates. 
+This way we can use the z-index to sort the rendering order.
+
+3. I tested a 640x350 bmp to be rendered as a background sprite, a background should
+be an own asset type? (such as sprites and animations)
+
+4. Also, big bitmaps dont clip out bounds properly. 

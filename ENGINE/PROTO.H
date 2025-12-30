@@ -8,10 +8,12 @@ bool checkConfig();
 BMPfile *loadBMPfile(char *fileName);
 void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
 void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
-void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
+void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
 void addBMPtoList(List **bmpList, BMPdata *bmpData);
 void drawAnimations(unsigned long gametick);
 void drawSprites(unsigned long gametick);
+void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
+
 void setPalette(Color *palette);
 
 Animation *createAnimation();

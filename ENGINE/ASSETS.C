@@ -97,7 +97,7 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	
 	for(i = 0; frameArray[i] != NULL; i++){
 		sprite = createSprite();
-		if(!loadSprite(sprite, frameArray[i], NULL, 0)){
+		if(!loadSprite(sprite, frameArray[i], NULL, 15)){
 			logger("\nError loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
@@ -154,7 +154,7 @@ void drawAnimations(unsigned long gametick){
 	long totalOffsetX = 0;
 	long totalOffsetY = 0;
 	RotationTransformation *rot = NULL;
-	MovementTransformation *mov = NULL;
+	TranslationTransformation *translation = NULL;
 	
 	if(spriteTable == NULL){
 		logger("\nSprite table is NULL");
@@ -198,6 +198,7 @@ void drawAnimations(unsigned long gametick){
 				transformation = (Transformation *)node->data;
 				if(transformation == NULL) continue;
 
+				// ROTATION
 				if (strcmp(transformation->type, TR_ROTATION) == 0){
 					rot = (RotationTransformation *)transformation->data;
 					
@@ -210,16 +211,63 @@ void drawAnimations(unsigned long gametick){
 
 					totalAngle += rot->current;
 				}
+
+				// TRANSLATION
+				if (strcmp(transformation->type, TR_TRANSLATION) == 0){
+					/* logger("\nTranslation transformation"); */
+					calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+				}
 			}
 		}
 
 		// Optimization: Use standard draw if effectively not rotated
 		if (totalAngle % 360 != 0) {
-			drawBitmapDistorted(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animation->maskColor, totalAngle);
+			drawBitmapTransform(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animationSprite->maskColor, totalAngle);
 		} else {
-			drawBitmap(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animation->maskColor);
+			drawBitmap(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animationSprite->maskColor);
 		}
 	}
+}
+
+void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick){
+	TranslationTransformation *translation = (TranslationTransformation *)transformation->data;
+
+	if (translation != NULL && translation->dest != NULL) {
+		if(*totalOffsetX < translation->dest->x){
+			if(translation->loop == true){
+				*totalOffsetX = *totalOffsetX + ((gametick | 1) % translation->dest->x);
+			} else {
+				*totalOffsetX++;
+			}
+		}
+
+		if(*totalOffsetX > translation->dest->x){
+			if(translation->loop == true){
+				*totalOffsetX = *totalOffsetX - ((gametick | 1) % translation->dest->x);
+			} else {
+				*totalOffsetX--;
+			}
+		}
+
+		if(*totalOffsetY < translation->dest->y){
+			if(translation->loop == true){
+				*totalOffsetY = *totalOffsetY + ((gametick | 1) % translation->dest->y);
+			} else {
+				*totalOffsetY++;
+			}
+		}
+
+		if(*totalOffsetY > translation->dest->y){
+			if(translation->loop == true){
+				*totalOffsetY = *totalOffsetY - ((gametick | 1) % translation->dest->y);
+			} else {
+				*totalOffsetY--;
+			}
+		}
+
+	} else {
+			logger("\nError: Translation data or dest is NULL");
+	}	
 }
 
 void drawSprites(unsigned long gametick){
@@ -256,8 +304,8 @@ void render2d(unsigned long gametick){
 		return;
 	}
 	
-	drawAnimations(gametick);
 	drawSprites(gametick);  // ISSUE
+	drawAnimations(gametick);
 }
 // ================================================================
 
@@ -347,54 +395,78 @@ BMPfile *loadBMPfile(char *fileName){
 }
 
 void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
-	long i, j;
+	int i, j;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
-	unsigned int width = (*bmpData)->width;
-	unsigned int height = (*bmpData)->height;
+	int width = (int)(*bmpData)->width;
+	int height = (int)(*bmpData)->height;
 
-	if (bmp != NULL){
-		for (i = 0; i < height; i++){
-			if (y + i < 0 || y + i >= 200) continue; 
-			for (j = 0; j < width; j++){
-				if (x + j < 0 || x + j >= 320) continue;
-				color = bmp[i][j];
-				if (color != maskcolor){
-					putPixelX(j + x, i + y, color);
-				}
-			}
-		}
-	}
+    int x_start = 0, y_start = 0;
+    int x_end = width, y_end = height;
+
+	if (bmp == NULL) return;
+
+    // Clipping
+    if (y < 0) { y_start = -y; }
+    if (y + height > 200) y_end = 200 - y;
+    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+
+    if (x < 0) { x_start = -x; }
+    if (x + width > 320) x_end = 320 - x;
+    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+
+    for (i = y_start; i < y_end; i++){
+        for (j = x_start; j < x_end; j++){
+            color = bmp[i][j];
+            if (color != (unsigned char)maskcolor){
+                putPixelX(x + j, y + i, color);
+            }
+        }
+    }
 }
 
 /* Optimized Plane-batched drawing */
 void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
-	long i, j, plane;
+	int i, j, plane;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
-	unsigned int width = (*bmpData)->width;
-	unsigned int height = (*bmpData)->height;
+	int width = (int)(*bmpData)->width;
+	int height = (int)(*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
     unsigned long row_offs;
 
-	if (bmp != NULL){
-        for (plane = 0; plane < 4; plane++) {
-            outPortb(SEQU_ADDR, 0x02);
-            outPortb(SEQU_ADDR + 1, 0x01 << plane);
+    int x_start = 0, y_start = 0;
+    int x_end = width, y_end = height;
 
-            for (i = 0; i < height; i++) {
-                if (y + i < 0 || y + i >= 200) continue;
-                row_offs = page_offs + (unsigned long)(i + y) * 80;
-                for (j = plane; j < width; j += 4) {
-                    if (x + j < 0 || x + j >= 320) continue;
-                    color = bmp[i][j];
-                    if (color != maskcolor) {
-                        putPixelASM(row_offs + ((j + x) >> 2), color);
-                    }
+	if (bmp == NULL) return;
+
+    // Clipping
+    if (y < 0) { y_start = -y; }
+    if (y + height > 200) y_end = 200 - y;
+    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+
+    if (x < 0) { x_start = -x; }
+    if (x + width > 320) x_end = 320 - x;
+    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+
+    for (plane = 0; plane < 4; plane++) {
+        int start_j;
+        outPortb(SEQU_ADDR, 0x02);
+        outPortb(SEQU_ADDR + 1, 0x01 << plane);
+
+        // Find first j >= x_start such that (x + j) % 4 == plane
+        start_j = x_start + ((plane - ((x + x_start) % 4) + 4) % 4);
+
+        for (i = y_start; i < y_end; i++) {
+            row_offs = page_offs + (unsigned long)(y + i) * 80;
+            for (j = start_j; j < x_end; j += 4) {
+                color = bmp[i][j];
+                if (color != (unsigned char)maskcolor) {
+                    putPixelASM(row_offs + ((x + j) >> 2), color);
                 }
             }
         }
-	}
+    }
 }
 
 void addBMPtoList(List **bmpList, BMPdata *bmpData){
@@ -446,7 +518,7 @@ void setPalette(Color *palette){
 
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
    OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
-void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
+void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
     unsigned char **bmp = (*bmpData)->bmp;
     unsigned int width = (*bmpData)->width;
     unsigned int height = (*bmpData)->height;
@@ -460,6 +532,7 @@ void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int ang
     long du, dv;
     int u, v;
     unsigned char color;
+    unsigned long dest_offs;
     
     // Bounding Box (A bit loose for rotation safety)
     int min_x = (int)x - (int)(width >> 1);
@@ -471,6 +544,9 @@ void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int ang
     if (max_x > 320) max_x = 320;
     if (min_y < 0) min_y = 0;
     if (max_y > 200) max_y = 200;
+
+    // Early exit
+    if (min_x >= max_x || min_y >= max_y) return;
 
     angle %= 360;
     if (angle < 0) angle += 360;
@@ -495,6 +571,9 @@ void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int ang
             u_fixed = ((dx * angcos + dy * angsin) >> 8) + halfw;
             v_fixed = ((-dx * angsin + dy * angcos) >> 8) + halfh;
             
+            // Optimization: running destination offset
+            dest_offs = page_offs + (unsigned long)screen_y * 80 + (start_x >> 2);
+            
             for (screen_x = start_x; screen_x < max_x; screen_x += 4) {
                 u = (int)(u_fixed >> 8);
                 v = (int)(v_fixed >> 8);
@@ -502,11 +581,12 @@ void drawBitmapDistorted(BMPdata **bmpData, int x, int y, int maskcolor, int ang
                 if (u >= 0 && u < width && v >= 0 && v < height) {
                     color = bmp[v][u];
                     if (color != maskcolor) {
-                        putPixelASM(page_offs + (unsigned long)screen_y * 80 + (screen_x >> 2), color);
+                        putPixelASM(dest_offs, color);
                     }
                 }
                 u_fixed += du;
                 v_fixed += dv;
+                dest_offs++;
             }
         }
     }
