@@ -56,3 +56,47 @@ void gm_destroyAsset(Asset *asset){
 	}
 	free(asset);
 }
+
+/* ACTOR METHODS ===========================================================================*/
+Action *gm_createAction(char *name, unsigned char type, Animation *animation, void (*update)(struct Asset *self)){
+	Action *newAction = (Action*)malloc(sizeof(Action));
+	sprintf(newAction->name, name);
+	newAction->type = type;
+	newAction->animation = animation;
+	newAction->update = update;
+	return newAction;
+}
+
+Stats *gm_createStats(int health, int maxHealth, int attack, int defense, int speed){
+	Stats *newStats = (Stats*)malloc(sizeof(Stats));
+	newStats->health = health;
+	newStats->maxHealth = maxHealth;
+	newStats->attack = attack;
+	newStats->defense = defense;
+	newStats->speed = speed;
+	return newStats;
+}
+
+Actor *gm_createActor(char *name, char *description, Stats *stats, Action *actions[]){
+	Actor *newActor = (Actor*)malloc(sizeof(Actor));
+	
+    sprintf(newActor->name, name);
+    sprintf(newActor->description, description);
+
+    newActor->stats = stats;
+    newActor->currentAction = NULL;
+
+    if(!actions){
+        logger("[gm_createActor]: No actions provided");
+        return NULL;
+    }else{
+        memset(newActor->actions, 0, sizeof(newActor->actions));
+        memcpy(newActor->actions, actions, sizeof(newActor->actions));
+        newActor->actionLength = sizeof(actions)/sizeof(actions[0]);
+    }
+    
+    if(!stats){
+        newActor->stats = gm_createStats(100, 100, 10, 10, 10);
+    }
+	return newActor;
+}

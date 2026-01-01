@@ -5,7 +5,7 @@
 #include "STD.H"
 
 /* CONSTANTS ===========================================================================*/
-#define SP_GRID_SIZE 255
+#define SP_GRID_SIZE 63
 #define SP_GRID_HALF (SP_GRID_SIZE/2)
 
 /* TRANSFORMATIONS ===========================================================================*/

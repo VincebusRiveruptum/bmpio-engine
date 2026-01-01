@@ -16,11 +16,11 @@ int main(int argc, char *argv[]){
     loadEnv();
     logger("ENV loaded!");
    
-    t_initTests();
+    //t_initTests();
 
     m_initTrig(); // Log the static load
     v_set200pxMode();
-    eng_setPalette(testPalette);
+    //eng_setPalette(testPalette);
 
     while (!checkAppEnd()){
         //fillScreen(0);
