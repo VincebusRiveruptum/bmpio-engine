@@ -5,18 +5,12 @@
 */
 
 /* Animation Methods */
-Animation *createAnimation(Coordinates *coordinates){
+Animation *createAnimation(){
 	Animation *newAnimation = (Animation*)malloc(sizeof(Animation));
 	newAnimation->frames = NULL;
 	newAnimation->length = 0;
 	newAnimation->frameDelay = 0;
 	newAnimation->loop = false;
-
-	if(coordinates){
-		newAnimation->coordinates = coordinates;
-	} else {
-		newAnimation->coordinates = createCoordinates(0, 0, 0);
-	}
 	newAnimation->maskColor = 255;
 	newAnimation->transformationList = NULL;
 	return newAnimation;
@@ -25,25 +19,17 @@ Animation *createAnimation(Coordinates *coordinates){
 Sprite *createSprite(){
 	Sprite *newSprite = (Sprite*)malloc(sizeof(Sprite));
 	newSprite->bmpData = NULL;
-	newSprite->coordinates = createCoordinates(0, 0, 0);
 	newSprite->maskColor = 255;
 	return newSprite;
 }
 
-bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor){
+bool loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	BMPfile *loadedFrame = NULL;
 	loadedFrame = loadBMPfile(fileName);
 	
 	if(!loadedFrame){
 		logger("\nError loading sprite %s", fileName);
 		return false;
-	}
-
-	if(coordinates){
-		if(sprite->coordinates) free(sprite->coordinates);
-		sprite->coordinates = coordinates;
-	} else if (!sprite->coordinates) {
-		sprite->coordinates = createCoordinates(0, 0, 0);
 	}
 	
 	sprite->bmpData = loadedFrame->bmpData;
@@ -61,12 +47,12 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	if (frameArray[0] == NULL) return;
 
 	if(animation == NULL){
-		animation = createAnimation(createCoordinates(0, 0, 0));
+		animation = createAnimation();
 	}
 	
 	for(i = 0; frameArray[i] != NULL; i++){
 		sprite = createSprite();
-		if(!loadSprite(sprite, frameArray[i], NULL, 15)){
+		if(!loadSprite(sprite, frameArray[i], 15)){
 			logger("\nError loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
@@ -361,15 +347,6 @@ void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
             }
         }
     }
-}
-
-void addBMPtoList(List **bmpList, BMPdata *bmpData){
-	Node *newNode = (Node *)malloc(sizeof(Node));
-	newNode->data = bmpData;
-	newNode->next = NULL;
-	newNode->prev = NULL;
-
-	addToList(bmpList, newNode);
 }
 
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) 

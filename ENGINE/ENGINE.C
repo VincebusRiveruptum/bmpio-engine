@@ -1,7 +1,6 @@
 
 #include "ENGINE.H"
 
-List *bmpList = NULL;
 Color *globalPalette = NULL;
 
 unsigned long gameTicks = 0;
@@ -39,4 +38,10 @@ void render2d(unsigned long gametick){
 	drawSprites(gametick);  // ISSUE
 	drawAnimations(gametick);
 	*/
+}
+
+/* */
+
+void setVisPlane(){
+		
 }

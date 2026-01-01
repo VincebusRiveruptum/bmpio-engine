@@ -44,7 +44,6 @@ extern unsigned long gameTicks;
 extern unsigned long index;
 
 extern Config *gameConfig;
-extern List *bmpList;
 extern Color *globalPalette;
 
 // PROTOYPES ====================================================================

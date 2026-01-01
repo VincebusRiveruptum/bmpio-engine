@@ -36,6 +36,12 @@ typedef struct ScreenCoordinates{
 	unsigned int y;
 }ScreenCoordinates;
 
+// GRID SYSTEM
+#define SP_GRID_SIZE 255
+
+struct Asset;
+struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE];
+
 /* PROTOYPES ===========================================================================*/
 
 Coordinates *createCoordinates(long x, long y, int z);

@@ -53,4 +53,12 @@ of concerns by taking assets.c,         ## OK
 11. ENGINE.C AND ENGINE.H are the 'glue', behaves like a layer that brings all the engine related
 stuff together.                         ## OK
 
+/////////////////
+
+Grid system:
+
+I was reading about using a grid system to calculate the rendering order of sprites and animations. This grid
+will not determine the poisition of the object, as we have a coordinates system for that.  However, a grid will
+help to determine if the object is inside the viewport of the camera, so will be rendered or not. This also solves
+the issue of the render queue, as we can calculate the rendering order based on the grid position of the object.
 

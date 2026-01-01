@@ -13,6 +13,12 @@
 
 /* TYPES ===================================================================================*/
 
+typedef enum AssetType{
+	A_SPRITE,
+	A_ANIMATION,
+	A_BACKGROUND,	
+}AssetType;
+
 typedef struct Color{
 	unsigned char b;
 	unsigned char g;
@@ -49,35 +55,38 @@ typedef struct BMPfile{
 
 typedef struct BMPdata{                     // Raw bmp data
     unsigned char **bmp;
-    struct Color *palette;          // Color palette object
+    struct Color *palette;         			// Color palette object
     long width;
     long height;
 }BMPdata;
 
 typedef struct Sprite{
 	struct BMPdata *bmpData;
-	struct Coordinates *coordinates;
 	char maskColor;
 }Sprite;
 
 typedef struct Animation{
-	struct List *frames;			// SPRITE LIST
+	struct List *frames;					// SPRITE LIST
 	int length;
 	int frameDelay;
 	bool loop;
-
-	struct Coordinates *coordinates;
 	char maskColor;
 
 	struct List *transformationList;		// An animation can have many transformations at the same time.
 }Animation;
 
+typedef struct Asset{						// Asset object
+	void *asset;							// This could be a sprite, animation, background, etc
+	unsigned char type;						// Asset type
+	struct Coordinates *coordinates;		// Asset coordinates, relative to the environment space
+}Asset;
+
 /* PROTOYPES ===========================================================================*/
 
 BMPfile *loadBMPfile(char *fileName);
-Animation *createAnimation(Coordinates *coordinates);
+Animation *createAnimation();
 Sprite *createSprite();
-bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor);
+bool loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
 void loadAnimationFrames(Animation *animation, char **frameArray);
 void drawAnimations(unsigned long gametick);
 
@@ -90,3 +99,16 @@ void drawSprites(unsigned long gametick);
 void addAnimationToTable(Animation *animation); /* TODO: REFACTOR IN PROGRESS*/
 
 #endif
+
+/*
+	Each one has its own coordinates. 
+
+	Asset - Actor - Sprite/Animation
+
+	An asset coordinates are relative to the environment space.
+	An actor coordinates are relative to the asset position.
+	A sprite/animation coordinates are relative to the actor position.
+
+	The environment space is the world space.
+
+*/
