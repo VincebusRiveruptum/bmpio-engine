@@ -10,13 +10,13 @@
 
 /* PROTOYPES ===========================================================================*/
 
-int round(float x);
-void initTrig();
+int m_round(float x);
+void m_initTrig();
 
 /* GLOBAL VARS =========================================================================*/
 
-extern long sintable[360];
-extern long costable[360];
-extern int trigInitialized;
+extern long m_sintable[360];
+extern long m_costable[360];
+extern int m_trigInitialized;
 
 #endif

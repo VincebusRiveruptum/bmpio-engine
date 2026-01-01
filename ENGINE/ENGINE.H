@@ -51,8 +51,8 @@ extern Color *globalPalette;
 
 // PROTOYPES ====================================================================
 
-void render2d(unsigned long gametick);
-bool checkConfig();
-void setPalette(Color *palette);
+void eng_render2d(unsigned long gametick);
+bool eng_checkConfig();
+void eng_setPalette(Color *palette);
 
 #endif

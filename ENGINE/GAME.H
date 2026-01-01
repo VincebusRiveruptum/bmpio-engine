@@ -117,4 +117,9 @@ typedef struct Asset{
 	defend
 */
 
+Asset *gm_createAsset(Actor *actor, Coordinates *coordinates);
+void gm_insertAsset(Asset *asset);
+Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z);
+void gm_destroyAsset(Asset *asset);
+
 #endif

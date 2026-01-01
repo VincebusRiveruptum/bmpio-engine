@@ -4,11 +4,11 @@
     THIS MODULE HANDLES ALL GAME LOGIC & BUSSINES RULES
 */
 
-Asset *createAsset(Actor *actor, Coordinates *coordinates){
+Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 	Asset *newAsset = (Asset*)malloc(sizeof(Asset));
 
 	if(!coordinates){
-		newAsset->coordinates = createCoordinates(0, 0, 0);
+		newAsset->coordinates = sp_createCoordinates(0, 0, 0);
 	}
     
     if(!actor){
@@ -29,7 +29,7 @@ Asset *createAsset(Actor *actor, Coordinates *coordinates){
 	return newAsset;
 }
 
-void insertAsset(Asset *asset){
+void gm_insertAsset(Asset *asset){
     unsigned int vis_x = (int)(asset->coordinates->x + SP_GRID_HALF);
     unsigned int vis_y = (int)(asset->coordinates->y + SP_GRID_HALF);
     unsigned int vis_z = (int)(asset->coordinates->z + SP_GRID_HALF);
@@ -41,7 +41,7 @@ void insertAsset(Asset *asset){
 	visGrid[vis_x][vis_y][vis_z] = asset;
 }
 
-Asset *getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z){
+Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z){
 	if(vis_x >= SP_GRID_SIZE || vis_y >= SP_GRID_SIZE || vis_z >= SP_GRID_SIZE){
 		logger("\n[engine/game/getAssetByIndex]: Error: Index out of bounds");
 		return NULL;
@@ -49,7 +49,7 @@ Asset *getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char v
 	return visGrid[vis_x][vis_y][vis_z];
 }
 
-void destroyAsset(Asset *asset){
+void gm_destroyAsset(Asset *asset){
 	if(!asset){
 		logger("\n[engine/game/destroyAsset]: Error: Asset is NULL");
 		return;

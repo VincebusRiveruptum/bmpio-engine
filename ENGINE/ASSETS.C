@@ -5,7 +5,7 @@
 */
 
 /* Animation Methods */
-Animation *createAnimation(){
+Animation *as_createAnimation(){
 	Animation *newAnimation = (Animation*)malloc(sizeof(Animation));
 	newAnimation->frames = NULL;
 	newAnimation->length = 0;
@@ -16,16 +16,16 @@ Animation *createAnimation(){
 	return newAnimation;
 }
 
-Sprite *createSprite(){
+Sprite *as_createSprite(){
 	Sprite *newSprite = (Sprite*)malloc(sizeof(Sprite));
 	newSprite->bmpData = NULL;
 	newSprite->maskColor = 255;
 	return newSprite;
 }
 
-bool loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
+bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	BMPfile *loadedFrame = NULL;
-	loadedFrame = loadBMPfile(fileName);
+	loadedFrame = as_loadBMPfile(fileName);
 	
 	if(!loadedFrame){
 		logger("\nError loading sprite %s", fileName);
@@ -39,7 +39,7 @@ bool loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	return true;
 }
 
-void loadAnimationFrames(Animation *animation, char **frameArray){
+void as_loadAnimationFrames(Animation *animation, char **frameArray){
 	Sprite *sprite = NULL; 
 	int i;
 
@@ -47,12 +47,12 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	if (frameArray[0] == NULL) return;
 
 	if(animation == NULL){
-		animation = createAnimation();
+		animation = as_createAnimation();
 	}
 	
 	for(i = 0; frameArray[i] != NULL; i++){
-		sprite = createSprite();
-		if(!loadSprite(sprite, frameArray[i], 15)){
+		sprite = as_createSprite();
+		if(!as_loadSprite(sprite, frameArray[i], 15)){
 			logger("\nError loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
@@ -65,11 +65,11 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	}
 }
 
-void drawAnimations(unsigned long gameTick){
+void as_drawAnimations(unsigned long gameTick){
 	logger("\n[engine/assets/drawAnimations] Placeholder due that SpriteTable got refactored");
 }
 
-void drawSprites(unsigned long gameTick){
+void as_drawSprites(unsigned long gameTick){
 	logger("\n[engine/assets/drawSprites] Placeholder due that SpriteTable got refactored");
 }
 /*
@@ -149,7 +149,7 @@ void drawAnimations(unsigned long gametick){
 				// TRANSLATION
 				if (strcmp(transformation->type, TR_TRANSLATION) == 0){
 					// logger("\nTranslation transformation"); 
-					calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+					sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
 				}
 			}
 		}
@@ -189,7 +189,7 @@ void drawSprites(unsigned long gametick){
 
 // ================================================================
 
-BMPfile *loadBMPfile(char *fileName){
+BMPfile *as_loadBMPfile(char *fileName){
 	FILE *fp = NULL;
 	BMPfile *newFile = NULL;
 	char *id = (char *)calloc(3, sizeof(char));
@@ -274,7 +274,7 @@ BMPfile *loadBMPfile(char *fileName){
 	return newFile;
 }
 
-void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
+void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
 	int i, j;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
@@ -299,14 +299,14 @@ void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
         for (j = x_start; j < x_end; j++){
             color = bmp[i][j];
             if (color != (unsigned char)maskcolor){
-                putPixelX(x + j, y + i, color);
+                v_putPixelX(x + j, y + i, color);
             }
         }
     }
 }
 
 /* Optimized Plane-batched drawing */
-void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
+void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 	int i, j, plane;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
@@ -342,7 +342,7 @@ void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
             for (j = start_j; j < x_end; j += 4) {
                 color = bmp[i][j];
                 if (color != (unsigned char)maskcolor) {
-                    putPixelASM(row_offs + ((x + j) >> 2), color);
+                    v_putPixelASM(row_offs + ((x + j) >> 2), color);
                 }
             }
         }
@@ -351,7 +351,7 @@ void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
    OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
-void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
+void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
     unsigned char **bmp = (*bmpData)->bmp;
     unsigned int width = (*bmpData)->width;
     unsigned int height = (*bmpData)->height;
@@ -383,8 +383,8 @@ void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int ang
 
     angle %= 360;
     if (angle < 0) angle += 360;
-    angcos = costable[angle];
-    angsin = sintable[angle];
+    angcos = m_costable[angle];
+    angsin = m_sintable[angle];
 
     if (angcos == -2147483648L || angsin == -2147483648L) return;
 
@@ -414,7 +414,7 @@ void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int ang
                 if (u >= 0 && u < width && v >= 0 && v < height) {
                     color = bmp[v][u];
                     if (color != maskcolor) {
-                        putPixelASM(dest_offs, color);
+                        v_putPixelASM(dest_offs, color);
                     }
                 }
                 u_fixed += du;
@@ -451,6 +451,6 @@ bool removeTransformation(Animation *animation, int index){
 	return true;
 }
 
-void addAnimationToTable(Animation *animation){
+void as_addAnimationToTable(Animation *animation){
 	logger("\nThis method is going to be refactored, THIS IS A PLACEHOLDER");
 }

@@ -77,19 +77,19 @@ typedef struct Animation{
 
 /* PROTOYPES ===========================================================================*/
 
-BMPfile *loadBMPfile(char *fileName);
-Animation *createAnimation();
-Sprite *createSprite();
-bool loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
-void loadAnimationFrames(Animation *animation, char **frameArray);
-void drawAnimations(unsigned long gametick);
+BMPfile *as_loadBMPfile(char *fileName);
+Animation *as_createAnimation();
+Sprite *as_createSprite();
+bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
+void as_loadAnimationFrames(Animation *animation, char **frameArray);
+void as_drawAnimations(unsigned long gametick);
 
-void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
-void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
-void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
+void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
+void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
+void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
 
-void drawSprites(unsigned long gametick);
+void as_drawSprites(unsigned long gametick);
 
-void addAnimationToTable(Animation *animation); /* TODO: REFACTOR IN PROGRESS*/
+void as_addAnimationToTable(Animation *animation); /* TODO: REFACTOR IN PROGRESS*/
 
 #endif

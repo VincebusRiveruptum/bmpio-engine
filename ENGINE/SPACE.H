@@ -46,8 +46,10 @@ extern struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 
 /* PROTOYPES ===========================================================================*/
 
-Coordinates *createCoordinates(long x, long y, int z);
-ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y);
-void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
+Coordinates *sp_createCoordinates(long x, long y, int z);
+ScreenCoordinates *sp_createScreenCoordinates(unsigned int x, unsigned int y);
+void sp_calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
+bool sp_addAssetToVisGrid(struct Asset *asset);
+bool sp_removeAssetFromVisGrid(struct Asset *asset);
 
 #endif

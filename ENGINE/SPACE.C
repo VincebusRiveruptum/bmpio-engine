@@ -3,7 +3,7 @@
 
 struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 
-Coordinates *createCoordinates(long x, long y, int z){
+Coordinates *sp_createCoordinates(long x, long y, int z){
 	Coordinates *newCoordinates = (Coordinates*)malloc(sizeof(Coordinates));
 	newCoordinates->x = x;
 	newCoordinates->y = y;
@@ -11,14 +11,14 @@ Coordinates *createCoordinates(long x, long y, int z){
 	return newCoordinates;
 }
 
-ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y){
+ScreenCoordinates *sp_createScreenCoordinates(unsigned int x, unsigned int y){
 	ScreenCoordinates *newScreenCoordinates = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
 	newScreenCoordinates->x = x;
 	newScreenCoordinates->y = y;
 	return newScreenCoordinates;
 }
 
-void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick){
+void sp_calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick){
 	TranslationTransformation *translation = (TranslationTransformation *)transformation->data;
 
 	if (translation != NULL && translation->dest != NULL) {
@@ -60,7 +60,7 @@ void calculateTranslation(Transformation *transformation, long *totalOffsetX, lo
 }
 
 // Culling =====================================================================================================
-bool addAssetToVisGrid(struct Asset *asset){
+bool sp_addAssetToVisGrid(struct Asset *asset){
 	if(!asset){
 		logger("\nError: Asset is NULL");
 		return false;
@@ -76,7 +76,7 @@ bool addAssetToVisGrid(struct Asset *asset){
 	return true;
 }
 
-bool removeAssetFromVisGrid(struct Asset *asset){
+bool sp_removeAssetFromVisGrid(struct Asset *asset){
 	if(!asset){
 		logger("\nError: Asset is NULL");
 		return false;

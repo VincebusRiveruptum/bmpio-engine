@@ -29,10 +29,10 @@ bool t_initTests(){
 
     sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
-    renamonFile = loadBMPfile(renamonPath);
+    renamonFile = as_loadBMPfile(renamonPath);
     
-    renamonJumping = createAnimation(createCoordinates(0, 0, 0)); 
-    loadAnimationFrames(renamonJumping, renamonFrames);
+    renamonJumping = as_createAnimation(sp_createCoordinates(0, 0, 0)); 
+    as_loadAnimationFrames(renamonJumping, renamonFrames);
     
     testPalette = renamonFile->bmpData->palette;
     

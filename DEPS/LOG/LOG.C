@@ -8,6 +8,8 @@
 */
 #include "LOG.H"
 
+extern bool eng_checkConfig();
+
 void logToFile(char *outputString){
     FILE *fp = fopen("logs.txt", "a+");
     if(!fp){
@@ -51,7 +53,7 @@ void logger(const char *format, ...){ // Modified signature for variadic argumen
         sprintf(logString, "%s %s\n", dateString, p);
     }
 
-    if(checkConfig()){
+    if(eng_checkConfig()){
         // Use config logging
         // Added check for logType being non-NULL
         if(logType && (strcmp(logType, "file") == 0 || strcmp(logType, "fileConsole") == 0)){

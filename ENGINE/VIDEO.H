@@ -11,23 +11,23 @@
 
 /* PROTOYPES ===========================================================================*/
 
-void clearScreen();
-void setVideoMode13();
-void set200pxMode(void);
-void setTXTMode(void);
-void putPixelX(int, int, char);
-void putPixelASM(unsigned long offset, unsigned char color);
-unsigned char getPixelX(int, int);
-void setPal(char color, unsigned char r, unsigned char g, unsigned char b);
-void drawPalette();
-void waitVsync();
+void v_clearScreen();
+void v_setVideoMode13();
+void v_set200pxMode(void);
+void v_setTXTMode(void);
+void v_putPixelX(int, int, char);
+void v_putPixelASM(unsigned long offset, unsigned char color);
+unsigned char v_getPixelX(int, int);
+void v_setPal(char color, unsigned char r, unsigned char g, unsigned char b);
+void v_drawPalette();
+void v_waitVsync();
 
-void drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
-void fastFillRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
-void memsetVGAASM(unsigned long offset, unsigned char color, unsigned int count);
-void flipPage();
+void v_drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
+void v_fastFillRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
+void v_memsetVGAASM(unsigned long offset, unsigned char color, unsigned int count);
+void v_flipPage();
 
-#pragma aux clearScreen =                                   \
+#pragma aux v_clearScreen =                                   \
     "mov dx, 0x3C4"        \
     "mov ax, 0x0F02"       \
     "out dx, ax"           \
@@ -37,14 +37,14 @@ void flipPage();
     "rep stosd"            \
     modify[eax ecx edi edx];
 
-#pragma aux putPixelASM =                                  \
+#pragma aux v_putPixelASM =                                  \
     "mov edi, 0xA0000"     \
     "add edi, eax"         \
     "mov [edi], dl"        \
     parm[eax][dl]          \
     modify[edi];
 
-#pragma aux clearPageASM = \
+#pragma aux v_clearPageASM = \
     "mov edi, 0xA0000"     \
     "add edi, eax"         \
     "mov eax, ebx"         \
@@ -53,7 +53,7 @@ void flipPage();
     parm [eax] [ebx]       \
     modify [edi eax ecx];
 
-#pragma aux memsetVGAASM = \
+#pragma aux v_memsetVGAASM = \
     "mov edi, 0xA0000"     \
     "add edi, eax"         \
     "mov eax, ebx"         \
@@ -61,15 +61,15 @@ void flipPage();
     parm [eax] [ebx] [ecx] \
     modify [edi eax ecx];
 
-#pragma aux setVideoMode13 = \
+#pragma aux v_setVideoMode13 = \
     "cld"                    \
     "mov ax, 0x0013",        \
     "int 0x10";
-#pragma aux setTXTModeASM =    \
+#pragma aux v_setTXTModeASM =    \
         "mov ax, 0x03",     \
         "int 0x10";
 
-#pragma aux waitVsync = \
+#pragma aux v_waitVsync = \
     "mov dx, 0x3DA"     \
     "v_wait1:"          \
     "in al, dx"         \

@@ -2,7 +2,7 @@
 
 #include "MATH.H"
 
-long sintable[360] = {
+long m_sintable[360] = {
     0, 4, 8, 13, 17, 22, 26, 31, 35, 40,
     44, 48, 53, 57, 61, 66, 70, 74, 79, 83,
     87, 91, 95, 100, 104, 108, 112, 116, 120, 124,
@@ -41,7 +41,7 @@ long sintable[360] = {
     -44, -40, -35, -31, -26, -22, -17, -13, -8, -4
 };
 
-long costable[360] = {
+long m_costable[360] = {
     256, 256, 256, 256, 255, 255, 255, 254, 253, 253,
     252, 251, 250, 249, 248, 247, 246, 244, 243, 241,
     240, 238, 237, 235, 233, 232, 230, 228, 226, 223,
@@ -80,9 +80,9 @@ long costable[360] = {
     252, 253, 253, 254, 255, 255, 255
 };
 
-int trigInitialized = 1;
+int m_trigInitialized = 1;
 
-void initTrig() {
+void m_initTrig() {
     // Already initialized statically
     logger("\n[MATH] Trig tables loaded from static arrays.");
 }

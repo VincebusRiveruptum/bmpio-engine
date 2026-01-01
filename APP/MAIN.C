@@ -18,22 +18,22 @@ int main(int argc, char *argv[]){
    
     t_initTests();
 
-    initTrig(); // Log the static load
-    set200pxMode();
-    setPalette(testPalette);
+    m_initTrig(); // Log the static load
+    v_set200pxMode();
+    eng_setPalette(testPalette);
 
     while (!checkAppEnd()){
         //fillScreen(0);
         initInput();
         
-        render2d(gameTicks);
+        eng_render2d(gameTicks);
         if(ENABLE_PAGE_FLIPPING == 1){
-            flipPage(); 
+            v_flipPage(); 
         }
         gameTicks++;
     }
     
-    setTXTMode();
+    v_setTXTMode();
 
     printf("\n96 Tears...");
 
