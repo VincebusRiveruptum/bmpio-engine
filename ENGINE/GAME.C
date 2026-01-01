@@ -38,6 +38,8 @@ void gm_insertAsset(Asset *asset){
 		return;
 	}
 
+    logger("[gm_insertAsset]: Inserting asset at %d, %d, %d", vis_x, vis_y, vis_z);
+    
 	visGrid[vis_x][vis_y][vis_z] = asset;
 }
 

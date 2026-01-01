@@ -29,7 +29,7 @@ bool t_initTests(){
 
     t_createRenamon();
 
-    logger("\n[engine/test/t_initTests]: Testing initialization");
+    logger("\n[t_initTests]: Testing initialization");
 
     return true;
 }
@@ -43,6 +43,7 @@ void t_createRenamon(){
     Animation *renamonIdle = NULL;    
 
     Actor *renamonActor = NULL;
+    Asset *renamonAsset = NULL;
     
     sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
@@ -75,11 +76,15 @@ void t_createRenamon(){
         renamonActions
     );
     
-    gm_createAsset(
+    renamonAsset = gm_createAsset(
         renamonActor,
         sp_createCoordinates(0, 0, 0)
     );
-   
+
+    logger("[t_createRenamon]: Inserting asset");
+    
+    gm_insertAsset(renamonAsset);
+  
     testPalette = renamonFile->bmpData->palette;   
     
 }

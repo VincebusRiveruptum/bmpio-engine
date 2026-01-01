@@ -28,7 +28,7 @@ bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	loadedFrame = as_loadBMPfile(fileName);
 	
 	if(!loadedFrame){
-		logger("\nError loading sprite %s", fileName);
+		logger("[as_loadSprite]: Error loading sprite %s", fileName);
 		return false;
 	}
 	
@@ -53,7 +53,7 @@ void as_loadAnimationFrames(Animation *animation, char **frameArray){
 	for(i = 0; frameArray[i] != NULL; i++){
 		sprite = as_createSprite();
 		if(!as_loadSprite(sprite, frameArray[i], 15)){
-			logger("\nError loading frame sprite %s", frameArray[i]);
+			logger("[as_loadAnimationFrames]: Error loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
 		}
@@ -61,16 +61,16 @@ void as_loadAnimationFrames(Animation *animation, char **frameArray){
 		addGenericNode(&animation->frames, (void*)sprite);
 		animation->length++;
 
-		logger("\nLoaded frame %s", frameArray[i]);
+		logger("[as_loadAnimationFrames]: Loaded frame %s", frameArray[i]);
 	}
 }
 
 void as_drawAnimations(unsigned long gameTick){
-	logger("\n[engine/assets/drawAnimations] Placeholder due that SpriteTable got refactored");
+	logger("[as_drawAnimations]: Placeholder due that SpriteTable got refactored");
 }
 
 void as_drawSprites(unsigned long gameTick){
-	logger("\n[engine/assets/drawSprites] Placeholder due that SpriteTable got refactored");
+	logger("[as_drawSprites] Placeholder due that SpriteTable got refactored");
 }
 /*
 void drawAnimations(unsigned long gametick){
@@ -199,11 +199,11 @@ BMPfile *as_loadBMPfile(char *fileName){
 	fp = fopen(fileName, "rb");
 	
 	if (!fp){
-		logger("\nError, file not found!");
+		logger("[as_loadBMPfile]: Error, file not found!");
 		return NULL;
 	}
 
-	logger("\nLoading %s ", fileName);
+	logger("[as_loadBMPfile]: Loading %s ", fileName);
 
 	newFile = (BMPfile *)malloc(sizeof(BMPfile));
 	newFile->bmpData = (BMPdata *)malloc(sizeof(BMPdata));
@@ -211,17 +211,14 @@ BMPfile *as_loadBMPfile(char *fileName){
 	newFile->bmpData->palette = (Color *)malloc(256 * sizeof(Color));
 
 	if (newFile == NULL || newFile->bmpData == NULL || newFile->bmpData->palette == NULL){
-		logger("Memory allocation failed\n");
+		logger("[as_loadBMPfile]: Memory allocation failed");
 		return NULL;
 	}
 
 	fread(id, 2, 1, fp);
 
-	logger("%s", id);
-
 	if (strcmp(id, "BM") != 0){
-		/* El archivo es invalido no se crea la bmp */
-		logger("\nInvalid file. %s", id);
+		logger("[as_loadBMPfile]: Invalid file. %s", id);
 		free(newFile);
 		return NULL;
 	}
@@ -245,8 +242,8 @@ BMPfile *as_loadBMPfile(char *fileName){
 	newFile->bmpData->bmp = (unsigned char **)malloc(sizeof(unsigned char *) * newFile->ih.y);
 
 	if (newFile->bmpData->bmp == NULL){
-		logger("\nCould not allocate bmp height.");
-		return 0;
+		logger("[as_loadBMPfile]: Could not allocate bmp height.");
+		return NULL;
 	}
 
 	while ((newFile->ih.x + padding) % 4 != 0){
@@ -258,14 +255,13 @@ BMPfile *as_loadBMPfile(char *fileName){
 
 		if (newFile->bmpData->bmp[y] == NULL)
 		{
-			logger("\nCould not allocate bitmap width on loop index : %d", y);
-			return 0;
+			logger("[as_loadBMPfile]: Could not allocate bitmap width on loop index : %d", y);
+			return NULL;
 		}
 		else
 		{
 			fread(newFile->bmpData->bmp[y], newFile->ih.x + padding, 1, fp);
 		}
-		
 	}
 
 	free(id);

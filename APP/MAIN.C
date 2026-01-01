@@ -14,9 +14,9 @@
 
 int main(int argc, char *argv[]){
     loadEnv();
-    logger("ENV loaded!");
+    logger("[main]: ENV loaded!");
    
-    //t_initTests();
+    t_initTests();
 
     m_initTrig(); // Log the static load
     v_set200pxMode();
