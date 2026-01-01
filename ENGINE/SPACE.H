@@ -4,6 +4,10 @@
 
 #include "STD.H"
 
+/* CONSTANTS ===========================================================================*/
+#define SP_GRID_SIZE 255
+#define SP_GRID_HALF (SP_GRID_SIZE/2)
+
 /* TRANSFORMATIONS ===========================================================================*/
 typedef struct RotationTransformation{
 	int angle;		// angle step per tick
@@ -36,11 +40,9 @@ typedef struct ScreenCoordinates{
 	unsigned int y;
 }ScreenCoordinates;
 
-// GRID SYSTEM
-#define SP_GRID_SIZE 255
-
+// Culling grid system
 struct Asset;
-struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE];
+extern struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 
 /* PROTOYPES ===========================================================================*/
 

@@ -1,4 +1,7 @@
 #include "SPACE.H"
+#include "GAME.H"
+
+struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 
 Coordinates *createCoordinates(long x, long y, int z){
 	Coordinates *newCoordinates = (Coordinates*)malloc(sizeof(Coordinates));
@@ -55,3 +58,31 @@ void calculateTranslation(Transformation *transformation, long *totalOffsetX, lo
 			logger("\nError: Translation data or dest is NULL");
 	}	
 }
+
+// Culling =====================================================================================================
+bool addAssetToVisGrid(struct Asset *asset){
+	if(!asset){
+		logger("\nError: Asset is NULL");
+		return false;
+	}
+
+	// Normalize coordinates to grid size and check bounds
+	if(asset->coordinates->x + SP_GRID_HALF < 0 || asset->coordinates->x + SP_GRID_HALF > SP_GRID_SIZE || asset->coordinates->y + SP_GRID_HALF < 0 || asset->coordinates->y + SP_GRID_HALF > SP_GRID_SIZE || asset->coordinates->z + SP_GRID_HALF < 0 || asset->coordinates->z + SP_GRID_HALF > SP_GRID_SIZE){
+		logger("\nError: Asset coordinates are out of bounds");
+		return false;
+	}
+
+	visGrid[(asset->coordinates->x + SP_GRID_HALF)][(asset->coordinates->y + SP_GRID_HALF)][(asset->coordinates->z + SP_GRID_HALF)] = asset;
+	return true;
+}
+
+bool removeAssetFromVisGrid(struct Asset *asset){
+	if(!asset){
+		logger("\nError: Asset is NULL");
+		return false;
+	}
+
+	visGrid[asset->coordinates->x + SP_GRID_HALF][asset->coordinates->y + SP_GRID_HALF][asset->coordinates->z + SP_GRID_HALF] = NULL;
+	return true;
+}
+

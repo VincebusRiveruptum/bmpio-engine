@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "ENGINE.H"
+
 /* Cl stands for Collision*/
 #define CL_TYPE_ACTOR 0x01
 #define CL_TYPE_ENVIRONMENT 0x02
@@ -89,15 +91,22 @@ typedef struct Actor{
 }Actor;
 
 /* This cound be an actor instance that is currently playing */
-typedef struct ActorPlaying{
+typedef struct Asset{
 	unsigned long id;
 	struct Actor *actor;
 	struct Coordinates *coordinates;
-
-	// Stuff that depends on factors such as the enviroment and the actor's state
-	struct Action *currentAction;
 	struct Collision collisions[MAX_COLLISIONS];
-}ActorPlaying;
+
+	// Stuff for culling
+	unsigned char vis_prevX;
+	unsigned char vis_prevY;
+	unsigned char vis_prevZ;
+
+	unsigned char vis_currentX;
+	unsigned char vis_currentY;
+	unsigned char vis_currentZ;
+	
+}Asset;
 
 /* PROTOYPES ===========================================================================*/
 

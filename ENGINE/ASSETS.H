@@ -75,12 +75,6 @@ typedef struct Animation{
 	struct List *transformationList;		// An animation can have many transformations at the same time.
 }Animation;
 
-typedef struct Asset{						// Asset object
-	void *asset;							// This could be a sprite, animation, background, etc
-	unsigned char type;						// Asset type
-	struct Coordinates *coordinates;		// Asset coordinates, relative to the environment space
-}Asset;
-
 /* PROTOYPES ===========================================================================*/
 
 BMPfile *loadBMPfile(char *fileName);
@@ -99,16 +93,3 @@ void drawSprites(unsigned long gametick);
 void addAnimationToTable(Animation *animation); /* TODO: REFACTOR IN PROGRESS*/
 
 #endif
-
-/*
-	Each one has its own coordinates. 
-
-	Asset - Actor - Sprite/Animation
-
-	An asset coordinates are relative to the environment space.
-	An actor coordinates are relative to the asset position.
-	A sprite/animation coordinates are relative to the actor position.
-
-	The environment space is the world space.
-
-*/

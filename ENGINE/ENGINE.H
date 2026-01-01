@@ -21,6 +21,9 @@
 // ASSETS
 #include "ASSETS.H"
 
+// TEST
+#include "TEST.H"
+
 // CONSTANTS ====================================================================
 
 #define TR_ROTATION "ROTATION"
