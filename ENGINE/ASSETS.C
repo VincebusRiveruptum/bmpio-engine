@@ -4,6 +4,7 @@
 	I've been thinking of making this ASSETS.C file as the 'glue' for everything, however,
 	at which point the glue will be so thick that it will be a mess.
 */
+
 List *bmpList = NULL;
 Color *globalPalette = NULL;
 // This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen

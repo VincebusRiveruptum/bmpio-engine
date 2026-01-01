@@ -8,6 +8,7 @@
 #define TR_SCALE "SCALE"
 
 /* BMP STUFF ===================================================================================*/
+
 typedef struct FileHeader{
 	unsigned char id[2];
 	long size;
@@ -29,7 +30,6 @@ typedef struct InfoHeader{
 	long numImportantColors;
 }InfoHeader;
 
-
 typedef struct BMPfile{
 	struct FileHeader fh;
 	struct InfoHeader ih;
@@ -42,6 +42,7 @@ typedef struct BMPdata{                     // Raw bmp data
     long width;
     long height;
 }BMPdata;
+
 /* END BMP STUFF ===========================================================================*/
 
 typedef struct Color{

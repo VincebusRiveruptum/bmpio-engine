@@ -4,11 +4,28 @@ Ok, the next challenges are:
 animation due how the sprite and animation table is designed by separate arrays.
 We need to unify both or think on a way sprites and animations have a z-index.
 
-2. Use of Coordinates and ScreenCoordinates is a bit of a mess. A solution to the z-index issue
+2. Use of Coordinates and ScreenCoordinates is a bit of a mess. A solution to the sprite and animation order issue
 is to use the Coordinates object, and before rendering we need to convert it to ScreenCoordinates. 
-This way we can use the z-index to sort the rendering order.
+This way we can use the z-index to sort the rendering order. However, this could be extra overhead because we 
+need to identify which sprite or animation comes first before the rest subsesquently.
 
 3. I tested a 640x350 bmp to be rendered as a background sprite, a background should
-be an own asset type? (such as sprites and animations)
+be an own asset type? (such as sprites and animations). But, For now, let`s treat backgrounds as
+sprites, where the z-index must be at the very bottom or far so it theorically behaves like one, 
+also, the flag IS_BACKGROUND is limiting in the future a possibility of layered and parrallax
+effect becausde there is only one valid background with the IS_BACKGROUND flag on.
 
 4. Also, big bitmaps dont clip out bounds properly. 
+
+5. I`m thinking of a better way to name variables, any suggestions? Hungarian notation 
+could be OK, also, same with structs and functions. I could follow DOOM`s naming convention
+and prefix everything with a letter that describes the task type, such as VID for video, 
+SND for sound, GFX for graphics, etc. What do you think?
+
+6. There are some cast and parameter type inconsistencies. For example, maskColor handle 
+numbers between 0 and 255, so its a unsigned char. However in some parts its treated as an int.
+
+8. Maybe we could simulate OOP by treating structs as classes and functions as methods all together on its 
+own module.
+
+9.
