@@ -79,7 +79,14 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	}
 }
 
+void drawAnimations(unsigned long gameTick){
+	logger("\n[engine/assets/drawAnimations] Placeholder due that SpriteTable got refactored");
+}
 
+void drawSprites(unsigned long gameTick){
+	logger("\n[engine/assets/drawSprites] Placeholder due that SpriteTable got refactored");
+}
+/*
 void drawAnimations(unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
@@ -101,7 +108,7 @@ void drawAnimations(unsigned long gametick){
 		logger("\nSprite table is NULL");
 		return;
 	}
-
+	
 	// Per each animation
 	for(i = 0; i < spriteTable->animationIndex ; i++){
 		animation = spriteTable->animations[i];
@@ -110,7 +117,7 @@ void drawAnimations(unsigned long gametick){
 			logger("\nAnimation %ld is NULL or empty", i);
 			continue;
 		}
-
+		
 		frameToRender = gametick % animation->length;
 		animationSpriteNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
 		
@@ -118,7 +125,7 @@ void drawAnimations(unsigned long gametick){
 			logger("\nAnimation sprite node %ld is NULL", frameToRender);
 			continue;
 		}
-
+		
 		animationSprite = (Sprite *)animationSpriteNode->data;
 		
 		if(animationSprite == NULL){
@@ -129,16 +136,16 @@ void drawAnimations(unsigned long gametick){
 		totalAngle = 0;
 		totalOffsetX = animation->coordinates->x + animationSprite->coordinates->x;
 		totalOffsetY = animation->coordinates->y + animationSprite->coordinates->y;
-
+		
 		if(animation->transformationList != NULL){
 			transformationLength = animation->transformationList->length;
-
+			
 			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
 				Node *node = getNodeByIndex(&(animation->transformationList), transformationIndex);
 				if(node == NULL) continue;
 				transformation = (Transformation *)node->data;
 				if(transformation == NULL) continue;
-
+				
 				// ROTATION
 				if (strcmp(transformation->type, TR_ROTATION) == 0){
 					rot = (RotationTransformation *)transformation->data;
@@ -149,18 +156,18 @@ void drawAnimations(unsigned long gametick){
 					// Keep it bounded 0-359
 					if (rot->current >= 360) rot->current %= 360;
 					if (rot->current < 0) rot->current = (rot->current % 360) + 360;
-
+					
 					totalAngle += rot->current;
 				}
-
+				
 				// TRANSLATION
 				if (strcmp(transformation->type, TR_TRANSLATION) == 0){
-					/* logger("\nTranslation transformation"); */
+					// logger("\nTranslation transformation"); 
 					calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
 				}
 			}
 		}
-
+		
 		// Optimization: Use standard draw if effectively not rotated
 		if (totalAngle % 360 != 0) {
 			drawBitmapTransform(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animationSprite->maskColor, totalAngle);
@@ -169,7 +176,6 @@ void drawAnimations(unsigned long gametick){
 		}
 	}
 }
-
 
 void drawSprites(unsigned long gametick){
 	unsigned long i;
@@ -180,9 +186,7 @@ void drawSprites(unsigned long gametick){
 		return;
 	}
 	
-	/*
-		For each sprite in the sprite table, we render it
-	*/
+	// For each sprite in the sprite table, we render it
 	for(i = 0; i < spriteTable->spriteIndex ; i++){
 		sprite = spriteTable->sprites[i];
 		
@@ -195,6 +199,7 @@ void drawSprites(unsigned long gametick){
 		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
 	}
 }
+*/
 
 // ================================================================
 
@@ -204,9 +209,9 @@ BMPfile *loadBMPfile(char *fileName){
 	char *id = (char *)calloc(3, sizeof(char));
 	int padding = 0;
 	int y;
-
+	
 	fp = fopen(fileName, "rb");
-
+	
 	if (!fp){
 		logger("\nError, file not found!");
 		return NULL;
@@ -469,3 +474,6 @@ bool removeTransformation(Animation *animation, int index){
 	return true;
 }
 
+void addAnimationToTable(Animation *animation){
+	logger("\nThis method is going to be refactored, THIS IS A PLACEHOLDER");
+}

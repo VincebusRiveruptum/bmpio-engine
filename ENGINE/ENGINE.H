@@ -3,20 +3,17 @@
 
 #include "STD.H"
 
-// INTERNAL DEPENDENCES
-#include "LOG/LOG.H"
-
 // EXTERNAL DEPENDENCES
+#include "../DEPS/LOG/LOG.H"
 #include "../DEPS/DATA/DATA.H"
 #include "../DEPS/ENV/ENV.H"
+#include "../DEPS/INPUT/INPUT.H"
 
-// PROTOTYPES
-#include "PROTO.H"
+// VIDEO
 #include "VIDEO.H"
 
 // ENGINE
 #include "MATH.H"
-#include "INPUT.H"
 
 // SPACE
 #include "SPACE.H"
@@ -25,6 +22,7 @@
 #include "ASSETS.H"
 
 // CONSTANTS ====================================================================
+
 #define TR_ROTATION "ROTATION"
 #define TR_TRANSLATION "TRANSLATION"
 #define TR_SCALE "SCALE"
@@ -33,21 +31,7 @@
 #define ACTOR_FLAG_VISIBLE    0x02
 #define ACTOR_FLAG_COLLIDABLE 0x04
 
-// PROTOYPES ====================================================================
-
-void render2d(unsigned long gametick);
-
 // TYPES ========================================================================
-typedef struct Color{
-	unsigned char b;
-	unsigned char g;
-	unsigned char r;
-	unsigned char i;
-}Color;
-
-extern unsigned long gameTicks;
-extern unsigned long index;
-extern SpriteTable *spriteTable;
 
 typedef struct RenderQueue{
 	struct List *renderList;
@@ -56,8 +40,17 @@ typedef struct RenderQueue{
 
 // VARS ========================================================================
 
+extern unsigned long gameTicks;
+extern unsigned long index;
+
 extern Config *gameConfig;
 extern List *bmpList;
 extern Color *globalPalette;
+
+// PROTOYPES ====================================================================
+
+void render2d(unsigned long gametick);
+bool checkConfig();
+void setPalette(Color *palette);
 
 #endif

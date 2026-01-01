@@ -3,8 +3,6 @@
 
 List *bmpList = NULL;
 Color *globalPalette = NULL;
-// This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen
-SpriteTable *spriteTable = NULL;
 
 unsigned long gameTicks = 0;
 unsigned long index = 0;
@@ -30,6 +28,9 @@ void setPalette(Color *palette){
 // ================================================================
 
 void render2d(unsigned long gametick){
+	logger("\n[engine/render2d] Placeholder due that SpriteTable got refactored");
+	
+	/*
 	if(spriteTable == NULL){
 		logger("\nSprite table is NULL");
 		return;
@@ -37,4 +38,5 @@ void render2d(unsigned long gametick){
 	
 	drawSprites(gametick);  // ISSUE
 	drawAnimations(gametick);
+	*/
 }

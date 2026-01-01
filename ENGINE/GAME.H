@@ -1,6 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+/* TYPES ===================================================================================*/
+
 typedef struct Stats{
 	int health;
 	int maxHealth;
@@ -35,5 +37,7 @@ typedef struct Actor{
     int frameIndex;
     unsigned int flags;
 }Actor;
+
+/* PROTOYPES ===========================================================================*/
 
 #endif

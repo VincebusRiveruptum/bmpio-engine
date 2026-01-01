@@ -4,10 +4,6 @@
 
 #include "STD.H"
 
-Coordinates *createCoordinates(long x, long y, int z);
-ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y);
-void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
-
 /* TRANSFORMATIONS ===========================================================================*/
 typedef struct RotationTransformation{
 	int angle;		// angle step per tick
@@ -39,5 +35,11 @@ typedef struct ScreenCoordinates{
 	unsigned int x;
 	unsigned int y;
 }ScreenCoordinates;
+
+/* PROTOYPES ===========================================================================*/
+
+Coordinates *createCoordinates(long x, long y, int z);
+ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y);
+void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
 
 #endif

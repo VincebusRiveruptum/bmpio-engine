@@ -4,6 +4,13 @@
 #include "STD.H"
 #include "VGAREGS.H"
 
+/* CONSTANTS ===========================================================================*/
+
+#define PAGE_SIZE 16000
+#define NUM_PAGES 3
+
+/* PROTOYPES ===========================================================================*/
+
 void clearScreen();
 void setVideoMode13();
 void set200pxMode(void);
@@ -14,6 +21,11 @@ unsigned char getPixelX(int, int);
 void setPal(char color, unsigned char r, unsigned char g, unsigned char b);
 void drawPalette();
 void waitVsync();
+
+void drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
+void fastFillRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
+void memsetVGAASM(unsigned long offset, unsigned char color, unsigned int count);
+void flipPage();
 
 #pragma aux clearScreen =                                   \
     "mov dx, 0x3C4"        \
@@ -69,13 +81,9 @@ void waitVsync();
     "jz v_wait2"        \
     modify [eax edx];
 
-void drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
-void fastFillRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
-void memsetVGAASM(unsigned long offset, unsigned char color, unsigned int count);
-void flipPage();
 
-#define PAGE_SIZE 16000
-#define NUM_PAGES 3
+
+/* GLOBAL VARS =========================================================================*/
 
 extern unsigned long pageOffsets[NUM_PAGES];
 

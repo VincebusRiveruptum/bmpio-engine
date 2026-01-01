@@ -26,26 +26,31 @@ SND for sound, GFX for graphics, etc. What do you think?
 numbers between 0 and 255, so its a unsigned char. However in some parts its treated as an int.
 
 8. Maybe we could simulate OOP by treating structs as classes and functions as methods all together on its 
-own module.
+own module.                               ## OK     
 
 9. 1.1.2026
 
-So, instead of a rendee table solution (which was wrong), we use a RenderQueue
-that gather all the sprites that are going to be rendered on screen . However
-the sprites are calculated depending on the actor's coordinates and
-their position relative to the camera.
+	So, instead of a rendee table solution (which was wrong), we use a RenderQueue
+	that gather all the sprites that are going to be rendered on screen . However
+	the sprites are calculated depending on the actor's coordinates and
+	their position relative to the camera.
 
-Right now there is no player implementation, no viewport, no camera, etc.
+	Right now there is no player implementation, no viewport, no camera, etc.
+	
+	So, i need to implement environment space first, then player, then camera, then viewport.
 
-So, i need to implement environment space first, then player, then camera, then viewport.
+	Then finally the render queue will be able to render the stuff on screen.
 
-Then finally the render queue will be able to render the stuff on screen.
+        1. Environment space
+        2. Player
+        3. Camera
+        4. Viewport
 
 10. Now that we need to implement all the logic required for the render queue, the code and
 folder structure will become a bit unmaintainable. I'm thinking of refactoring separation
-of concerns by taking assets.c,
+of concerns by taking assets.c,         ## OK
 
 11. ENGINE.C AND ENGINE.H are the 'glue', behaves like a layer that brings all the engine related
-stuff together.
+stuff together.                         ## OK
 
 

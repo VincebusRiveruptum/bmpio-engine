@@ -7,15 +7,18 @@
 
 // STD IMPORTS
 #include "STD.H"
+#include "SPACE.H"
+#include "VIDEO.H"
+#include "../DEPS/DATA/DATA.H"
 
-/* PROTOYPES*/
-Animation *createAnimation(Coordinates *coordinates);}
-Sprite *createSprite();
-void loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor);
-void loadAnimationFrames(Animation *animation, char **frameArray);
-void drawAnimations(unsigned long gametick);
+/* TYPES ===================================================================================*/
 
-/* BMP STUFF ===================================================================================*/
+typedef struct Color{
+	unsigned char b;
+	unsigned char g;
+	unsigned char r;
+	unsigned char i;
+}Color;
 
 typedef struct FileHeader{
 	unsigned char id[2];
@@ -51,10 +54,6 @@ typedef struct BMPdata{                     // Raw bmp data
     long height;
 }BMPdata;
 
-/* END BMP STUFF ===========================================================================*/
-
-/* SPRITE ===================================================================================*/
-
 typedef struct Sprite{
 	struct BMPdata *bmpData;
 	struct Coordinates *coordinates;
@@ -72,5 +71,22 @@ typedef struct Animation{
 
 	struct List *transformationList;		// An animation can have many transformations at the same time.
 }Animation;
+
+/* PROTOYPES ===========================================================================*/
+
+BMPfile *loadBMPfile(char *fileName);
+Animation *createAnimation(Coordinates *coordinates);
+Sprite *createSprite();
+bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor);
+void loadAnimationFrames(Animation *animation, char **frameArray);
+void drawAnimations(unsigned long gametick);
+
+void drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
+void drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
+void drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
+
+void drawSprites(unsigned long gametick);
+
+void addAnimationToTable(Animation *animation); /* TODO: REFACTOR IN PROGRESS*/
 
 #endif
