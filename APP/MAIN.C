@@ -21,12 +21,13 @@ int main(int argc, char *argv[]){
     m_initTrig(); // Log the static load
     v_set200pxMode();
     //eng_setPalette(testPalette);
+    sp_initCameras();
 
     while (!checkAppEnd()){
         //fillScreen(0);
         initInput();
-        
-        eng_render2d(gameTicks);
+        sp_checkCameras();
+        eng_renderFrame(gameTicks);
         if(ENABLE_PAGE_FLIPPING == 1){
             v_flipPage(); 
         }
@@ -38,6 +39,6 @@ int main(int argc, char *argv[]){
     printf("\n96 Tears...");
 
     if(globalPalette) free(globalPalette);
-
+    if(globalCamera) sp_destroyCamera(globalCamera);
     return 0;
 }

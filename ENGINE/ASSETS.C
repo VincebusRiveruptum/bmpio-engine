@@ -72,122 +72,6 @@ void as_drawAnimations(unsigned long gameTick){
 void as_drawSprites(unsigned long gameTick){
 	logger("[as_drawSprites] Placeholder due that SpriteTable got refactored");
 }
-/*
-void drawAnimations(unsigned long gametick){
-	unsigned long frameToRender = 0;
-	unsigned long i;
-	Animation *animation = NULL;
-	Node *animationSpriteNode = NULL;
-	Sprite *animationSprite = NULL;
-	
-	Transformation *transformation = NULL;
-	int transformationLength = 0;
-	int transformationIndex = 0;
-	
-	int totalAngle = 0;
-	long totalOffsetX = 0;
-	long totalOffsetY = 0;
-	RotationTransformation *rot = NULL;
-	TranslationTransformation *translation = NULL;
-	
-	if(spriteTable == NULL){
-		logger("\nSprite table is NULL");
-		return;
-	}
-	
-	// Per each animation
-	for(i = 0; i < spriteTable->animationIndex ; i++){
-		animation = spriteTable->animations[i];
-		
-		if(animation == NULL || animation->length <= 0){
-			logger("\nAnimation %ld is NULL or empty", i);
-			continue;
-		}
-		
-		frameToRender = gametick % animation->length;
-		animationSpriteNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
-		
-		if(animationSpriteNode == NULL){
-			logger("\nAnimation sprite node %ld is NULL", frameToRender);
-			continue;
-		}
-		
-		animationSprite = (Sprite *)animationSpriteNode->data;
-		
-		if(animationSprite == NULL){
-			logger("\nAnimation sprite data %ld is NULL", frameToRender);
-			continue;
-		}
-		
-		totalAngle = 0;
-		totalOffsetX = animation->coordinates->x + animationSprite->coordinates->x;
-		totalOffsetY = animation->coordinates->y + animationSprite->coordinates->y;
-		
-		if(animation->transformationList != NULL){
-			transformationLength = animation->transformationList->length;
-			
-			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
-				Node *node = getNodeByIndex(&(animation->transformationList), transformationIndex);
-				if(node == NULL) continue;
-				transformation = (Transformation *)node->data;
-				if(transformation == NULL) continue;
-				
-				// ROTATION
-				if (strcmp(transformation->type, TR_ROTATION) == 0){
-					rot = (RotationTransformation *)transformation->data;
-					
-					// Every frame we add the 'angle' step to 'current'
-					rot->current += rot->angle;
-					
-					// Keep it bounded 0-359
-					if (rot->current >= 360) rot->current %= 360;
-					if (rot->current < 0) rot->current = (rot->current % 360) + 360;
-					
-					totalAngle += rot->current;
-				}
-				
-				// TRANSLATION
-				if (strcmp(transformation->type, TR_TRANSLATION) == 0){
-					// logger("\nTranslation transformation"); 
-					sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
-				}
-			}
-		}
-		
-		// Optimization: Use standard draw if effectively not rotated
-		if (totalAngle % 360 != 0) {
-			drawBitmapTransform(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animationSprite->maskColor, totalAngle);
-		} else {
-			drawBitmap(&animationSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)animationSprite->maskColor);
-		}
-	}
-}
-
-void drawSprites(unsigned long gametick){
-	unsigned long i;
-	Sprite *sprite = NULL;
-	
-	if(spriteTable == NULL){
-		logger("\nSprite table is NULL");
-		return;
-	}
-	
-	// For each sprite in the sprite table, we render it
-	for(i = 0; i < spriteTable->spriteIndex ; i++){
-		sprite = spriteTable->sprites[i];
-		
-		if(sprite == NULL){
-			logger("\nSprite %ld is NULL", i);
-			continue;
-		}
-		
-		//logger("\nDrawing sprite %ld", i);
-		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
-	}
-}
-*/
-
-// ================================================================
 
 BMPfile *as_loadBMPfile(char *fileName){
 	FILE *fp = NULL;
@@ -228,7 +112,7 @@ BMPfile *as_loadBMPfile(char *fileName){
 	fread(&(newFile->fh), 12, 1, fp);
 	fread(&(newFile->ih), 40, 1, fp);
 
-	logger("[ X : %ld, Y : %ld ]", newFile->ih.x, newFile->ih.y);
+	logger("[as_loadBMPfile]: %s [ X : %ld, Y : %ld ]", fileName, newFile->ih.x, newFile->ih.y);
 
 	newFile->bmpData->width = newFile->ih.x;
 	newFile->bmpData->height = newFile->ih.y;

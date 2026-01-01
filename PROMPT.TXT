@@ -62,3 +62,9 @@ will not determine the poisition of the object, as we have a coordinates system 
 help to determine if the object is inside the viewport of the camera, so will be rendered or not. This also solves
 the issue of the render queue, as we can calculate the rendering order based on the grid position of the object.
 
+Ok, the grid system and actor system is OK. I created a test module also, which i create a simple 'Renamon'
+actor with two action states 'idle' and 'jumping', enough for creating a full Asset. The next step is 
+the render pipeline, where we need to calculate the rendering order based on the grid position of the object. 
+But, before that, i need to implement a camera object to be able to define a test viewport and rendering the
+'Renamon' actor on screen. I need your validation first to continue with the camera implementation.
+and then the render pipeline.
