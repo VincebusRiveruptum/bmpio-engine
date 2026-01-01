@@ -19,11 +19,11 @@ bmpio.exe: $(OBJS)
 	wlink @$(LNK)
 
 # Compile rules for each .c -> .obj in BIN
-$(OBJDIR)\main.obj: APP\MAIN.C
+$(OBJDIR)\vgaregs.obj: HAL\VGAREGS.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\assets.obj: ENGINE\ASSETS.C
+$(OBJDIR)\video.obj: ENGINE\VIDEO.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
@@ -31,11 +31,7 @@ $(OBJDIR)\data.obj: DEPS\DATA\DATA.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\vgaregs.obj: HAL\VGAREGS.C
-	if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -fo=$@ $<
-
-$(OBJDIR)\video.obj: ENGINE\VIDEO.C
+$(OBJDIR)\math.obj: ENGINE\MATH.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
@@ -51,8 +47,21 @@ $(OBJDIR)\input.obj: ENGINE\INPUT.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\math.obj: ENGINE\MATH.C
+$(OBJDIR)\game.obj: ENGINE\GAME.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\assets.obj: ENGINE\ASSETS.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\engine.obj: ENGINE\ENGINE.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\main.obj: APP\MAIN.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
 
 

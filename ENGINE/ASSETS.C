@@ -1,40 +1,8 @@
 #include "ASSETS.H"
 
 /*
-	I've been thinking of making this ASSETS.C file as the 'glue' for everything, however,
-	at which point the glue will be so thick that it will be a mess.
+	This module is for file handling the assets and everyhting related with interacting with sprites and animations
 */
-
-List *bmpList = NULL;
-Color *globalPalette = NULL;
-// This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen
-SpriteTable *spriteTable = NULL;
-
-unsigned long gameTicks = 0;
-unsigned long index = 0;
-
-// Refactor pending
-bool checkConfig(){
-	if(config){
-		return true;
-	}
-	return false;
-}
-
-Coordinates *createCoordinates(long x, long y, int z){
-	Coordinates *newCoordinates = (Coordinates*)malloc(sizeof(Coordinates));
-	newCoordinates->x = x;
-	newCoordinates->y = y;
-	newCoordinates->z = z;
-	return newCoordinates;
-}
-
-ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y){
-	ScreenCoordinates *newScreenCoordinates = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
-	newScreenCoordinates->x = x;
-	newScreenCoordinates->y = y;
-	return newScreenCoordinates;
-}
 
 /* Animation Methods */
 Animation *createAnimation(Coordinates *coordinates){
@@ -111,34 +79,6 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	}
 }
 
-SpriteTable *initSpriteTable(){
-	SpriteTable *newSpriteTable = (SpriteTable *) malloc(sizeof(SpriteTable));
-	newSpriteTable->animationIndex = 0;
-	newSpriteTable->spriteIndex = 0;
-	return newSpriteTable;
-}
- 
-void addAnimationToTable(Animation *animation){
-	if(!animation) return;
-	
-	if(spriteTable == NULL){
-		spriteTable = initSpriteTable();
-	}
-
-	spriteTable->animations[spriteTable->animationIndex] = animation;
-	spriteTable->animationIndex++;
-}
-
-void addSpriteToTable(Sprite *sprite){
-	if(!sprite) return;
-	
-	if(spriteTable == NULL){
-		spriteTable = initSpriteTable();
-	}
-
-	spriteTable->sprites[spriteTable->spriteIndex] = sprite;
-	spriteTable->spriteIndex++;
-}
 
 void drawAnimations(unsigned long gametick){
 	unsigned long frameToRender = 0;
@@ -230,46 +170,6 @@ void drawAnimations(unsigned long gametick){
 	}
 }
 
-void calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick){
-	TranslationTransformation *translation = (TranslationTransformation *)transformation->data;
-
-	if (translation != NULL && translation->dest != NULL) {
-		if(*totalOffsetX < translation->dest->x){
-			if(translation->loop == true){
-				*totalOffsetX = *totalOffsetX + ((gametick | 1) % translation->dest->x);
-			} else {
-				*totalOffsetX++;
-			}
-		}
-
-		if(*totalOffsetX > translation->dest->x){
-			if(translation->loop == true){
-				*totalOffsetX = *totalOffsetX - ((gametick | 1) % translation->dest->x);
-			} else {
-				*totalOffsetX--;
-			}
-		}
-
-		if(*totalOffsetY < translation->dest->y){
-			if(translation->loop == true){
-				*totalOffsetY = *totalOffsetY + ((gametick | 1) % translation->dest->y);
-			} else {
-				*totalOffsetY++;
-			}
-		}
-
-		if(*totalOffsetY > translation->dest->y){
-			if(translation->loop == true){
-				*totalOffsetY = *totalOffsetY - ((gametick | 1) % translation->dest->y);
-			} else {
-				*totalOffsetY--;
-			}
-		}
-
-	} else {
-			logger("\nError: Translation data or dest is NULL");
-	}	
-}
 
 void drawSprites(unsigned long gametick){
 	unsigned long i;
@@ -295,19 +195,7 @@ void drawSprites(unsigned long gametick){
 		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
 	}
 }
-// ================================================================
-// MAIN LOOP'S 2d RENDERING =======================================
-// ================================================================
 
-void render2d(unsigned long gametick){
-	if(spriteTable == NULL){
-		logger("\nSprite table is NULL");
-		return;
-	}
-	
-	drawSprites(gametick);  // ISSUE
-	drawAnimations(gametick);
-}
 // ================================================================
 
 BMPfile *loadBMPfile(char *fileName){
@@ -478,44 +366,6 @@ void addBMPtoList(List **bmpList, BMPdata *bmpData){
 
 	addToList(bmpList, newNode);
 }
-
-// GENERIC
-void addGenericNode(List **list, void *data){
-	Node *newNode = (Node *)malloc(sizeof(Node));
-	newNode->data = data;
-	newNode->next = NULL;
-	newNode->prev = NULL;
-
-	addToList(list, newNode);
-}
-
-void drawList(List *list){
-	BMPdata *currentBmp = NULL;
-	int i = 0;
-
-	if (list != NULL){
-		for (i = 0; i < list->length; i++){
-			currentBmp = getNodeByIndex(&list, i)->data;
-
-			if (currentBmp != NULL)
-			{
-				drawBitmap(&currentBmp, 1, 1, 255);
-			}
-		}
-	}
-	else{
-		return;
-	}
-}
-
-void setPalette(Color *palette){
-	int i;
-
-	for (i = 0; i < 256; i++){
-		setPal(i, palette[i].r >> 2, palette[i].g >> 2, palette[i].b >> 2);
-	}
-}
-
 
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
    OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */

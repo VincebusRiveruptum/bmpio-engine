@@ -10,7 +10,7 @@
     wcl386 bmptest2.c
 */
 
-#include "ASSETS.H"
+#include "ENGINE.H"
 
 const char *renamonFrames[] = {
     "..\\assets\\jump\\FRAME1.bmp",
@@ -33,83 +33,28 @@ const char *renamonFrames[] = {
 
 int main(int argc, char *argv[]){
     char *assetsPath = NULL;
-    
-    char pathBassBg[128] = {0};
-    char sk256Path[128] = {0};
     char renamonPath[128] = {0};
-    char *bgSkullsFrames[2] = {NULL, NULL};
-    char *logType = NULL;
-    
-    BMPfile *bmpTestBackground = NULL;
-    BMPfile *bgSkullsFile = NULL;
+
     BMPfile *renamonFile = NULL;
-
-    Sprite *spriteTestBackground = NULL;
     Animation *renamonJumping = NULL; 
-    Sprite *renamonStanding = NULL;
-    Animation *bgSkullsAnimation = NULL;
-
-    RotationTransformation bgSkullsRot;
-    Transformation bgSkullsTransformation;
-    
-    TranslationTransformation renamonTranslation;
-    Transformation renamonTransformation;
-    
-    bgSkullsRot.angle = 1;      // Speed: 1 degree per frame
-    bgSkullsRot.current = 0;    // Starting angle
-
-    bgSkullsTransformation.type = TR_ROTATION;
-    bgSkullsTransformation.data = &bgSkullsRot;
-
-    renamonTranslation.dest = createCoordinates(10, 100, 0);
-    renamonTranslation.loop = true;
-    
-    renamonTransformation.type = TR_TRANSLATION;
-    renamonTransformation.data = &renamonTranslation;
 
     loadEnv();
     logger("ENV loaded!");
-    
-    initTrig(); // Log the static load
-    
     /* DEBUGGING STUFF =============*/
-    
     assetsPath = (char*)getEnv("ASSETS_PATH");
-    
-    sprintf(&pathBassBg, "%s\\bass256.bmp", assetsPath);
-    sprintf(&sk256Path, "%s\\sk256.bmp", assetsPath);
     sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
-    bmpTestBackground = loadBMPfile(sk256Path);
-    bgSkullsFile = loadBMPfile(sk256Path);
     renamonFile = loadBMPfile(renamonPath);
-
-    spriteTestBackground = createSprite();
-    loadSprite(spriteTestBackground, pathBassBg, createCoordinates(0, 0, 0), 0);
     
-    renamonJumping = createAnimation(createCoordinates(100, 100, 0)); 
-    renamonStanding = createSprite();
-    bgSkullsAnimation = createAnimation(createCoordinates(50, 50, 0));
-    
-    bgSkullsFrames[0] = sk256Path;
-    bgSkullsFrames[1] = NULL;
-
-    //loadAnimationFrames(bgSkullsAnimation, bgSkullsFrames);
-    //addAnimationToTable(bgSkullsAnimation);
-    //addTransformation(bgSkullsAnimation, &bgSkullsTransformation);
-    
+    renamonJumping = createAnimation(createCoordinates(0, 0, 0)); 
     loadAnimationFrames(renamonJumping, renamonFrames);
-    addAnimationToTable(renamonJumping);   
-    addTransformation(renamonJumping, &renamonTransformation);
-    
-    //loadSprite(renamonStanding, "..\\assets\\jump\\FRAME1.bmp", createCoordinates(200, 100, 0), 0);
-    //addSpriteToTable(renamonStanding);
-    addSpriteToTable(spriteTestBackground);
-    
-    set200pxMode();
-    setPalette(renamonFile->bmpData->palette);
     
     /* WHOLE LOOP!==========================*/
+    
+    initTrig(); // Log the static load
+    set200pxMode();
+    setPalette(renamonFile->bmpData->palette);
+
     while (!checkAppEnd()){
         //fillScreen(0);
         initInput();
@@ -125,10 +70,7 @@ int main(int argc, char *argv[]){
 
     printf("\n96 Tears...");
 
-    if(bmpList) freeList(&bmpList);
     if(globalPalette) free(globalPalette);
-
-    logger("What did you expect?");
 
     return 0;
 }

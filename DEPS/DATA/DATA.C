@@ -184,3 +184,13 @@ unsigned long addId(unsigned long id, unsigned long *array){
 	return id;
 }
 */
+
+// GENERIC
+void addGenericNode(List **list, void *data){
+	Node *newNode = (Node *)malloc(sizeof(Node));
+	newNode->data = data;
+	newNode->next = NULL;
+	newNode->prev = NULL;
+
+	addToList(list, newNode);
+}
