@@ -12,7 +12,7 @@ Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 	}
     
     if(!actor){
-        logger("\n[engine/game/createAsset]: Error: Actor is NULL");
+        logger("\n[gm_createAsset]: Error: Actor is NULL");
         return NULL;
 	}
 
@@ -35,7 +35,7 @@ void gm_insertAsset(Asset *asset){
     unsigned int vis_z;
     
 	if(!asset){
-		logger("\n[engine/game/insertAsset]: Error: Asset is NULL");
+		logger("\n[gm_insertAsset]: Error: Asset is NULL");
 		return;
 	}
 
@@ -50,7 +50,7 @@ void gm_insertAsset(Asset *asset){
 
 Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z){
 	if(vis_x >= SP_GRID_SIZE || vis_y >= SP_GRID_SIZE || vis_z >= SP_GRID_SIZE){
-		logger("\n[engine/game/getAssetByIndex]: Error: Index out of bounds");
+		logger("\n[gm_getAssetByIndex]: Error: Index out of bounds");
 		return NULL;
 	}
 	return visGrid[vis_x][vis_y][vis_z];
@@ -58,7 +58,7 @@ Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned cha
 
 void gm_destroyAsset(Asset *asset){
 	if(!asset){
-		logger("\n[engine/game/destroyAsset]: Error: Asset is NULL");
+		logger("\n[gm_destroyAsset]: Error: Asset is NULL");
 		return;
 	}
 	free(asset);

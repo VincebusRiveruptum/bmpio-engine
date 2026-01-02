@@ -68,3 +68,14 @@ the render pipeline, where we need to calculate the rendering order based on the
 But, before that, i need to implement a camera object to be able to define a test viewport and rendering the
 'Renamon' actor on screen. I need your validation first to continue with the camera implementation.
 and then the render pipeline.
+
+/////////////////
+
+Grid system update:
+
+The grid system works but needs some improvements, some of them are:
+
+1. Order by z-index
+2. frustum culling
+3. Fake sprite perspective, scale transformation by z-index
+4. Zone memory or Arenas

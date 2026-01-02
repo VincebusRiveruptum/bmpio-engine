@@ -65,14 +65,6 @@ void as_loadAnimationFrames(Animation *animation, char **frameArray){
 	}
 }
 
-void as_drawAnimations(unsigned long gameTick){
-	logger("[as_drawAnimations]: Placeholder due that SpriteTable got refactored");
-}
-
-void as_drawSprites(unsigned long gameTick){
-	logger("[as_drawSprites] Placeholder due that SpriteTable got refactored");
-}
-
 BMPfile *as_loadBMPfile(char *fileName){
 	FILE *fp = NULL;
 	BMPfile *newFile = NULL;
@@ -305,14 +297,14 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
     }
 }
 
-bool addTransformation(Animation *animation, void *transformation){
+bool as_addTransformation(Animation *animation, void *transformation){
 	Node *newNode = NULL;
 
 	if(!animation || !transformation) return false;
 	
 	newNode = (Node *)malloc(sizeof(Node));
 	if(!newNode) {
-		logger("\nCould not allocate memory for new node");
+		logger("[Could not allocate memory for new node");
 		return false;
 	}
 	newNode->data = transformation;
@@ -324,13 +316,9 @@ bool addTransformation(Animation *animation, void *transformation){
 	return true;
 }
 
-bool removeTransformation(Animation *animation, int index){
+bool as_removeTransformation(Animation *animation, int index){
 	if(!animation || !index) return false;
 
 	deleteNodeByIndex(&animation->transformationList, index);
 	return true;
-}
-
-void as_addAnimationToTable(Animation *animation){
-	logger("\nThis method is going to be refactored, THIS IS A PLACEHOLDER");
 }

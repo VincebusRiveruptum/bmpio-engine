@@ -80,6 +80,7 @@ typedef struct Animation{
 BMPfile *as_loadBMPfile(char *fileName);
 Animation *as_createAnimation();
 Sprite *as_createSprite();
+
 bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
 void as_loadAnimationFrames(Animation *animation, char **frameArray);
 void as_drawAnimations(unsigned long gametick);
@@ -88,8 +89,6 @@ void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
 void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
 void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
 
-void as_drawSprites(unsigned long gametick);
-
-void as_addAnimationToTable(Animation *animation); /* TODO: REFACTOR IN PROGRESS*/
-
+bool as_addTransformation(Animation *animation, void *transformation);
+bool as_removeTransformation(Animation *animation, int index);
 #endif
