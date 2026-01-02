@@ -2,7 +2,7 @@
 #include "GAME.H"
 
 struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
-struct Asset *renderQueue[SP_GRID_SIZE];
+struct Asset *renderQueue[SP_GRID_SIZE] = {NULL};
 struct Camera *globalCamera;
 struct Camera *cameras[SP_GRID_SIZE];
  
@@ -93,22 +93,40 @@ bool sp_removeAssetFromVisGrid(struct Asset *asset){
 // CAMERA =====================================================================================================
 
 Camera *sp_createCamera(Coordinates *position, ScreenCoordinates *resolution){
+	Camera *newCamera = NULL;
+	int camGridX = 0;
+	int camGridY = 0;
+	int camGridZ = 0;
+	
 	if(!position || !resolution){
 		logger("[sp_createCamera]: Error, Position or resolution is NULL");
 		return NULL;
 	}
 
-	Camera *newCamera = (Camera*)malloc(sizeof(Camera));
+	newCamera = (Camera*)malloc(sizeof(Camera));
 	newCamera->position = position;
 	newCamera->prevPos = NULL;
 	newCamera->resolution = resolution;
 
-	newCamera->gridMinX = 0;
-	newCamera->gridMinY = 0;
-	newCamera->gridMinZ = 0;
-	newCamera->gridMaxX = SP_GRID_VIS_SIZE;
-	newCamera->gridMaxY = SP_GRID_VIS_SIZE;
-	newCamera->gridMaxZ = SP_GRID_VIS_SIZE;
+	// Calculate grid position of camera
+	camGridX = (int)(position->x) + SP_GRID_HALF;
+	camGridY = (int)(position->y) + SP_GRID_HALF;
+	camGridZ = (int)(position->z) + SP_GRID_HALF;
+	
+	// Set bounds to 1 unit around camera position
+	newCamera->gridMinX = (camGridX - SP_GRID_VIS_SIZE < 0) ? 0 : camGridX - SP_GRID_VIS_SIZE;
+	newCamera->gridMinY = (camGridY - SP_GRID_VIS_SIZE < 0) ? 0 : camGridY - SP_GRID_VIS_SIZE;
+	newCamera->gridMinZ = (camGridZ - SP_GRID_VIS_SIZE < 0) ? 0 : camGridZ - SP_GRID_VIS_SIZE;
+	
+	newCamera->gridMaxX = (camGridX + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridX + SP_GRID_VIS_SIZE;
+	newCamera->gridMaxY = (camGridY + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridY + SP_GRID_VIS_SIZE;
+	newCamera->gridMaxZ = (camGridZ + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridZ + SP_GRID_VIS_SIZE;
+	
+	logger("[sp_createCamera]: Camera at grid [%d][%d][%d], bounds [%d-%d][%d-%d][%d-%d]", 
+		camGridX, camGridY, camGridZ,
+		newCamera->gridMinX, newCamera->gridMaxX,
+		newCamera->gridMinY, newCamera->gridMaxY,
+		newCamera->gridMinZ, newCamera->gridMaxZ);
 	return newCamera;
 }
 
@@ -130,6 +148,9 @@ void sp_destroyCamera(Camera *camera){
 
 /* This will make the render queue  based on the global camera*/
 void sp_initCameras(){
+	int i = 0;
+	int j = 0;
+	int k = 0;
 	int w = 0;
 	Asset *asset = NULL;
 
@@ -142,9 +163,9 @@ void sp_initCameras(){
 	memset(renderQueue, 0, sizeof(renderQueue));
 	
 	/* Generate render queue based on global camera by scanning the visGrid*/
-	for(int i = 0; i < SP_GRID_VIS_SIZE; i++){
-		for(int j = 0; j < SP_GRID_VIS_SIZE; j++){
-			for(int k = 0; k < SP_GRID_VIS_SIZE; k++){
+	for(i = 0; i < SP_GRID_SIZE; i++){
+		for(j = 0; j < SP_GRID_SIZE; j++){
+			for(k = 0; k < SP_GRID_SIZE; k++){
 				if(visGrid[i][j][k] == NULL){
 					continue;
 				}
@@ -169,9 +190,9 @@ void sp_initCameras(){
 				asset->vis_prevY = asset->vis_currentY;
 				asset->vis_prevZ = asset->vis_currentZ;
 
-				asset->vis_currentX = i;
-				asset->vis_currentY = j;
-				asset->vis_currentZ = k;
+				asset->vis_currentX = i + SP_GRID_HALF;
+				asset->vis_currentY = j + SP_GRID_HALF;
+				asset->vis_currentZ = k + SP_GRID_HALF;
 				
 				renderQueue[w] = asset;
 				w++;

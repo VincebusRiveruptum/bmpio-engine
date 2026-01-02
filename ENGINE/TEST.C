@@ -88,7 +88,7 @@ void t_createRenamon(){
     testPalette = renamonFile->bmpData->palette;   
 
     // Global camera setup
-    sp_setGlobalCamera(sp_createCamera(sp_createCoordinates(0, 0, 0), sp_createScreenCoordinates(640, 480)));
+    sp_setGlobalCamera(sp_createCamera(sp_createCoordinates(0, 0, 0), sp_createScreenCoordinates(VID_WIDTH, VID_HEIGHT)));
     
 }
 

@@ -30,13 +30,18 @@ Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 }
 
 void gm_insertAsset(Asset *asset){
-    unsigned int vis_x = (int)(asset->coordinates->x + SP_GRID_HALF);
-    unsigned int vis_y = (int)(asset->coordinates->y + SP_GRID_HALF);
-    unsigned int vis_z = (int)(asset->coordinates->z + SP_GRID_HALF);
+    unsigned int vis_x;
+    unsigned int vis_y;
+    unsigned int vis_z;
+    
 	if(!asset){
 		logger("\n[engine/game/insertAsset]: Error: Asset is NULL");
 		return;
 	}
+
+    vis_x = (int)(asset->coordinates->x + SP_GRID_HALF);
+    vis_y = (int)(asset->coordinates->y + SP_GRID_HALF);
+    vis_z = (int)(asset->coordinates->z + SP_GRID_HALF);
 
     logger("[gm_insertAsset]: Inserting asset at %d, %d, %d", vis_x, vis_y, vis_z);
     
@@ -95,6 +100,11 @@ Actor *gm_createActor(char *name, char *description, Stats *stats, Action *actio
         memset(newActor->actions, 0, sizeof(newActor->actions));
         memcpy(newActor->actions, actions, sizeof(newActor->actions));
         newActor->actionLength = sizeof(actions)/sizeof(actions[0]);
+        
+        // Set first action as default
+        if(actions[0] != NULL){
+            newActor->currentAction = actions[0];
+        }
     }
     
     if(!stats){

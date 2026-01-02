@@ -44,15 +44,18 @@ void eng_renderFrame(unsigned long gametick){
 	TranslationTransformation *translation = NULL;
 	
 	if(renderQueue == NULL){
-		logger("[eng_renderAssets]:Render queue is NULL");
+		logger("[eng_renderFrame]: Render queue is NULL");
 		return;
 	}
 	
+	logger("[eng_renderFrame]: Starting render, scanning %d slots", SP_GRID_SIZE);
+	
 	for(i = 0; i < SP_GRID_SIZE; i++){
 		if(renderQueue[i] == NULL){
-			logger("[eng_renderAssets]:Render queue %ld is NULL", i);
 			continue;
 		}
+		
+		logger("[eng_renderFrame]: Found asset at queue slot %ld", i);
 		
 		if(renderQueue[i]->actor == NULL){
 			logger("[eng_renderAssets]:Render queue %ld actor is NULL", i);
@@ -87,16 +90,11 @@ void eng_renderFrame(unsigned long gametick){
 		totalOffsetX = renderQueue[i]->coordinates->x;
 		totalOffsetY = renderQueue[i]->coordinates->y;
 		
-		if(renderQueue[i]->actor->currentAction->transformationList != NULL){
-			transformationLength = renderQueue[i]->actor->currentAction->transformationList->length;
-
-			if(transformationLength == 0){
-				logger("[eng_renderAssets]:Render queue %ld actor transformation list is empty", i);
-				continue;
-			}
+		if(actorAnimation->transformationList && actorAnimation->transformationList->length > 0){
+			transformationLength = actorAnimation->transformationList->length;
 			
 			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
-				Node *node = getNodeByIndex(&(renderQueue[i]->actor->currentAction->transformationList), transformationIndex);
+				Node *node = getNodeByIndex(&(actorAnimation->transformationList), transformationIndex);
 				if(node == NULL) continue;
 				transformation = (Transformation *)node->data;
 				if(transformation == NULL) continue;
@@ -117,8 +115,9 @@ void eng_renderFrame(unsigned long gametick){
 				
 				// TRANSLATION
 				if (strcmp(transformation->type, TR_TRANSLATION) == 0){
-					// logger("\nTranslation transformation"); 
-					sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+					//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+					//TODO: Implement asset translation in space, instead of fake sprite translation
+					logger("[eng_renderAssets]: Translation transformation PENDING"); 
 				}
 			}
 		}

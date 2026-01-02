@@ -9,6 +9,9 @@
 #define PAGE_SIZE 16000
 #define NUM_PAGES 3
 
+#define VID_WIDTH 320
+#define VID_HEIGHT 200
+
 /* PROTOYPES ===========================================================================*/
 
 void v_clearScreen();

@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 
     m_initTrig(); // Log the static load
     v_set200pxMode();
-    //eng_setPalette(testPalette);
+    eng_setPalette(testPalette);
     sp_initCameras();
 
     while (!checkAppEnd()){
