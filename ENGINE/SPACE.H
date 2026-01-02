@@ -4,6 +4,11 @@
 
 #include "STD.H"
 
+/* Forward declarations to avoid circular dependencies */
+struct Sprite;
+struct Asset;
+struct Transformation;
+
 /* CONSTANTS ===========================================================================*/
 #define SP_GRID_SIZE 63
 #define SP_GRID_HALF (SP_GRID_SIZE/2)
@@ -11,23 +16,6 @@
 #define SP_GRID_SCALE 100			// World units per grid cell (100:1 scale)
 
 /* TRANSFORMATIONS ===========================================================================*/
-typedef struct RotationTransformation{
-	int angle;		// angle step per tick
-	int current;    // current angle
-}RotationTransformation;
-
-typedef struct TranslationTransformation{
-	/*
-		For now, we just use destination coordinates and loop. The origin will be the animation base coordinates.
-	*/
-	struct Coordinates *dest;
-	bool loop;
-}TranslationTransformation;
-
-typedef struct Transformation {
-	char *type;				// ROTATION, MOVEMENT, etc
-	void *data;				// Data for the transformation
-}Transformation;
 
 // SPACE COORDINATES
 typedef struct Coordinates{
@@ -58,7 +46,7 @@ typedef struct Camera{
 }Camera;
 
 /* Culling grid system ==================================================================*/
-struct Asset;
+
 extern struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 extern struct Asset *renderQueue[SP_GRID_SIZE];		// Current render  queue
 extern struct Camera *globalCamera;
@@ -68,7 +56,7 @@ extern struct Camera *cameras[SP_GRID_SIZE];
 
 Coordinates *sp_createCoordinates(long x, long y, int z);
 ScreenCoordinates *sp_createScreenCoordinates(unsigned int x, unsigned int y);
-void sp_calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
+void sp_calculateTranslation(struct Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
 bool sp_addAssetToVisGrid(struct Asset *asset);
 bool sp_removeAssetFromVisGrid(struct Asset *asset);
 
@@ -78,4 +66,7 @@ void sp_destroyCamera(Camera *camera);
 void sp_initCameras();
 void sp_checkCameras();
 ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera);
+bool sp_isInFrustrum(ScreenCoordinates *screenPos, struct Sprite *sprite);
+void sp_renderQueueApplyZOrdering();
+
 #endif

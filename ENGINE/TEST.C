@@ -26,10 +26,9 @@ const char *renamonIdleFrames[] = {
 struct Color *testPalette;
 
 bool t_initTests(){
+    logger("\n[t_initTests]: Testing initialization");
 
     t_createRenamon();
-
-    logger("\n[t_initTests]: Testing initialization");
 
     return true;
 }
@@ -42,6 +41,8 @@ void t_createRenamon(){
     Animation *renamonJumping = NULL;  
     Animation *renamonIdle = NULL;    
 
+    Transformation *transformation = NULL;
+
     Actor *renamonActor = NULL;
     Asset *renamonAsset = NULL;
     
@@ -52,8 +53,11 @@ void t_createRenamon(){
     renamonIdle = as_createAnimation(); 
     as_loadAnimationFrames(renamonIdle, renamonIdleFrames);
     
+    as_addRotationTransformation(renamonIdle, as_createRotationTransformation(10, 0));
+    
     renamonJumping = as_createAnimation(); 
     as_loadAnimationFrames(renamonJumping, renamonJumpingFrames);
+    
     
     renamonActions[0] = gm_createAction(
         "Idle", 

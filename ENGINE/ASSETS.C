@@ -297,7 +297,7 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
     }
 }
 
-bool as_addTransformation(Animation *animation, void *transformation){
+bool as_addTransformation(Animation *animation, Transformation *transformation){
 	Node *newNode = NULL;
 
 	if(!animation || !transformation) return false;
@@ -307,7 +307,7 @@ bool as_addTransformation(Animation *animation, void *transformation){
 		logger("[Could not allocate memory for new node");
 		return false;
 	}
-	newNode->data = transformation;
+	newNode->data = (void *)transformation;
 	newNode->next = NULL;
 	newNode->prev = NULL;
 	
@@ -320,5 +320,63 @@ bool as_removeTransformation(Animation *animation, int index){
 	if(!animation || !index) return false;
 
 	deleteNodeByIndex(&animation->transformationList, index);
+	return true;
+}
+
+RotationTransformation *as_createRotationTransformation(int angle, int current){
+	RotationTransformation *newRotationTransformation = NULL;
+
+	newRotationTransformation = (RotationTransformation *)malloc(sizeof(RotationTransformation));
+	if (!newRotationTransformation){
+		logger("[as_createRotationTransformation]: Could not allocate memory for new transformation");
+		return NULL;
+	}
+	newRotationTransformation->angle = angle;
+	newRotationTransformation->current = current;
+
+	logger("[as_createRotationTransformation]: Created rotation transformation");
+	return newRotationTransformation;
+}
+
+bool as_addRotationTransformation(Animation *animation, RotationTransformation *transformation){
+	Transformation *newTransformation = NULL;
+	RotationTransformation *newRotationTransformation = NULL;
+
+	if (!animation){
+		return false;
+	}
+
+    /* If no transformation provided, create a default one */
+	if (!transformation){
+		newRotationTransformation = (RotationTransformation *)malloc(sizeof(RotationTransformation));
+		if (!newRotationTransformation){
+			logger("[as_addRotationTransformation]: Could not allocate memory for new internal rotation data");
+			return false;
+		}
+        newRotationTransformation->angle = 0;
+        newRotationTransformation->current = 0;
+	} else {
+        newRotationTransformation = transformation;
+    }
+
+	newTransformation = (Transformation *)malloc(sizeof(Transformation));
+	
+	if (!newTransformation){
+		logger("[as_addRotationTransformation]: Could not allocate memory for new transformation wrapper");
+        if (!transformation) free(newRotationTransformation);
+		return false;
+	}
+
+	newTransformation->type = TR_ROTATION;
+	newTransformation->data = (void *)newRotationTransformation;
+
+	if (!as_addTransformation(animation, newTransformation)){
+		logger("[as_addRotationTransformation]: Could not add transformation to animation");
+        free(newTransformation);
+        if (!transformation) free(newRotationTransformation);
+		return false;
+	}
+
+	logger("[as_addRotationTransformation]: Added rotation transformation to animation");
 	return true;
 }

@@ -11,7 +11,13 @@
 #include "VIDEO.H"
 #include "../DEPS/DATA/DATA.H"
 
+/* CONSTANTS */
+
 /* TYPES ===================================================================================*/
+
+#define TR_ROTATION 1
+#define TR_TRANSLATION 2
+#define TR_SCALE 3
 
 typedef enum AssetType{
 	A_SPRITE,
@@ -75,6 +81,24 @@ typedef struct Animation{
 	struct List *transformationList;		// An animation can have many transformations at the same time.
 }Animation;
 
+typedef struct RotationTransformation{
+	int angle;		// angle step per tick
+	int current;    // current angle
+}RotationTransformation;
+
+typedef struct TranslationTransformation{
+	/*
+		For now, we just use destination coordinates and loop. The origin will be the animation base coordinates.
+	*/
+	struct Coordinates *dest;
+	bool loop;
+}TranslationTransformation;
+
+typedef struct Transformation {
+	unsigned char type;				// ROTATION, MOVEMENT, etc
+	void *data;				// Data for the transformation
+}Transformation;
+
 /* PROTOYPES ===========================================================================*/
 
 BMPfile *as_loadBMPfile(char *fileName);
@@ -89,6 +113,9 @@ void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
 void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
 void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
 
-bool as_addTransformation(Animation *animation, void *transformation);
+bool as_addTransformation(Animation *animation, Transformation *transformation);
+bool as_addRotationTransformation(Animation *animation, RotationTransformation *transformation);
 bool as_removeTransformation(Animation *animation, int index);
+
+RotationTransformation *as_createRotationTransformation(int angle, int current);
 #endif

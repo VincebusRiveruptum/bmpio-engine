@@ -20,7 +20,7 @@ ScreenCoordinates *sp_createScreenCoordinates(unsigned int x, unsigned int y){
 	newScreenCoordinates->y = y;
 	return newScreenCoordinates;
 }
-
+// Helper Functions ============================================================================================
 void sp_calculateTranslation(Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick){
 	TranslationTransformation *translation = (TranslationTransformation *)transformation->data;
 
@@ -109,19 +109,24 @@ Camera *sp_createCamera(Coordinates *position, ScreenCoordinates *resolution){
 	newCamera->resolution = resolution;
 
 	// Calculate grid position of camera
+	// 31
 	camGridX = (int)(position->x / SP_GRID_SCALE) + SP_GRID_HALF;
 	camGridY = (int)(position->y / SP_GRID_SCALE) + SP_GRID_HALF;
 	camGridZ = (int)(position->z / SP_GRID_SCALE) + SP_GRID_HALF;
 	
 	// Set bounds to 1 unit around camera position
+	// 0
 	newCamera->gridMinX = (camGridX - SP_GRID_VIS_SIZE < 0) ? 0 : camGridX - SP_GRID_VIS_SIZE;
 	newCamera->gridMinY = (camGridY - SP_GRID_VIS_SIZE < 0) ? 0 : camGridY - SP_GRID_VIS_SIZE;
 	newCamera->gridMinZ = (camGridZ - SP_GRID_VIS_SIZE < 0) ? 0 : camGridZ - SP_GRID_VIS_SIZE;
 	
+	// 31
 	newCamera->gridMaxX = (camGridX + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridX + SP_GRID_VIS_SIZE;
 	newCamera->gridMaxY = (camGridY + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridY + SP_GRID_VIS_SIZE;
 	newCamera->gridMaxZ = (camGridZ + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridZ + SP_GRID_VIS_SIZE;
-	
+
+
+	// [31][31][31], bounds [0-62][0-62][0-62]
 	logger("[sp_createCamera]: Camera at grid [%d][%d][%d], bounds [%d-%d][%d-%d][%d-%d]", 
 		camGridX, camGridY, camGridZ,
 		newCamera->gridMinX, newCamera->gridMaxX,
@@ -199,6 +204,8 @@ void sp_initCameras(){
 			}
 		}
 	}
+
+	sp_renderQueueApplyZOrdering();
 }
 
 void sp_checkCameras(){
@@ -233,12 +240,67 @@ ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera){
 	screenPos = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
 	
 	/* Calculate offset from camera position */
+
+	// offsetX = 0
+	// offsetY = 0 - 5
 	offsetX = worldPos->x - camera->position->x;
 	offsetY = worldPos->y - camera->position->y;
 	
 	/* Center camera on screen and add offset */
+	// (320 / 2) = 160
+	// + (-5)
+	// = 155
 	screenPos->x = (camera->resolution->x / 2) + offsetX;
 	screenPos->y = (camera->resolution->y / 2) + offsetY;
 	
 	return screenPos;
+}
+
+bool sp_isInFrustrum(ScreenCoordinates *screenPos, struct Sprite *sprite){
+	unsigned int spriteWidth, spriteHeight;
+	if(!screenPos || !sprite || !sprite->bmpData){
+		logger("[sp_isInFrustrum]: Error, screenPos or sprite is NULL");
+		return false;
+	}
+
+	spriteWidth = sprite->bmpData->width;
+	spriteHeight = sprite->bmpData->height;
+
+	if(
+		screenPos->x + spriteWidth < 0 ||
+		screenPos->x > VID_WIDTH ||
+		screenPos->y + spriteHeight < 0 ||
+		screenPos->y > VID_HEIGHT
+	) return false;
+	
+	return true;
+}
+
+void sp_renderQueueApplyZOrdering(){
+	int i, j;
+	Asset *temp;
+	
+	if (!renderQueue){
+		logger("[sp_renderQueueApplyZOrdering]: Error, renderQueue is NULL");
+		return;
+	}
+
+	/* Insertion sort algorithm*/
+	for (i = 0; i < SP_GRID_SIZE; i++){
+		if (renderQueue[i] == NULL){
+			continue;
+		}		
+		j = i;		
+		while(
+			renderQueue[j] != NULL && 
+			renderQueue[j - 1] != NULL && 
+			j > 0 && 
+			renderQueue[j]->vis_currentZ < renderQueue[j - 1]->vis_currentZ){
+			
+			temp = renderQueue[j];
+			renderQueue[j] = renderQueue[j - 1];
+			renderQueue[j - 1] = temp;
+			j--;
+		}
+	}
 }

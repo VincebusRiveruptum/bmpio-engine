@@ -87,6 +87,7 @@ void eng_renderFrame(unsigned long gametick){
 			continue;
 		}
 		
+		
 		totalAngle = 0;
 		
 		/* Project world coordinates to screen coordinates */
@@ -96,6 +97,11 @@ void eng_renderFrame(unsigned long gametick){
 			continue;
 		}
 		
+		if(!sp_isInFrustrum(screenPos, actorSprite)){
+			free(screenPos);
+			continue;
+		}
+
 		totalOffsetX = screenPos->x;
 		totalOffsetY = screenPos->y;
 		
@@ -109,7 +115,7 @@ void eng_renderFrame(unsigned long gametick){
 				if(transformation == NULL) continue;
 				
 				// ROTATION
-				if (strcmp(transformation->type, TR_ROTATION) == 0){
+				if (transformation->type == TR_ROTATION){
 					rot = (RotationTransformation *)transformation->data;
 					
 					// Every frame we add the 'angle' step to 'current'
@@ -123,7 +129,7 @@ void eng_renderFrame(unsigned long gametick){
 				}
 				
 				// TRANSLATION
-				if (strcmp(transformation->type, TR_TRANSLATION) == 0){
+				if (transformation->type == TR_TRANSLATION){
 					//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
 					//TODO: Implement asset translation in space, instead of fake sprite translation
 					logger("[eng_renderAssets]: Translation transformation PENDING"); 

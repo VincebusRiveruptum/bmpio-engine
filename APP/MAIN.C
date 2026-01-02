@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
 
     while (!checkAppEnd()){
         //fillScreen(0);
-        initInput();
+        initInput();    
         sp_checkCameras();
         eng_renderFrame(gameTicks);
         if(ENABLE_PAGE_FLIPPING == 1){

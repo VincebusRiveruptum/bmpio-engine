@@ -26,10 +26,6 @@
 
 // CONSTANTS ====================================================================
 
-#define TR_ROTATION "ROTATION"
-#define TR_TRANSLATION "TRANSLATION"
-#define TR_SCALE "SCALE"
-
 #define ACTOR_FLAG_ACTIVE     0x01
 #define ACTOR_FLAG_VISIBLE    0x02
 #define ACTOR_FLAG_COLLIDABLE 0x04
