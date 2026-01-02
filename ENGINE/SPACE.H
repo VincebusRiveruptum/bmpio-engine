@@ -8,6 +8,7 @@
 #define SP_GRID_SIZE 63
 #define SP_GRID_HALF (SP_GRID_SIZE/2)
 #define SP_GRID_VIS_SIZE 1			// Camera viewport size (1 grid slot)
+#define SP_GRID_SCALE 100			// World units per grid cell (100:1 scale)
 
 /* TRANSFORMATIONS ===========================================================================*/
 typedef struct RotationTransformation{
@@ -76,4 +77,5 @@ void sp_setGlobalCamera(Camera *camera);
 void sp_destroyCamera(Camera *camera);
 void sp_initCameras();
 void sp_checkCameras();
+ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera);
 #endif

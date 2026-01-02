@@ -39,9 +39,9 @@ void gm_insertAsset(Asset *asset){
 		return;
 	}
 
-    vis_x = (int)(asset->coordinates->x + SP_GRID_HALF);
-    vis_y = (int)(asset->coordinates->y + SP_GRID_HALF);
-    vis_z = (int)(asset->coordinates->z + SP_GRID_HALF);
+    vis_x = (int)(asset->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    vis_y = (int)(asset->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    vis_z = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
 
     logger("[gm_insertAsset]: Inserting asset at %d, %d, %d", vis_x, vis_y, vis_z);
     

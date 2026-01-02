@@ -109,9 +109,9 @@ Camera *sp_createCamera(Coordinates *position, ScreenCoordinates *resolution){
 	newCamera->resolution = resolution;
 
 	// Calculate grid position of camera
-	camGridX = (int)(position->x) + SP_GRID_HALF;
-	camGridY = (int)(position->y) + SP_GRID_HALF;
-	camGridZ = (int)(position->z) + SP_GRID_HALF;
+	camGridX = (int)(position->x / SP_GRID_SCALE) + SP_GRID_HALF;
+	camGridY = (int)(position->y / SP_GRID_SCALE) + SP_GRID_HALF;
+	camGridZ = (int)(position->z / SP_GRID_SCALE) + SP_GRID_HALF;
 	
 	// Set bounds to 1 unit around camera position
 	newCamera->gridMinX = (camGridX - SP_GRID_VIS_SIZE < 0) ? 0 : camGridX - SP_GRID_VIS_SIZE;
@@ -218,4 +218,27 @@ void sp_checkCameras(){
 		globalCamera->prevPos->y = globalCamera->position->y;
 		globalCamera->prevPos->z = globalCamera->position->z;
 	}
+}
+
+/* Convert world coordinates to screen coordinates relative to camera */
+ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera){
+	ScreenCoordinates *screenPos = NULL;
+	long offsetX, offsetY;
+	
+	if(!worldPos || !camera){
+		logger("[sp_worldToScreen]: Error, worldPos or camera is NULL");
+		return NULL;
+	}
+	
+	screenPos = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
+	
+	/* Calculate offset from camera position */
+	offsetX = worldPos->x - camera->position->x;
+	offsetY = worldPos->y - camera->position->y;
+	
+	/* Center camera on screen and add offset */
+	screenPos->x = (camera->resolution->x / 2) + offsetX;
+	screenPos->y = (camera->resolution->y / 2) + offsetY;
+	
+	return screenPos;
 }

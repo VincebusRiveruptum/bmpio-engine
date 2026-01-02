@@ -32,6 +32,7 @@ void eng_renderFrame(unsigned long gametick){
 	Animation *actorAnimation = NULL;
 	Node *actorSpriteNode = NULL;
 	Sprite *actorSprite = NULL;
+	ScreenCoordinates *screenPos = NULL;
 	
 	Transformation *transformation = NULL;
 	int transformationLength = 0;
@@ -87,8 +88,16 @@ void eng_renderFrame(unsigned long gametick){
 		}
 		
 		totalAngle = 0;
-		totalOffsetX = renderQueue[i]->coordinates->x;
-		totalOffsetY = renderQueue[i]->coordinates->y;
+		
+		/* Project world coordinates to screen coordinates */
+		screenPos = sp_worldToScreen(renderQueue[i]->coordinates, globalCamera);
+		if(!screenPos){
+			logger("[eng_renderFrame]: Failed to project world to screen");
+			continue;
+		}
+		
+		totalOffsetX = screenPos->x;
+		totalOffsetY = screenPos->y;
 		
 		if(actorAnimation->transformationList && actorAnimation->transformationList->length > 0){
 			transformationLength = actorAnimation->transformationList->length;
