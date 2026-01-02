@@ -108,8 +108,11 @@ typedef struct Asset{
 	unsigned char vis_currentX;
 	unsigned char vis_currentY;
 	unsigned char vis_currentZ;
-	
 }Asset;
+
+typedef struct AssetList{
+	struct List *assets;
+}AssetList;
 
 /* PROTOYPES ===========================================================================*/
 
@@ -122,7 +125,7 @@ typedef struct Asset{
 
 Asset *gm_createAsset(Actor *actor, Coordinates *coordinates);
 void gm_insertAsset(Asset *asset);
-Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z);
+Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index);
 void gm_destroyAsset(Asset *asset);
 
 /* ACTOR METHODS ===========================================================================*/

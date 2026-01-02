@@ -79,3 +79,13 @@ The grid system works but needs some improvements, some of them are:
 2. frustum culling
 3. Fake sprite perspective, scale transformation by z-index
 4. Zone memory or Arenas
+
+
+/////////////////
+
+Ok, found a problem, what happens if i want to have more than one assets in the same grid position? 
+block? A cheap solution would be adding another dimensioon to visGrid, however this would increase the memory
+usage by a lot. 
+
+A soultion would be to use a linked list or a tree to store the assets in the same grid position. This
+avoids having to allocate an full extra dimension to all visGrird axises.

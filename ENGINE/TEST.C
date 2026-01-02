@@ -45,6 +45,7 @@ void t_createRenamon(){
 
     Actor *renamonActor = NULL;
     Asset *renamonAsset = NULL;
+    Asset *renamonAsset2 = NULL;
     
     sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
@@ -53,7 +54,7 @@ void t_createRenamon(){
     renamonIdle = as_createAnimation(); 
     as_loadAnimationFrames(renamonIdle, renamonIdleFrames);
     
-    as_addRotationTransformation(renamonIdle, as_createRotationTransformation(10, 0));
+    as_addRotationTransformation(renamonIdle, as_createRotationTransformation(5, 0));
     
     renamonJumping = as_createAnimation(); 
     as_loadAnimationFrames(renamonJumping, renamonJumpingFrames);
@@ -84,10 +85,15 @@ void t_createRenamon(){
         renamonActor,
         sp_createCoordinates(0, 0, 0)
     );
+    renamonAsset2 = gm_createAsset(
+        renamonActor,
+        sp_createCoordinates(30, 2, 2)
+    );
 
     logger("[t_createRenamon]: Inserting asset");
     
     gm_insertAsset(renamonAsset);
+    gm_insertAsset(renamonAsset2);
   
     testPalette = renamonFile->bmpData->palette;   
 

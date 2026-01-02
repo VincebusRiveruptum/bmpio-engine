@@ -47,7 +47,7 @@ typedef struct Camera{
 
 /* Culling grid system ==================================================================*/
 
-extern struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
+extern struct List *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 extern struct Asset *renderQueue[SP_GRID_SIZE];		// Current render  queue
 extern struct Camera *globalCamera;
 extern struct Camera *cameras[SP_GRID_SIZE];
@@ -58,7 +58,7 @@ Coordinates *sp_createCoordinates(long x, long y, int z);
 ScreenCoordinates *sp_createScreenCoordinates(unsigned int x, unsigned int y);
 void sp_calculateTranslation(struct Transformation *transformation, long *totalOffsetX, long *totalOffsetY, unsigned long gametick);
 bool sp_addAssetToVisGrid(struct Asset *asset);
-bool sp_removeAssetFromVisGrid(struct Asset *asset);
+bool sp_removeAssetFromVisGrid(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index);
 
 Camera *sp_createCamera(Coordinates *position, ScreenCoordinates *resolution);
 void sp_setGlobalCamera(Camera *camera);

@@ -1,7 +1,7 @@
 #include "SPACE.H"
 #include "GAME.H"
 
-struct Asset *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
+struct List *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 struct Asset *renderQueue[SP_GRID_SIZE] = {NULL};
 struct Camera *globalCamera;
 struct Camera *cameras[SP_GRID_SIZE];
@@ -71,22 +71,32 @@ bool sp_addAssetToVisGrid(struct Asset *asset){
 	}
 
 	// Normalize coordinates to grid size and check bounds
-	if(asset->coordinates->x + SP_GRID_HALF < 0 || asset->coordinates->x + SP_GRID_HALF > SP_GRID_SIZE || asset->coordinates->y + SP_GRID_HALF < 0 || asset->coordinates->y + SP_GRID_HALF > SP_GRID_SIZE || asset->coordinates->z + SP_GRID_HALF < 0 || asset->coordinates->z + SP_GRID_HALF > SP_GRID_SIZE){
+	if(	asset->coordinates->x + SP_GRID_HALF < 0 ||
+		asset->coordinates->x + SP_GRID_HALF > SP_GRID_SIZE ||
+		asset->coordinates->y + SP_GRID_HALF < 0 ||
+		asset->coordinates->y + SP_GRID_HALF > SP_GRID_SIZE ||
+		asset->coordinates->z + SP_GRID_HALF < 0 ||
+		asset->coordinates->z + SP_GRID_HALF > SP_GRID_SIZE){
 		logger("\nError: Asset coordinates are out of bounds");
 		return false;
 	}
 
-	visGrid[(asset->coordinates->x + SP_GRID_HALF)][(asset->coordinates->y + SP_GRID_HALF)][(asset->coordinates->z + SP_GRID_HALF)] = asset;
+	addGenericNode(&visGrid[(int)(asset->coordinates->x + SP_GRID_HALF)][(int)(asset->coordinates->y + SP_GRID_HALF)][(int)(asset->coordinates->z + SP_GRID_HALF)], (void *)asset);
 	return true;
 }
 
-bool sp_removeAssetFromVisGrid(struct Asset *asset){
-	if(!asset){
-		logger("\nError: Asset is NULL");
+bool sp_removeAssetFromVisGrid(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index){
+	if(vis_x >= SP_GRID_SIZE || vis_y >= SP_GRID_SIZE || vis_z >= SP_GRID_SIZE){
+		logger("\nError: Index out of bounds");
 		return false;
 	}
 
-	visGrid[asset->coordinates->x + SP_GRID_HALF][asset->coordinates->y + SP_GRID_HALF][asset->coordinates->z + SP_GRID_HALF] = NULL;
+	if(visGrid[vis_x][vis_y][vis_z] == NULL){
+		logger("\nError: Asset list is NULL");
+		return false;
+	}
+
+	deleteNodeByIndex(&visGrid[vis_x][vis_y][vis_z], index);
 	return true;
 }
 
@@ -156,7 +166,11 @@ void sp_initCameras(){
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	int w = 0;
+	int assetListLength = 0;
+	int assetListIndex = 0;
+    int qIndex = 0;
+	List *assetList = NULL;
+	Node *node = NULL;
 	Asset *asset = NULL;
 
 	if(!globalCamera){
@@ -179,33 +193,39 @@ void sp_initCameras(){
 					continue;
 				}				
 
-				if(w >= SP_GRID_SIZE){
-					logger("[sp_initCameras]: Error, Render queue is full");
-					return;
-				}
+				assetList = visGrid[i][j][k];
 
-				asset = visGrid[i][j][k];
-
-				if(asset == NULL){
-					logger("[sp_initCameras]: Error, Asset is NULL");
+				if(assetList == NULL){
+					logger("[sp_initCameras]: Error, Asset list is NULL");
 					continue;
 				}
 				
-				asset->vis_prevX = asset->vis_currentX;
-				asset->vis_prevY = asset->vis_currentY;
-				asset->vis_prevZ = asset->vis_currentZ;
+				assetListLength = assetList->length;
 
-				asset->vis_currentX = i + SP_GRID_HALF;
-				asset->vis_currentY = j + SP_GRID_HALF;
-				asset->vis_currentZ = k + SP_GRID_HALF;
-				
-				renderQueue[w] = asset;
-				w++;
+				for(assetListIndex = 0; assetListIndex < assetListLength; assetListIndex++){
+					node = getNodeByIndex(&assetList, assetListIndex);
+                    if(node == NULL) continue;
+					
+                    asset = (Asset*)node->data;
+					
+					asset->vis_prevX = asset->vis_currentX;
+					asset->vis_prevY = asset->vis_currentY;
+					asset->vis_prevZ = asset->vis_currentZ;
+	
+					asset->vis_currentX = i;
+					asset->vis_currentY = j;
+					asset->vis_currentZ = k;
+					
+                    if(qIndex < SP_GRID_SIZE){
+					    renderQueue[qIndex] = asset;
+					    qIndex++;
+                    }
+				}
 			}
 		}
 	}
 
-	sp_renderQueueApplyZOrdering();
+	//sp_renderQueueApplyZOrdering();
 }
 
 void sp_checkCameras(){

@@ -44,16 +44,22 @@ void gm_insertAsset(Asset *asset){
     vis_z = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
 
     logger("[gm_insertAsset]: Inserting asset at %d, %d, %d", vis_x, vis_y, vis_z);
-    
-	visGrid[vis_x][vis_y][vis_z] = asset;
+   
+	addGenericNode(&visGrid[vis_x][vis_y][vis_z], (void *)asset);
+	
 }
 
-Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z){
+Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index){
+    Node *node = NULL;
 	if(vis_x >= SP_GRID_SIZE || vis_y >= SP_GRID_SIZE || vis_z >= SP_GRID_SIZE){
 		logger("\n[gm_getAssetByIndex]: Error: Index out of bounds");
 		return NULL;
 	}
-	return visGrid[vis_x][vis_y][vis_z];
+    
+    node = getNodeByIndex(&visGrid[vis_x][vis_y][vis_z], index);
+    if(node) return (Asset *)node->data;
+    
+	return NULL;
 }
 
 void gm_destroyAsset(Asset *asset){
