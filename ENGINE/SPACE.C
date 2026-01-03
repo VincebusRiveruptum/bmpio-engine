@@ -102,11 +102,25 @@ bool sp_removeAssetFromVisGrid(unsigned char vis_x, unsigned char vis_y, unsigne
 
 // CAMERA =====================================================================================================
 
+void sp_calculateCameraBounds(Camera *camera){
+    int camGridX, camGridY, camGridZ;
+	if(!camera) return;
+
+	camGridX = (int)(camera->position->x / SP_GRID_SCALE) + SP_GRID_HALF;
+	camGridY = (int)(camera->position->y / SP_GRID_SCALE) + SP_GRID_HALF;
+	camGridZ = (int)(camera->position->z / SP_GRID_SCALE) + SP_GRID_HALF;
+	
+	camera->gridMinX = (camGridX - SP_GRID_VIS_SIZE < 0) ? 0 : camGridX - SP_GRID_VIS_SIZE;
+	camera->gridMinY = (camGridY - SP_GRID_VIS_SIZE < 0) ? 0 : camGridY - SP_GRID_VIS_SIZE;
+	camera->gridMinZ = (camGridZ - SP_GRID_VIS_SIZE < 0) ? 0 : camGridZ - SP_GRID_VIS_SIZE;
+	
+	camera->gridMaxX = (camGridX + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridX + SP_GRID_VIS_SIZE;
+	camera->gridMaxY = (camGridY + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridY + SP_GRID_VIS_SIZE;
+	camera->gridMaxZ = (camGridZ + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridZ + SP_GRID_VIS_SIZE;
+}
+
 Camera *sp_createCamera(Coordinates *position, ScreenCoordinates *resolution){
 	Camera *newCamera = NULL;
-	int camGridX = 0;
-	int camGridY = 0;
-	int camGridZ = 0;
 	
 	if(!position || !resolution){
 		logger("[sp_createCamera]: Error, Position or resolution is NULL");
@@ -118,27 +132,9 @@ Camera *sp_createCamera(Coordinates *position, ScreenCoordinates *resolution){
 	newCamera->prevPos = NULL;
 	newCamera->resolution = resolution;
 
-	// Calculate grid position of camera
-	// 31
-	camGridX = (int)(position->x / SP_GRID_SCALE) + SP_GRID_HALF;
-	camGridY = (int)(position->y / SP_GRID_SCALE) + SP_GRID_HALF;
-	camGridZ = (int)(position->z / SP_GRID_SCALE) + SP_GRID_HALF;
-	
-	// Set bounds to 1 unit around camera position
-	// 0
-	newCamera->gridMinX = (camGridX - SP_GRID_VIS_SIZE < 0) ? 0 : camGridX - SP_GRID_VIS_SIZE;
-	newCamera->gridMinY = (camGridY - SP_GRID_VIS_SIZE < 0) ? 0 : camGridY - SP_GRID_VIS_SIZE;
-	newCamera->gridMinZ = (camGridZ - SP_GRID_VIS_SIZE < 0) ? 0 : camGridZ - SP_GRID_VIS_SIZE;
-	
-	// 31
-	newCamera->gridMaxX = (camGridX + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridX + SP_GRID_VIS_SIZE;
-	newCamera->gridMaxY = (camGridY + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridY + SP_GRID_VIS_SIZE;
-	newCamera->gridMaxZ = (camGridZ + SP_GRID_VIS_SIZE >= SP_GRID_SIZE) ? SP_GRID_SIZE - 1 : camGridZ + SP_GRID_VIS_SIZE;
+    sp_calculateCameraBounds(newCamera);
 
-
-	// [31][31][31], bounds [0-62][0-62][0-62]
-	logger("[sp_createCamera]: Camera at grid [%d][%d][%d], bounds [%d-%d][%d-%d][%d-%d]", 
-		camGridX, camGridY, camGridZ,
+	logger("[sp_createCamera]: Camera initialized with bounds [%d-%d][%d-%d][%d-%d]", 
 		newCamera->gridMinX, newCamera->gridMaxX,
 		newCamera->gridMinY, newCamera->gridMaxY,
 		newCamera->gridMinZ, newCamera->gridMaxZ);
@@ -230,16 +226,17 @@ void sp_initCameras(){
 
 void sp_checkCameras(){
 	if(!globalCamera){
-		logger("[sp_checkCameras]: Error, Global camera is NULL");
 		return;
 	}
 
 	if(globalCamera->prevPos == NULL){
-		globalCamera->prevPos = sp_createCoordinates(0, 0, 0);
+		globalCamera->prevPos = sp_createCoordinates(globalCamera->position->x, globalCamera->position->y, globalCamera->position->z);
 	}	
 	
 	if(globalCamera->position->x != globalCamera->prevPos->x || globalCamera->position->y != globalCamera->prevPos->y || globalCamera->position->z != globalCamera->prevPos->z){
-		sp_initCameras();
+		// Recalculate bounds since camera moved
+        sp_calculateCameraBounds(globalCamera);
+        sp_initCameras();
 
 		globalCamera->prevPos->x = globalCamera->position->x;
 		globalCamera->prevPos->y = globalCamera->position->y;

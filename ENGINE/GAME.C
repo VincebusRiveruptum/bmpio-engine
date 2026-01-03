@@ -169,76 +169,67 @@ void gm_listenEvents(){
 }
 
 void gm_kbdInput(){
+	// Camera movement (LSHIFT + WASD)
+    if(keyboardTable[KEY_LSHIFT] == true){
+        if(keyboardTable[KEY_A] == true) gm_cameraMove(-16, 0, 0);
+        if(keyboardTable[KEY_D] == true) gm_cameraMove(16, 0, 0);
+        if(keyboardTable[KEY_W] == true) gm_cameraMove(0, -16, 0);
+        if(keyboardTable[KEY_S] == true) gm_cameraMove(0, 16, 0);
+        return; // Don't move player if camera is moving
+    }
+
+    // Player movement (WASD)
+	if(keyboardTable[KEY_A] == true) gm_mainPlayerWalk(-16, 0, 0);
+	if(keyboardTable[KEY_D] == true) gm_mainPlayerWalk(16, 0, 0);
+	if(keyboardTable[KEY_W] == true) gm_mainPlayerWalk(0, -16, 0);
+	if(keyboardTable[KEY_S] == true) gm_mainPlayerWalk(0, 16, 0);
+
 	if(keyboardTable[KEY_SPACE] == true){
 		gm_mainPlayerJump();
 	}
-
-	if(keyboardTable[KEY_A] == true){
-		gm_mainPlayerWalkLeft();
-	}
-
-	if(keyboardTable[KEY_D] == true){
-		gm_mainPlayerWalkRight();
-	}
-
-	if(keyboardTable[KEY_W] == true){
-		gm_mainPlayerWalkForward();
-	}
-
-	if(keyboardTable[KEY_S] == true){
-		gm_mainPlayerWalkBack();
-	}
 }
 
+// due to perfomance, we will assume that player is always there
 void gm_mainPlayerJump(){
-	if (!player){	
-		logger("\n[gm_mainPlayerJump]: Error: Player is NULL");
-		return;
-	}
-	logger("\n[gm_mainPlayerJump]: Player jumped");
 	gm_setCurrentAction(player->actor, GM_ACTION_JUMP);
 }
 
-void gm_mainPlayerWalkLeft(){
-	if (!player){
-		logger("\n[gm_mainPlayerWalkLeft]: Error: Player is NULL");
-		return;
-	}
-	logger("\n[gm_mainPlayerWalkLeft]: Player moved left");
+void gm_mainPlayerWalk(int x, int y, int z){
+    int oldVisX, oldVisY, oldVisZ;
+    int newVisX, newVisY, newVisZ;
+
 	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
 
-	player->coordinates->x -= 16;
+    // Track old grid position
+    oldVisX = (int)(player->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    oldVisY = (int)(player->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    oldVisZ = (int)(player->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
+
+	player->coordinates->x += x;
+	player->coordinates->y += y;
+	player->coordinates->z += z;
+
+    // Track new grid position
+    newVisX = (int)(player->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    newVisY = (int)(player->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    newVisZ = (int)(player->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
+
+    // If we crossed a grid boundary, update the visibility grid
+    if(oldVisX != newVisX || oldVisY != newVisY || oldVisZ != newVisZ){
+        // TODO: This requires a search in the old list to remove the asset. 
+        // For now, we will re-init the cameras because the list is small.
+        sp_initCameras(); 
+    }
 }
 
-void gm_mainPlayerWalkRight(){
-	if (!player){
-		logger("\n[gm_mainPlayerWalkRight]: Error: Player is NULL");
-		return;
-	}
-	logger("\n[gm_mainPlayerWalkRight]: Player moved right");
-	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
 
-	player->coordinates->x += 16;
-}
+void gm_cameraMove(int x, int y, int z){
 
-void gm_mainPlayerWalkForward(){
-	if (!player){
-		logger("\n[gm_mainPlayerWalkForward]: Error: Player is NULL");
-		return;
-	}
-	logger("\n[gm_mainPlayerWalkForward]: Player moved forward");
-	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
+	globalCamera->prevPos->x = globalCamera->position->x;
+	globalCamera->prevPos->y = globalCamera->position->y;
+	globalCamera->prevPos->z = globalCamera->position->z;
 
-	player->coordinates->y -= 16;
-}
-
-void gm_mainPlayerWalkBack(){
-	if (!player){
-		logger("\n[gm_mainPlayerWalkBack]: Error: Player is NULL");
-		return;
-	}
-	logger("\n[gm_mainPlayerWalkBack]: Player moved back");
-	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
-
-	player->coordinates->y += 16;
+	globalCamera->position->x += x;
+	globalCamera->position->y += y;
+	globalCamera->position->z += z;
 }
