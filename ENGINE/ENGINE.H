@@ -24,6 +24,9 @@
 // TEST
 #include "TEST.H"
 
+// HAL
+#include "../HAL/VGAREGS.H"
+
 // CONSTANTS ====================================================================
 
 #define ACTOR_FLAG_ACTIVE     0x01

@@ -2,7 +2,7 @@
 #define ENGINE_VIDEO_H
 
 #include "STD.H"
-#include "VGAREGS.H"
+#include "../HAL/VGAREGS.H"
 
 /* CONSTANTS ===========================================================================*/
 
