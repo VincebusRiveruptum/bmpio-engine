@@ -63,7 +63,7 @@ typedef struct BMPfile{
 }BMPfile;
 
 typedef struct BMPdata{                     // Raw bmp data
-    unsigned char **bmp;
+    unsigned char *bmp;                    // Flat contiguous buffer (original name preserved)
     struct Color *palette;         			// Color palette object
     long width;
     long height;

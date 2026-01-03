@@ -134,9 +134,9 @@ void eng_renderFrame(unsigned long gametick){
 		
 		// Optimization: Use standard draw if effectively not rotated
 		if (totalAngle % 360 != 0) {
-			as_drawBitmapTransform(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, totalAngle);
+			as_drawBitmapTransform(&actorSprite->bmpData, (int)totalOffsetX, (int)totalOffsetY, (int)actorSprite->maskColor, totalAngle);
 		} else {
-			as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor);
+			as_drawBitmap(&actorSprite->bmpData, (int)totalOffsetX, (int)totalOffsetY, (int)actorSprite->maskColor);
 		}
 		
 	}

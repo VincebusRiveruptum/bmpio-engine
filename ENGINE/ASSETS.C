@@ -129,29 +129,18 @@ BMPfile *as_loadBMPfile(char *fileName){
 
 	/* Lectura de imagen */
 
-	newFile->bmpData->bmp = (unsigned char **)mem_arena_alloc(gameSessionArena, sizeof(unsigned char *) * newFile->ih.y);
-
-	if (newFile->bmpData->bmp == NULL){
-		logger("[as_loadBMPfile]: Could not allocate bmp height.");
+	/* Allocate flat buffer */
+	newFile->bmpData->bmp = (unsigned char *)mem_arena_alloc(gameSessionArena, (newFile->ih.x + padding) * newFile->ih.y);
+	if (newFile->bmpData->bmp == NULL)
+	{
+		logger("[as_loadBMPfile]: Could not allocate flat pixel buffer");
 		return NULL;
 	}
 
-	while ((newFile->ih.x + padding) % 4 != 0){
-		padding++;
-	};
-
-	for (y = (int) newFile->ih.y - 1; y >= 0; y--){
-		newFile->bmpData->bmp[y] = (unsigned char *)mem_arena_alloc(gameSessionArena, sizeof(unsigned char) * (newFile->ih.x + padding));
-
-		if (newFile->bmpData->bmp[y] == NULL)
-		{
-			logger("[as_loadBMPfile]: Could not allocate bitmap width on loop index : %d", y);
-			return NULL;
-		}
-		else
-		{
-			fread(newFile->bmpData->bmp[y], newFile->ih.x + padding, 1, fp);
-		}
+	/* Read BMP rows in reverse order so they are right-side up in memory */
+	for (y = (int)newFile->ih.y - 1; y >= 0; y--) {
+		unsigned char *dest = newFile->bmpData->bmp + (unsigned long)y * (newFile->ih.x + padding);
+		fread(dest, newFile->ih.x + padding, 1, fp);
 	}
 
 	fclose(fp);
@@ -160,20 +149,20 @@ BMPfile *as_loadBMPfile(char *fileName){
 
 void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
 	int i, j;
-	unsigned char color = 0;
-	unsigned char **bmp = (*bmpData)->bmp;
+	unsigned char *bmp = (*bmpData)->bmp;
 	int width = (int)(*bmpData)->width;
 	int height = (int)(*bmpData)->height;
     int x_start = 0, y_start = 0;
     int x_end = width, y_end = height;
-
+ 	unsigned char *row_ptr;
+	unsigned char color;
 	if (bmp == NULL) return;
 
-    /* Adjust for CENTER - as_drawBitmap */
+    /* Adjust for CENTER */
     x = x - (width >> 1);
     y = y - (height >> 1);
 
-    /* Clipping for as_drawBitmap */
+    /* Clipping */
     if (y < 0) { y_start = -y; }
     if (y + height > 200) y_end = 200 - y;
     if (y_start >= y_end || y >= 200 || y + height <= 0) return;
@@ -183,8 +172,9 @@ void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
     if (x_start >= x_end || x >= 320 || x + width <= 0) return;
 
     for (i = y_start; i < y_end; i++){
+        row_ptr = bmp + (unsigned long)i * width;
         for (j = x_start; j < x_end; j++){
-            color = bmp[i][j];
+            color = row_ptr[j];
             if (color != (unsigned char)maskcolor){
                 v_putPixelX(x + j, y + i, color);
             }
@@ -195,22 +185,23 @@ void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
 /* Optimized Plane-batched drawing */
 void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 	int i, j, plane;
-	unsigned char color = 0;
-	unsigned char **bmp = (*bmpData)->bmp;
+	unsigned char *bmp = (*bmpData)->bmp;
 	int width = (int)(*bmpData)->width;
 	int height = (int)(*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
-    unsigned long row_offs;
     int x_start = 0, y_start = 0;
     int x_end = width, y_end = height;
+    int start_j = 0;
+    unsigned char *row_ptr;
+    unsigned char color;
+	unsigned long current_dest_offs;
+    if (bmp == NULL) return;
 
-	if (bmp == NULL) return;
-
-    /* Adjust for CENTER - as_drawBitmapPlaneBatch */
+    /* Adjust for CENTER */
     x = x - (width >> 1);
     y = y - (height >> 1);
 
-    /* Clipping for as_drawBitmapPlaneBatch */
+    /* Clipping */
     if (y < 0) { y_start = -y; }
     if (y + height > 200) y_end = 200 - y;
     if (y_start >= y_end || y >= 200 || y + height <= 0) return;
@@ -220,7 +211,6 @@ void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
     if (x_start >= x_end || x >= 320 || x + width <= 0) return;
 
     for (plane = 0; plane < 4; plane++) {
-        int start_j;
         outPortb(SEQU_ADDR, 0x02);
         outPortb(SEQU_ADDR + 1, 0x01 << plane);
 
@@ -228,12 +218,15 @@ void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
         start_j = x_start + ((plane - ((x + x_start) % 4) + 4) % 4);
 
         for (i = y_start; i < y_end; i++) {
-            row_offs = page_offs + (unsigned long)(y + i) * 80;
+            row_ptr = bmp + (unsigned long)i * width;
+            current_dest_offs = page_offs + (unsigned long)(y + i) * 80 + (unsigned long)((x + start_j) >> 2);
+            
             for (j = start_j; j < x_end; j += 4) {
-                color = bmp[i][j];
+                color = row_ptr[j];
                 if (color != (unsigned char)maskcolor) {
-                    v_putPixelASM(row_offs + ((x + j) >> 2), color);
+                    v_putPixelASM(current_dest_offs, color);
                 }
+                current_dest_offs++;
             }
         }
     }
@@ -242,11 +235,11 @@ void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
    OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
 void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
-    unsigned char **bmp = (*bmpData)->bmp;
-    unsigned int width = (*bmpData)->width;
-    unsigned int height = (*bmpData)->height;
+    unsigned char *bmp = (*bmpData)->bmp;
+    unsigned int width = (unsigned int)(*bmpData)->width;
+    unsigned int height = (unsigned int)(*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
-    
+    unsigned char color;
     long angcos, angsin;
     long halfw = (long)width << 7;
     long halfh = (long)height << 7;
@@ -254,10 +247,9 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
     long dx, dy, u_fixed, v_fixed;
     long du, dv;
     int u, v;
-    unsigned char color;
     unsigned long dest_offs;
     
-    // Bounding Box (A bit loose for rotation safety)
+    // Bounding Box
     int min_x = (int)x - (int)(width >> 1);
     int max_x = (int)x + (int)width + (int)(width >> 1);
     int min_y = (int)y - (int)(height >> 1);
@@ -268,7 +260,6 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
     if (min_y < 0) min_y = 0;
     if (max_y > 200) max_y = 200;
 
-    // Early exit
     if (min_x >= max_x || min_y >= max_y) return;
 
     angle %= 360;
@@ -287,23 +278,21 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
         outPortb(SEQU_ADDR + 1, 0x01 << plane);
         
         for (screen_y = min_y; screen_y < max_y; screen_y++) {
-            dy = ((long)screen_y - ((long)y + (height >> 1))) << 8;
-            dx = ((long)start_x - ((long)x + (width >> 1))) << 8;
+            dy = ((long)screen_y - ((long)y + (int)(height >> 1))) << 8;
+            dx = ((long)start_x - ((long)x + (int)(width >> 1))) << 8;
             
-            // Calculate initial u, v for the start of the row
             u_fixed = ((dx * angcos + dy * angsin) >> 8) + halfw;
             v_fixed = ((-dx * angsin + dy * angcos) >> 8) + halfh;
             
-            // Optimization: running destination offset
-            dest_offs = page_offs + (unsigned long)screen_y * 80 + (start_x >> 2);
+            dest_offs = page_offs + (unsigned long)screen_y * 80 + (unsigned long)(start_x >> 2);
             
             for (screen_x = start_x; screen_x < max_x; screen_x += 4) {
                 u = (int)(u_fixed >> 8);
                 v = (int)(v_fixed >> 8);
                 
-                if (u >= 0 && u < width && v >= 0 && v < height) {
-                    color = bmp[v][u];
-                    if (color != maskcolor) {
+                if (u >= 0 && u < (int)width && v >= 0 && v < (int)height) {
+                    color = bmp[(unsigned long)v * width + (unsigned long)u];
+                    if (color != (unsigned char)maskcolor) {
                         v_putPixelASM(dest_offs, color);
                     }
                 }
