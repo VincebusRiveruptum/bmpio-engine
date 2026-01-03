@@ -14,11 +14,13 @@
 
 int main(int argc, char *argv[]){
     loadEnv();
-    logger("[main]: ENV loaded!");
+    mem_init(); // CRITICAL: Initialize memory FIRST
+    
+    logger("[main]: ENV and Memory initialized!");
    
     t_initTests();
 
-    m_initTrig(); // Log the static load
+    m_initTrig();
     v_set200pxMode();
     eng_setPalette(testPalette);
     sp_initCameras();
@@ -36,6 +38,7 @@ int main(int argc, char *argv[]){
     closeKeyboard();
     
     v_setTXTMode();
+    mem_shutdown();
 
     printf("\n96 Tears...");
 

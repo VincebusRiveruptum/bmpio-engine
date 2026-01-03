@@ -5,7 +5,7 @@ CFLAGS = -iAPP -iENGINE -iHAL -iDEPS\DATA -iDEPS\ENV /4r /s /otexan
 OBJDIR = BIN
 
 # Object files in BIN
-OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj $(OBJDIR)\log.obj $(OBJDIR)\math.obj $(OBJDIR)\game.obj $(OBJDIR)\engine.obj $(OBJDIR)\space.obj $(OBJDIR)\test.obj
+OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj $(OBJDIR)\log.obj $(OBJDIR)\math.obj $(OBJDIR)\game.obj $(OBJDIR)\engine.obj $(OBJDIR)\space.obj $(OBJDIR)\test.obj $(OBJDIR)\mem.obj
 
 # Linker directive file
 LNK = $(OBJDIR)\bmpio.lnk
@@ -24,6 +24,10 @@ $(OBJDIR)\vgaregs.obj: HAL\VGAREGS.C
 	$(CC) $(CFLAGS) -fo=$@ $<
 
 $(OBJDIR)\video.obj: ENGINE\VIDEO.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\mem.obj: ENGINE\MEM.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 

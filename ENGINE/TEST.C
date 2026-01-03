@@ -56,6 +56,10 @@ void t_createRenamon(){
     sprintf(renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
     renamonFile = as_loadBMPfile(renamonPath);
+    if(!renamonFile){
+        logger("[t_createRenamon]: Error: renamonFile is NULL");
+        return;
+    }
     
     renamonIdle = as_createAnimation(); 
     as_loadAnimationFrames(renamonIdle, renamonIdleFrames, 15);
@@ -108,7 +112,7 @@ void t_createRenamon(){
     sp_setGlobalCamera(sp_createCamera(sp_createCoordinates(0, 0, 0), sp_createScreenCoordinates(VID_WIDTH, VID_HEIGHT)));
     
     /* SET RENAMON AS PLAYER*/
-    player = renamonAsset;
+    if(renamonAsset) player = renamonAsset;
 }
 
 void t_freeRenamonTest(){

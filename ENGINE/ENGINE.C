@@ -1,5 +1,6 @@
 
 #include "ENGINE.H"
+#include "MEM.H"
 
 Color *globalPalette = NULL;
 
@@ -48,6 +49,8 @@ void eng_renderFrame(unsigned long gametick){
 		logger("[eng_renderFrame]: Render queue is NULL");
 		return;
 	}
+	
+    mem_arena_reset(frameArena);
 	
 	//logger("[eng_renderFrame]: Starting render, scanning %d slots", SP_GRID_SIZE);
 	
@@ -150,7 +153,6 @@ void eng_renderFrame(unsigned long gametick){
 			as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor);
 		}
 		
-		free(screenPos);
 	}
 }
 
