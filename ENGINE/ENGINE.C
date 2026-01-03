@@ -30,13 +30,14 @@ void eng_setPalette(Color *palette){
 void eng_renderFrame(unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
-	Animation *actorAnimation = NULL;
-	Node *actorSpriteNode = NULL;
 	Sprite *actorSprite = NULL;
 	ScreenCoordinates *screenPos = NULL;
+	Asset *asset = NULL;
+	Actor *actor = NULL;
+	Action *action = NULL;
+	Animation *actionAnimation = NULL;
 	
 	Transformation *transformation = NULL;
-	int transformationLength = 0;
 	int transformationIndex = 0;
 	
 	int totalAngle = 0;
@@ -60,89 +61,74 @@ void eng_renderFrame(unsigned long gametick){
 		}
 		
 		//logger("[eng_renderFrame]: Found asset at queue slot %ld", i);
-		
-		if(renderQueue[i]->actor == NULL){
-			logger("[eng_renderAssets]:Render queue %ld actor is NULL", i);
+		actor = renderQueue[i]->actor;
+
+		if(actor == NULL){
+			logger("[eng_renderFrame]:Render queue %ld actor is NULL", i);
 			continue;
 		}
 
-		if(renderQueue[i]->actor->currentAction == NULL){
-			logger("[eng_renderAssets]:Render queue %ld actor currentAction is NULL", i);
+		action = actor->currentAction;
+
+		if(action == NULL){
+			logger("[eng_renderFrame]:Render queue %ld actor currentAction is NULL", i);
 			continue;
 		}
-		if(renderQueue[i]->actor->currentAction->animation == NULL){
-			logger("[eng_renderAssets]:Render queue %ld actor currentAction animation is NULL", i);
+
+		actionAnimation = action->animation;
+
+		if(actionAnimation == NULL){
+			logger("[eng_renderFrame]:Render queue %ld actor currentAction animation is NULL", i);
 			continue;
 		}
-		if(renderQueue[i]->actor->currentAction->animation->length == 0){
-			logger("[eng_renderAssets]:Render queue %ld actor currentAction animation length is 0", i);
+		if(actionAnimation->length == 0){
+			logger("[eng_renderFrame]:Render queue %ld actor currentAction animation length is 0", i);
 			continue;
 		}
-		
-		actorAnimation = renderQueue[i]->actor->currentAction->animation;
-		
-		frameToRender = gametick % actorAnimation->length;
-		actorSpriteNode = getNodeByIndex(&(actorAnimation->frames), (int)frameToRender);
-		
-		if(actorSpriteNode == NULL){
-			logger("[eng_renderAssets]:Actor sprite node %ld is NULL", frameToRender);
-			continue;
-		}
-		
-		actorSprite = (Sprite *)actorSpriteNode->data;
+
+		frameToRender = gametick % actionAnimation->length;
+		actorSprite = actionAnimation->frames[frameToRender];
 		
 		if(actorSprite == NULL){
-			logger("[eng_renderAssets]:Actor sprite data %ld is NULL", frameToRender);
+			logger("[eng_renderFrame]:Actor sprite %ld is NULL", frameToRender);
 			continue;
 		}
-		
 		
 		totalAngle = 0;
 		
-		/* Project world coordinates to screen coordinates */
-		screenPos = sp_worldToScreen(renderQueue[i]->coordinates, globalCamera);
-		if(!screenPos){
-			logger("[eng_renderFrame]: Failed to project world to screen");
-			continue;
-		}
-		
-		if(!sp_isInFrustrum(screenPos, actorSprite)){
-			free(screenPos);
-			continue;
-		}
+		/* Project world coordinates to screen coordinates via macro (zero overhead) */
+        SP_WORLD_TO_SCREEN(renderQueue[i]->coordinates->x, renderQueue[i]->coordinates->y, 
+                           globalCamera->position->x, globalCamera->position->y, 
+                           globalCamera->resolution->x, globalCamera->resolution->y, 
+                           totalOffsetX, totalOffsetY);
 
-		totalOffsetX = screenPos->x;
-		totalOffsetY = screenPos->y;
+		if(!sp_isInFrustrum(totalOffsetX, totalOffsetY, actorSprite)){
+			continue;
+		}
 		
-		if(actorAnimation->transformationList && actorAnimation->transformationList->length > 0){
-			transformationLength = actorAnimation->transformationList->length;
+		for(transformationIndex = 0; transformationIndex < GM_ANIMATION_MAX_TRANSFORMATIONS; transformationIndex++){
+			transformation = actionAnimation->transformationList[transformationIndex];
+			if(transformation == NULL) continue;
 			
-			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
-				Node *node = getNodeByIndex(&(actorAnimation->transformationList), transformationIndex);
-				if(node == NULL) continue;
-				transformation = (Transformation *)node->data;
-				if(transformation == NULL) continue;
+			// ROTATION
+			if (transformation->type == TR_ROTATION){
+				rot = (RotationTransformation *)transformation->data;
 				
-				// ROTATION
-				if (transformation->type == TR_ROTATION){
-					rot = (RotationTransformation *)transformation->data;
-					
-					// Every frame we add the 'angle' step to 'current'
-					rot->current += rot->angle;
-					
-					// Keep it bounded 0-359
-					if (rot->current >= 360) rot->current %= 360;
-					if (rot->current < 0) rot->current = (rot->current % 360) + 360;
-					
-					totalAngle += rot->current;
-				}
+				// Every frame we add the 'angle' step to 'current'
+				rot->current += rot->angle;
 				
-				// TRANSLATION
-				if (transformation->type == TR_TRANSLATION){
-					//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
-					//TODO: Implement asset translation in space, instead of fake sprite translation
-					logger("[eng_renderAssets]: Translation transformation PENDING"); 
-				}
+				// Keep it bounded 0-359
+				if (rot->current >= 360) rot->current %= 360;
+				if (rot->current < 0) rot->current = (rot->current % 360) + 360;
+				
+				totalAngle += rot->current;
+			}
+			
+			// TRANSLATION
+			if (transformation->type == TR_TRANSLATION){
+				//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+				//TODO: Implement asset translation in space, instead of fake sprite translation
+				logger("[eng_renderFrame]: Translation transformation PENDING"); 
 			}
 		}
 		

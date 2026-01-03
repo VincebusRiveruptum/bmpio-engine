@@ -10,15 +10,27 @@
 
 extern bool eng_checkConfig();
 
-void logToFile(char *outputString){
-    FILE *fp = fopen("logs.txt", "a+");
-    if(!fp){
-        printf("\nError trying to log to file.");
-        return;
-    }
+FILE *logFp = NULL;
 
-    fputs(outputString, fp);
-    fclose(fp);
+void log_init(){
+    logFp = fopen("logs.txt", "a+"); // Start fresh on every run
+    if(!logFp){
+        printf("\n[log_init]: FATAL ERROR: Could not open logs.txt for writing.\n");
+    }
+}
+
+void log_shutdown(){
+    if(logFp){
+        fclose(logFp);
+        logFp = NULL;
+    }
+}
+
+void logToFile(char *outputString){
+    if(logFp){
+        fputs(outputString, logFp);
+        fflush(logFp); // Ensure data is written even if app crashes
+    }
 }
 
 void logToConsole(char *outputString){

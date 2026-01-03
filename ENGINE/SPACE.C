@@ -182,31 +182,23 @@ void sp_initCameras(){
 	/* Clear render queue*/
 	memset(renderQueue, 0, sizeof(renderQueue));
 	
-	/* Generate render queue based on global camera by scanning the visGrid*/
-	for(i = 0; i < SP_GRID_SIZE; i++){
-		for(j = 0; j < SP_GRID_SIZE; j++){
-			for(k = 0; k < SP_GRID_SIZE; k++){
+	/* Generate render queue based on global camera by scanning only the visible region of the visGrid */
+	for(i = globalCamera->gridMinX; i <= globalCamera->gridMaxX; i++){
+		for(j = globalCamera->gridMinY; j <= globalCamera->gridMaxY; j++){
+			for(k = globalCamera->gridMinZ; k <= globalCamera->gridMaxZ; k++){
 				if(visGrid[i][j][k] == NULL){
 					continue;
 				}
 
-				if(i < globalCamera->gridMinX || i > globalCamera->gridMaxX || j < globalCamera->gridMinY || j > globalCamera->gridMaxY || k < globalCamera->gridMinZ || k > globalCamera->gridMaxZ){
-					continue;
-				}				
-
 				assetList = visGrid[i][j][k];
 
 				if(assetList == NULL){
-					logger("[sp_initCameras]: Error, Asset list is NULL");
 					continue;
 				}
 				
-				assetListLength = assetList->length;
+				node = assetList->firstNode;
 
-				for(assetListIndex = 0; assetListIndex < assetListLength; assetListIndex++){
-					node = getNodeByIndex(&assetList, assetListIndex);
-                    if(node == NULL) continue;
-					
+				while(node != NULL){
                     asset = (Asset*)node->data;
 					
 					asset->vis_prevX = asset->vis_currentX;
@@ -221,12 +213,13 @@ void sp_initCameras(){
 					    renderQueue[qIndex] = asset;
 					    qIndex++;
                     }
+					node = node->next;
 				}
 			}
 		}
 	}
 
-	sp_renderQueueApplyZOrdering();
+	sp_renderQueueApplyZOrdering(qIndex);
 }
 
 void sp_checkCameras(){
@@ -250,69 +243,39 @@ void sp_checkCameras(){
 }
 
 
-/* Convert world coordinates to screen coordinates relative to camera */
-ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera){
-	ScreenCoordinates *screenPos = NULL;
-	long offsetX, offsetY;
-	
-	if(!worldPos || !camera){
-		logger("[sp_worldToScreen]: Error, worldPos or camera is NULL");
-		return NULL;
-	}
-	
-	screenPos = (ScreenCoordinates*)mem_arena_alloc(frameArena, sizeof(ScreenCoordinates));
-	
-	if(!screenPos) return NULL;
 
-	/* Calculate offset from camera position */
 
-	// offsetX = 0
-	// offsetY = 0 - 5
-	offsetX = worldPos->x - camera->position->x;
-	offsetY = worldPos->y - camera->position->y;
-	
-	/* Center camera on screen and add offset */
-	// (320 / 2) = 160
-	// + (-5)
-	// = 155
-	screenPos->x = (camera->resolution->x / 2) + offsetX;
-	screenPos->y = (camera->resolution->y / 2) + offsetY;
-	
-	return screenPos;
-}
-
-bool sp_isInFrustrum(ScreenCoordinates *screenPos, struct Sprite *sprite){
+bool sp_isInFrustrum(int screenX, int screenY, struct Sprite *sprite){
 	int spriteWidth, spriteHeight;
-	if(!screenPos || !sprite || !sprite->bmpData){
-		logger("[sp_isInFrustrum]: Error, screenPos or sprite is NULL");
+	if(!sprite || !sprite->bmpData){
+		logger("[sp_isInFrustrum]: Error, sprite or bmpData is NULL");
 		return false;
 	}
 
 	spriteWidth = (int)sprite->bmpData->width;
 	spriteHeight = (int)sprite->bmpData->height;
 
-    /* Treat screenPos as CENTER - handles negative coordinates correctly now */
+    /* Treat screenX/Y as CENTER */
 	if(
-		screenPos->x + (spriteWidth / 2) < 0 ||
-		screenPos->x - (spriteWidth / 2) > VID_WIDTH ||
-		screenPos->y + (spriteHeight / 2) < 0 ||
-		screenPos->y - (spriteHeight / 2) > VID_HEIGHT
+		screenX + (spriteWidth / 2) < 0 ||
+		screenX - (spriteWidth / 2) > VID_WIDTH ||
+		screenY + (spriteHeight / 2) < 0 ||
+		screenY - (spriteHeight / 2) > VID_HEIGHT
 	) return false;
 	
 	return true;
 }
 
-void sp_renderQueueApplyZOrdering(){
+void sp_renderQueueApplyZOrdering(int length){
 	int i, j;
 	Asset *temp;
 	
-	if (!renderQueue){
-		logger("[sp_renderQueueApplyZOrdering]: Error, renderQueue is NULL");
+	if (!renderQueue || length <= 0){
 		return;
 	}
 
-	/* Insertion sort algorithm*/
-	for (i = 0; i < SP_MAX_RENDER_ASSETS; i++){
+	/* Insertion sort algorithm limited to active assets */
+	for (i = 0; i < length; i++){
 		if (renderQueue[i] == NULL){
 			continue;
 		}		

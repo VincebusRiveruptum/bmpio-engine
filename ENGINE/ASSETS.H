@@ -19,6 +19,9 @@
 #define TR_TRANSLATION 2
 #define TR_SCALE 3
 
+#define GM_ANIMATION_MAX_FRAMES 64
+#define GM_ANIMATION_MAX_TRANSFORMATIONS 8
+
 typedef enum AssetType{
 	A_SPRITE,
 	A_ANIMATION,
@@ -72,13 +75,12 @@ typedef struct Sprite{
 }Sprite;
 
 typedef struct Animation{
-	struct List *frames;					// SPRITE LIST
+	struct Sprite *frames[GM_ANIMATION_MAX_FRAMES];	// O(1) Access!
 	int length;
 	int frameDelay;
 	bool loop;
 	char maskColor;
-
-	struct List *transformationList;		// An animation can have many transformations at the same time.
+	struct Transformation *transformationList[GM_ANIMATION_MAX_TRANSFORMATIONS];		// An animation can have many transformations at the same time.
 }Animation;
 
 typedef struct RotationTransformation{
@@ -107,7 +109,6 @@ Sprite *as_createSprite();
 
 bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
 void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned char maskColor);
-void as_drawAnimations(unsigned long gametick);
 
 void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
 void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
