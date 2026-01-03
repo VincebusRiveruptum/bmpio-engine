@@ -106,7 +106,7 @@ Animation *as_createAnimation();
 Sprite *as_createSprite();
 
 bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
-void as_loadAnimationFrames(Animation *animation, char **frameArray);
+void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned char maskColor);
 void as_drawAnimations(unsigned long gametick);
 
 void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);

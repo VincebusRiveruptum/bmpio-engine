@@ -9,6 +9,7 @@
 /* PROTOTYPES ===========================================================================*/
 bool t_initTests();
 void t_createRenamon();
+void t_skullBgTest();
 /* GLOBAL VARS =========================================================================*/
 extern struct Color *testPalette;
 

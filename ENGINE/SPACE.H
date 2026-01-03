@@ -14,6 +14,7 @@ struct Transformation;
 #define SP_GRID_HALF (SP_GRID_SIZE/2)
 #define SP_GRID_VIS_SIZE 1			// Camera viewport size (1 grid slot)
 #define SP_GRID_SCALE 100			// World units per grid cell (100:1 scale)
+#define SP_MAX_RENDER_ASSETS 256
 
 /* TRANSFORMATIONS ===========================================================================*/
 
@@ -26,8 +27,8 @@ typedef struct Coordinates{
 
 // SCREEN COORDINATES
 typedef struct ScreenCoordinates{
-	unsigned int x;
-	unsigned int y;
+	int x;
+	int y;
 }ScreenCoordinates;
 
 /* 2D - ORTHOGONAL CAMERA FOR NOW */
@@ -48,7 +49,7 @@ typedef struct Camera{
 /* Culling grid system ==================================================================*/
 
 extern struct List *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
-extern struct Asset *renderQueue[SP_GRID_SIZE];		// Current render  queue
+extern struct Asset *renderQueue[SP_MAX_RENDER_ASSETS];		// Current render  queue
 extern struct Camera *globalCamera;
 extern struct Camera *cameras[SP_GRID_SIZE];
 

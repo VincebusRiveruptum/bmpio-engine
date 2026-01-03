@@ -23,12 +23,18 @@ const char *renamonIdleFrames[] = {
     NULL
 };
 
+const char *skullFrames[] = {
+    "..\\assets\\sk256.bmp",
+    NULL
+};
+
 struct Color *testPalette;
 
 bool t_initTests(){
-    logger("\n[t_initTests]: Testing initialization");
+    logger("\n[t_initTests`]: Testing initialization");
 
     t_createRenamon();
+    t_skullBgTest();
 
     return true;
 }
@@ -36,7 +42,7 @@ bool t_initTests(){
 void t_createRenamon(){
     char *assetsPath = (char*)getEnv("ASSETS_PATH");
     char renamonPath[128] = {0};
-    Action *renamonActions[2] = {NULL, NULL};
+    Action *renamonActions[GM_MAX_ACTIONS] = {NULL};
     BMPfile *renamonFile = NULL;
     Animation *renamonJumping = NULL;  
     Animation *renamonIdle = NULL;    
@@ -44,21 +50,21 @@ void t_createRenamon(){
     Transformation *transformation = NULL;
 
     Actor *renamonActor = NULL;
+
     Asset *renamonAsset = NULL;
     Asset *renamonAsset2 = NULL;
     
-    sprintf(&renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
+    sprintf(renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
     renamonFile = as_loadBMPfile(renamonPath);
     
     renamonIdle = as_createAnimation(); 
-    as_loadAnimationFrames(renamonIdle, renamonIdleFrames);
+    as_loadAnimationFrames(renamonIdle, renamonIdleFrames, 15);
     
     as_addRotationTransformation(renamonIdle, as_createRotationTransformation(5, 0));
     
     renamonJumping = as_createAnimation(); 
-    as_loadAnimationFrames(renamonJumping, renamonJumpingFrames);
-    
+    as_loadAnimationFrames(renamonJumping, renamonJumpingFrames, 15);
     
     renamonActions[0] = gm_createAction(
         "Idle", 
@@ -100,8 +106,36 @@ void t_createRenamon(){
     // Global camera setup
     sp_setGlobalCamera(sp_createCamera(sp_createCoordinates(0, 0, 0), sp_createScreenCoordinates(VID_WIDTH, VID_HEIGHT)));
     
+    /* SET RENAMON AS PLAYER*/
+    player = renamonAsset;
 }
 
 void t_freeRenamonTest(){
     sp_destroyCamera(globalCamera); 
+}
+
+void t_skullBgTest(){
+    char *assetsPath = (char*)getEnv("ASSETS_PATH");
+    char skullPath[128] = {0};
+    Animation *skullAnimation = NULL;
+    Action *skullBgActions[GM_MAX_ACTIONS] = {NULL};
+    Asset *skullAsset = NULL;
+    
+    skullAnimation = as_createAnimation(); 
+    as_loadAnimationFrames(skullAnimation, skullFrames, 255);  
+    
+    skullBgActions[0] = gm_createAction(
+        "Idle", 
+        GM_ACTION_IDLE,
+        skullAnimation,
+        NULL
+    );
+
+    skullAsset = gm_createAsset(
+        gm_createActor("Skulls Background", "An impaled skulls background", gm_createStats(100, 100, 10, 10, 10), skullBgActions),
+        sp_createCoordinates(0, 0, -100)
+    );
+
+    logger("[t_skullBgTest]: Inserting asset");
+    gm_insertAsset(skullAsset);       
 }

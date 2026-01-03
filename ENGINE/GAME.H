@@ -19,6 +19,8 @@
 
 #define MAX_COLLISIONS 8
 
+#define GM_MAX_ACTIONS 16
+
 /* TYPES ===================================================================================*/
 
 typedef struct Stats{
@@ -87,9 +89,8 @@ typedef struct Actor{
 	char description[256];
     
     struct Stats *stats;
-	struct Action *actions[16];  // Array or list of possible actions
+	struct Action *actions[GM_MAX_ACTIONS];  // Array or list of possible actions
 	struct Action *currentAction;
-	unsigned char actionLength;
 }Actor;
 
 /* This cound be an actor instance that is currently playing */
@@ -114,6 +115,10 @@ typedef struct AssetList{
 	struct List *assets;
 }AssetList;
 
+
+/* 	GLOBAL VARIABLES ===========================================================================*/
+extern Asset *player;
+
 /* PROTOYPES ===========================================================================*/
 
 /* Possible actionns 
@@ -132,5 +137,10 @@ void gm_destroyAsset(Asset *asset);
 Stats *gm_createStats(int health, int maxHealth, int attack, int defense, int speed);
 Action *gm_createAction(char *name, unsigned char type, Animation *animation, void (*update)(struct Asset *self));
 Actor *gm_createActor(char *name, char *description, Stats *stats, Action *actions[]);
+
+void gm_listenEvents();
+void gm_kbdInput();
+
+bool gm_setCurrentAction(Actor *actor, unsigned char actionType);
 
 #endif

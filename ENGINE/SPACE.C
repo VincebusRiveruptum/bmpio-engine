@@ -2,7 +2,7 @@
 #include "GAME.H"
 
 struct List *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
-struct Asset *renderQueue[SP_GRID_SIZE] = {NULL};
+struct Asset *renderQueue[SP_MAX_RENDER_ASSETS] = {NULL};
 struct Camera *globalCamera;
 struct Camera *cameras[SP_GRID_SIZE];
  
@@ -216,7 +216,7 @@ void sp_initCameras(){
 					asset->vis_currentY = j;
 					asset->vis_currentZ = k;
 					
-                    if(qIndex < SP_GRID_SIZE){
+                    if(qIndex < SP_MAX_RENDER_ASSETS){
 					    renderQueue[qIndex] = asset;
 					    qIndex++;
                     }
@@ -225,7 +225,7 @@ void sp_initCameras(){
 		}
 	}
 
-	//sp_renderQueueApplyZOrdering();
+	sp_renderQueueApplyZOrdering();
 }
 
 void sp_checkCameras(){
@@ -277,20 +277,21 @@ ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera){
 }
 
 bool sp_isInFrustrum(ScreenCoordinates *screenPos, struct Sprite *sprite){
-	unsigned int spriteWidth, spriteHeight;
+	int spriteWidth, spriteHeight;
 	if(!screenPos || !sprite || !sprite->bmpData){
 		logger("[sp_isInFrustrum]: Error, screenPos or sprite is NULL");
 		return false;
 	}
 
-	spriteWidth = sprite->bmpData->width;
-	spriteHeight = sprite->bmpData->height;
+	spriteWidth = (int)sprite->bmpData->width;
+	spriteHeight = (int)sprite->bmpData->height;
 
+    /* Treat screenPos as CENTER - handles negative coordinates correctly now */
 	if(
-		screenPos->x + spriteWidth < 0 ||
-		screenPos->x > VID_WIDTH ||
-		screenPos->y + spriteHeight < 0 ||
-		screenPos->y > VID_HEIGHT
+		screenPos->x + (spriteWidth / 2) < 0 ||
+		screenPos->x - (spriteWidth / 2) > VID_WIDTH ||
+		screenPos->y + (spriteHeight / 2) < 0 ||
+		screenPos->y - (spriteHeight / 2) > VID_HEIGHT
 	) return false;
 	
 	return true;
@@ -306,16 +307,16 @@ void sp_renderQueueApplyZOrdering(){
 	}
 
 	/* Insertion sort algorithm*/
-	for (i = 0; i < SP_GRID_SIZE; i++){
+	for (i = 0; i < SP_MAX_RENDER_ASSETS; i++){
 		if (renderQueue[i] == NULL){
 			continue;
 		}		
 		j = i;		
 		while(
+			j > 0 && 
 			renderQueue[j] != NULL && 
 			renderQueue[j - 1] != NULL && 
-			j > 0 && 
-			renderQueue[j]->vis_currentZ < renderQueue[j - 1]->vis_currentZ){
+			renderQueue[j]->coordinates->z < renderQueue[j - 1]->coordinates->z){
 			
 			temp = renderQueue[j];
 			renderQueue[j] = renderQueue[j - 1];

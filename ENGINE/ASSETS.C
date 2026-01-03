@@ -39,7 +39,7 @@ bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	return true;
 }
 
-void as_loadAnimationFrames(Animation *animation, char **frameArray){
+void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned char maskColor){
 	Sprite *sprite = NULL; 
 	int i;
 
@@ -52,7 +52,7 @@ void as_loadAnimationFrames(Animation *animation, char **frameArray){
 	
 	for(i = 0; frameArray[i] != NULL; i++){
 		sprite = as_createSprite();
-		if(!as_loadSprite(sprite, frameArray[i], 15)){
+		if(!as_loadSprite(sprite, frameArray[i], maskColor)){
 			logger("[as_loadAnimationFrames]: Error loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
@@ -152,13 +152,16 @@ void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
 	unsigned char **bmp = (*bmpData)->bmp;
 	int width = (int)(*bmpData)->width;
 	int height = (int)(*bmpData)->height;
-
     int x_start = 0, y_start = 0;
     int x_end = width, y_end = height;
 
 	if (bmp == NULL) return;
 
-    // Clipping
+    /* Adjust for CENTER - as_drawBitmap */
+    x = x - (width >> 1);
+    y = y - (height >> 1);
+
+    /* Clipping for as_drawBitmap */
     if (y < 0) { y_start = -y; }
     if (y + height > 200) y_end = 200 - y;
     if (y_start >= y_end || y >= 200 || y + height <= 0) return;
@@ -186,13 +189,16 @@ void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 	int height = (int)(*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
     unsigned long row_offs;
-
     int x_start = 0, y_start = 0;
     int x_end = width, y_end = height;
 
 	if (bmp == NULL) return;
 
-    // Clipping
+    /* Adjust for CENTER - as_drawBitmapPlaneBatch */
+    x = x - (width >> 1);
+    y = y - (height >> 1);
+
+    /* Clipping for as_drawBitmapPlaneBatch */
     if (y < 0) { y_start = -y; }
     if (y + height > 200) y_end = 200 - y;
     if (y_start >= y_end || y >= 200 || y + height <= 0) return;

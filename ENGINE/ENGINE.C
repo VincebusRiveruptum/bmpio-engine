@@ -49,24 +49,30 @@ void eng_renderFrame(unsigned long gametick){
 		return;
 	}
 	
-	logger("[eng_renderFrame]: Starting render, scanning %d slots", SP_GRID_SIZE);
+	//logger("[eng_renderFrame]: Starting render, scanning %d slots", SP_GRID_SIZE);
 	
 	for(i = 0; i < SP_GRID_SIZE; i++){
 		if(renderQueue[i] == NULL){
 			continue;
 		}
 		
-		logger("[eng_renderFrame]: Found asset at queue slot %ld", i);
+		//logger("[eng_renderFrame]: Found asset at queue slot %ld", i);
 		
 		if(renderQueue[i]->actor == NULL){
 			logger("[eng_renderAssets]:Render queue %ld actor is NULL", i);
 			continue;
 		}
 
-		if(	renderQueue[i]->actor->currentAction == NULL || 
-			renderQueue[i]->actor->currentAction->animation == NULL || 
-			renderQueue[i]->actor->currentAction->animation->length == 0){
-			logger("[eng_renderAssets]:Render queue %ld actor animation is NULL", i);
+		if(renderQueue[i]->actor->currentAction == NULL){
+			logger("[eng_renderAssets]:Render queue %ld actor currentAction is NULL", i);
+			continue;
+		}
+		if(renderQueue[i]->actor->currentAction->animation == NULL){
+			logger("[eng_renderAssets]:Render queue %ld actor currentAction animation is NULL", i);
+			continue;
+		}
+		if(renderQueue[i]->actor->currentAction->animation->length == 0){
+			logger("[eng_renderAssets]:Render queue %ld actor currentAction animation length is 0", i);
 			continue;
 		}
 		
@@ -143,6 +149,8 @@ void eng_renderFrame(unsigned long gametick){
 		} else {
 			as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor);
 		}
+		
+		free(screenPos);
 	}
 }
 
