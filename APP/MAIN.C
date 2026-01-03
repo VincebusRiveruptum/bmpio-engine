@@ -13,6 +13,7 @@
 #include "ENGINE.H"
 
 int main(int argc, char *argv[]){
+    log_init(); // OPEN LOG FILE ONCE
     loadEnv();
     mem_init(); // CRITICAL: Initialize memory FIRST
     
@@ -44,5 +45,6 @@ int main(int argc, char *argv[]){
 
     if(globalPalette) free(globalPalette);
     if(globalCamera) sp_destroyCamera(globalCamera);
+    log_shutdown();
     return 0;
 }

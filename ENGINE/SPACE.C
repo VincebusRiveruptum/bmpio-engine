@@ -182,17 +182,13 @@ void sp_initCameras(){
 	/* Clear render queue*/
 	memset(renderQueue, 0, sizeof(renderQueue));
 	
-	/* Generate render queue based on global camera by scanning the visGrid*/
-	for(i = 0; i < SP_GRID_SIZE; i++){
-		for(j = 0; j < SP_GRID_SIZE; j++){
-			for(k = 0; k < SP_GRID_SIZE; k++){
+	/* Generate render queue based on global camera by scanning only the visible region of the visGrid */
+	for(i = globalCamera->gridMinX; i <= globalCamera->gridMaxX; i++){
+		for(j = globalCamera->gridMinY; j <= globalCamera->gridMaxY; j++){
+			for(k = globalCamera->gridMinZ; k <= globalCamera->gridMaxZ; k++){
 				if(visGrid[i][j][k] == NULL){
 					continue;
 				}
-
-				if(i < globalCamera->gridMinX || i > globalCamera->gridMaxX || j < globalCamera->gridMinY || j > globalCamera->gridMaxY || k < globalCamera->gridMinZ || k > globalCamera->gridMaxZ){
-					continue;
-				}				
 
 				assetList = visGrid[i][j][k];
 
