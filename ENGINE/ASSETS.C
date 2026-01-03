@@ -158,7 +158,7 @@ BMPfile *as_loadBMPfile(char *fileName){
 	return newFile;
 }
 
-void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
+void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor, bool hflip){
 	int i, j;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
@@ -182,14 +182,26 @@ void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
     if (x + width > 320) x_end = 320 - x;
     if (x_start >= x_end || x >= 320 || x + width <= 0) return;
 
-    for (i = y_start; i < y_end; i++){
-        for (j = x_start; j < x_end; j++){
-            color = bmp[i][j];
-            if (color != (unsigned char)maskcolor){
-                v_putPixelX(x + j, y + i, color);
-            }
-        }
-    }
+	if(hflip == false){
+		for (i = y_start; i < y_end; i++){
+			for (j = x_start; j < x_end; j++){
+				color = bmp[i][j];
+				if (color != (unsigned char)maskcolor){
+					v_putPixelX(x + j, y + i, color);
+				}
+			}
+		}
+	}else{
+		for (i = y_start; i < y_end; i++){
+			for (j = x_start; j < x_end; j++){
+                // Horizontal flip: pull from (width - 1 - j)
+				color = bmp[i][width - 1 - j];
+				if (color != (unsigned char)maskcolor){
+					v_putPixelX(x + j, y + i, color);
+				}
+			}
+		}
+	}
 }
 
 /* Optimized Plane-batched drawing */
@@ -241,7 +253,7 @@ void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
 
 /* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
    OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
-void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
+void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle, bool hflip){
     unsigned char **bmp = (*bmpData)->bmp;
     unsigned int width = (*bmpData)->width;
     unsigned int height = (*bmpData)->height;
@@ -302,8 +314,10 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
                 v = (int)(v_fixed >> 8);
                 
                 if (u >= 0 && u < width && v >= 0 && v < height) {
-                    color = bmp[v][u];
-                    if (color != maskcolor) {
+                    // Horizontal flip: pull from (width - 1 - u)
+                    int src_u = hflip ? (width - 1 - u) : u;
+                    color = bmp[v][src_u];
+                    if (color != (unsigned char)maskcolor) {
                         v_putPixelASM(dest_offs, color);
                     }
                 }

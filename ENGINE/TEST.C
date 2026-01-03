@@ -18,6 +18,49 @@ const char *renamonJumpingFrames[] = {
     "..\\assets\\jump\\FRAME15.bmp",
     NULL
 };
+const char *renamonJumpingAltFrames[] = {
+    "..\\assets\\jump2\\FRAME1.bmp",
+    "..\\assets\\jump2\\FRAME2.bmp",
+    "..\\assets\\jump2\\FRAME3.bmp",
+    "..\\assets\\jump2\\FRAME4.bmp",
+    "..\\assets\\jump2\\FRAME5.bmp",
+    "..\\assets\\jump2\\FRAME6.bmp",
+    "..\\assets\\jump2\\FRAME7.bmp",
+    "..\\assets\\jump2\\FRAME8.bmp",
+    "..\\assets\\jump2\\FRAME9.bmp",
+    "..\\assets\\jump2\\FRAME10.bmp",
+    "..\\assets\\jump2\\FRAME11.bmp",
+    "..\\assets\\jump2\\FRAME12.bmp",
+    NULL
+};
+
+const char *renamonRunningFrames[] = {
+    "..\\assets\\run\\FRAME1.bmp",
+    "..\\assets\\run\\FRAME2.bmp",
+    "..\\assets\\run\\FRAME4.bmp",
+    "..\\assets\\run\\FRAME5.bmp",
+    "..\\assets\\run\\FRAME6.bmp",
+    "..\\assets\\run\\FRAME11.bmp",
+    NULL
+};
+
+const char *renamonSprintFrames[] = {
+    "..\\assets\\sprint\\FRAME1.bmp",
+    "..\\assets\\sprint\\FRAME2.bmp",
+    "..\\assets\\sprint\\FRAME4.bmp",
+    NULL
+};
+
+const char *renamonCrouchFrames[] = {
+    "..\\assets\\crouch\\FRAME1.bmp",
+    "..\\assets\\crouch\\FRAME2.bmp",
+    "..\\assets\\crouch\\FRAME3.bmp",
+    "..\\assets\\crouch\\FRAME4.bmp",
+    "..\\assets\\crouch\\FRAME5.bmp",
+    "..\\assets\\crouch\\FRAME6.bmp",
+    "..\\assets\\crouch\\FRAME7.bmp",
+    NULL
+};
 
 const char *renamonIdleFrames[] = {
     "..\\assets\\idle\\FRAME1.bmp",
@@ -47,9 +90,10 @@ void t_createRenamon(){
     BMPfile *renamonFile = NULL;
     Animation *renamonJumping = NULL;  
     Animation *renamonIdle = NULL;    
-
-    Transformation *transformation = NULL;
-
+    Animation *renamonRunning = NULL;
+    Animation *renamonSprint = NULL;
+    Animation *renamonCrouch = NULL;
+    
     Actor *renamonActor = NULL;
     Asset *renamonAsset = NULL;
 
@@ -61,13 +105,21 @@ void t_createRenamon(){
         return;
     }
     
+    /* Renamon's actions */
     renamonIdle = as_createAnimation(); 
-    as_loadAnimationFrames(renamonIdle, renamonIdleFrames, 15);
+    as_loadAnimationFrames(renamonIdle, renamonIdleFrames, 255);
     
-    as_addRotationTransformation(renamonIdle, as_createRotationTransformation(5, 0));
+    renamonRunning = as_createAnimation(); 
+    as_loadAnimationFrames(renamonRunning, renamonRunningFrames, 255);
     
     renamonJumping = as_createAnimation(); 
-    as_loadAnimationFrames(renamonJumping, renamonJumpingFrames, 15);
+    as_loadAnimationFrames(renamonJumping, renamonJumpingFrames, 255);
+    
+    renamonSprint = as_createAnimation(); 
+    as_loadAnimationFrames(renamonSprint, renamonSprintFrames, 255);
+    
+    renamonCrouch = as_createAnimation(); 
+    as_loadAnimationFrames(renamonCrouch, renamonCrouchFrames, 255);
     
     renamonActions[0] = gm_createAction(
         "Idle", 
@@ -83,9 +135,21 @@ void t_createRenamon(){
         NULL
     );
     renamonActions[2] = gm_createAction(
-        "Walk", 
-        GM_ACTION_WALK,
-        renamonIdle,
+        "Running", 
+        GM_ACTION_RUN,
+        renamonRunning,
+        NULL
+    );
+    renamonActions[3] = gm_createAction(
+        "Sprinting", 
+        GM_ACTION_SPRINT,
+        renamonSprint,
+        NULL
+    );
+    renamonActions[4] = gm_createAction(
+        "Crouch", 
+        GM_ACTION_CROUCH,
+        renamonCrouch,
         NULL
     );
     

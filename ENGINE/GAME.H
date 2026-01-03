@@ -13,9 +13,11 @@
 #define GM_ACTION_IDLE 0x02
 #define GM_ACTION_WALK 0x03
 #define GM_ACTION_RUN 0x04
-#define GM_ACTION_ATTACK 0x05
-#define GM_ACTION_JUMP 0x06
-#define GM_ACTION_DIE 0x07
+#define GM_ACTION_SPRINT 0x05
+#define GM_ACTION_ATTACK 0x06
+#define GM_ACTION_JUMP 0x07
+#define GM_ACTION_DIE 0x08
+#define GM_ACTION_CROUCH 0x09
 
 #define MAX_COLLISIONS 8
 
@@ -99,6 +101,9 @@ typedef struct Asset{
 	struct Actor *actor;
 
 	struct Coordinates *coordinates;
+	struct Coordinates *previousCoordinates;		// Used for checking movement
+	struct Coordinates *pointingTo;
+
 	struct Collision collisions[MAX_COLLISIONS];
 
 	// Stuff for culling

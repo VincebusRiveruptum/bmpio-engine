@@ -10,6 +10,8 @@ Asset *player = NULL;
 
 Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 	Asset *newAsset = (Asset*)mem_arena_alloc(sceneArena, sizeof(Asset));
+	Coordinates *pointingTo = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
+	Coordinates *previousCoordinates = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
 
 	if(!newAsset){
 		logger("\n[gm_createAsset]: Error: Could not allocate memory for asset");
@@ -24,6 +26,16 @@ Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 
 	newAsset->actor = actor;
 	newAsset->coordinates = coordinates;
+	newAsset->pointingTo = pointingTo;			// pointing to nothing for now
+
+	newAsset->pointingTo->x = coordinates->x;
+	newAsset->pointingTo->y = coordinates->y;
+	newAsset->pointingTo->z = coordinates->z;
+
+	newAsset->previousCoordinates = previousCoordinates;	// If current coordinates are different from previous, then the asset is moving
+	newAsset->previousCoordinates->x = coordinates->x;
+	newAsset->previousCoordinates->y = coordinates->y;
+	newAsset->previousCoordinates->z = coordinates->z;
 
 	newAsset->vis_prevX = 0;
 	newAsset->vis_prevY = 0;
@@ -152,10 +164,8 @@ bool gm_setCurrentAction(Actor *actor, unsigned char actionType){
     
     for(i = 0; i < GM_MAX_ACTIONS; i++){
 		if(actor->actions[i]){
-			logger("\n[gm_setCurrentAction]: Action %d: '%s', type: %d, input: %d", (int)i, actor->actions[i]->name, (int)actor->actions[i]->type, (int)actionType);
 			if(actor->actions[i]->type == actionType){
 				actor->currentAction = actor->actions[i];
-				logger("\n[gm_setCurrentAction]: Action set to %s", actor->actions[i]->name);
 				return true;
 			}
 		}
@@ -171,6 +181,21 @@ void gm_listenEvents(){
 	// Environment events
 
 	gm_kbdInput();
+	gm_assetEvents();
+}
+void gm_assetEvents(){
+	checkAssetsMoving();
+}
+
+void checkAssetsMoving(){
+	// Player asset separated from others for now (renderQueue) as if were more assets around the complexity increases
+	if(	player->coordinates->x == player->previousCoordinates->x &&
+		player->coordinates->y == player->previousCoordinates->y && 
+		player->coordinates->z == player->previousCoordinates->z)
+	{
+		logger("[checkAssetsMoving]: Player is not moving");
+		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
+	}
 }
 
 void gm_kbdInput(){
@@ -184,14 +209,19 @@ void gm_kbdInput(){
     }
 
     // Player movement (WASD)
-	if(keyboardTable[KEY_A] == true) gm_mainPlayerWalk(-16, 0, 0);
-	if(keyboardTable[KEY_D] == true) gm_mainPlayerWalk(16, 0, 0);
-	if(keyboardTable[KEY_W] == true) gm_mainPlayerWalk(0, -16, 0);
-	if(keyboardTable[KEY_S] == true) gm_mainPlayerWalk(0, 16, 0);
-
-	if(keyboardTable[KEY_SPACE] == true){
-		gm_mainPlayerJump();
+	if(keyboardTable[KEY_A] == true) {
+		gm_mainPlayerWalk(-16, 0, 0);
+	}else if(keyboardTable[KEY_D] == true){
+		gm_mainPlayerWalk(16, 0, 0);
+	}else if(keyboardTable[KEY_W] == true){
+		gm_mainPlayerWalk(0, -16, 0);
+	}else if(keyboardTable[KEY_S] == true){
+		gm_mainPlayerWalk(0, 16, 0);
+	}else{
+		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
 	}
+
+	if(keyboardTable[KEY_SPACE] == true) gm_mainPlayerJump();
 }
 
 // due to perfomance, we will assume that player is always there
@@ -203,7 +233,7 @@ void gm_mainPlayerWalk(int x, int y, int z){
     int oldVisX, oldVisY, oldVisZ;
     int newVisX, newVisY, newVisZ;
 
-	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
+	gm_setCurrentAction(player->actor, GM_ACTION_RUN);
 
     // Track old grid position
     oldVisX = (int)(player->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
@@ -219,6 +249,13 @@ void gm_mainPlayerWalk(int x, int y, int z){
     newVisY = (int)(player->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
     newVisZ = (int)(player->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
 
+	// Flip character if moving left
+	if(x < 0){
+		player->pointingTo->x = player->coordinates->x - 1;
+	}else{
+		player->pointingTo->x = player->coordinates->x + 1;
+	}
+
     // If we crossed a grid boundary, update the visibility grid
     if(oldVisX != newVisX || oldVisY != newVisY || oldVisZ != newVisZ){
         // TODO: This requires a search in the old list to remove the asset. 
@@ -227,6 +264,9 @@ void gm_mainPlayerWalk(int x, int y, int z){
     }
 }
 
+void gm_mainPlayerIdle(){
+	gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
+}	
 
 void gm_cameraMove(int x, int y, int z){
 
