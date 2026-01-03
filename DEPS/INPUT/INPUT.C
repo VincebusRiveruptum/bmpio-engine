@@ -10,10 +10,6 @@ char *keyboardInput = NULL;
 char lastKey = 0;
 
 // BIOS Data Area (BDA) addresses for 32-bit protected mode
-
-#define ESC_KEY 27
-
-
 extern int keyAvailableASM(void);
 #pragma aux keyAvailableASM = \
     "mov ah, 01h"             \
@@ -44,14 +40,18 @@ static unsigned short readKey(void)
 
 unsigned char kbd_ascii, kbd_scan;
 
-void initInput(){
-    //readKey();
-}
-
 bool checkAppEnd(){
     if(keyAvailable()){
         kbd_ascii = readKey() & 0xFF;
         if(kbd_ascii == ESC_KEY) return true;
     }
     return false;
+}
+
+unsigned char listenKeys(){
+    if(keyAvailable()){
+        kbd_ascii = readKey() & 0xFF;
+        return kbd_ascii;
+    }
+    return 0;
 }

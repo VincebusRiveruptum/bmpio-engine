@@ -1,74 +1,35 @@
 #include "ASSETS.H"
 
 /*
-	I've been thinking of making this ASSETS.C file as the 'glue' for everything, however,
-	at which point the glue will be so thick that it will be a mess.
+	This module is for file handling the assets and everyhting related with interacting with sprites and animations
 */
-List *bmpList = NULL;
-Color *globalPalette = NULL;
-// This stores all the sprites MEMORY ADDRESSES that have to be rendered on screen
-SpriteTable *spriteTable = NULL;
-
-unsigned long gameTicks = 0;
-unsigned long index = 0;
-
-// Refactor pending
-bool checkConfig(){
-	if(config){
-		return true;
-	}
-	return false;
-}
-
-Coordinates *createCoordinates(long x, long y, int z){
-	Coordinates *newCoordinates = (Coordinates*)malloc(sizeof(Coordinates));
-	newCoordinates->x = x;
-	newCoordinates->y = y;
-	newCoordinates->z = z;
-	return newCoordinates;
-}
-
-ScreenCoordinates *createScreenCoordinates(unsigned int x, unsigned int y){
-	ScreenCoordinates *newScreenCoordinates = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
-	newScreenCoordinates->x = x;
-	newScreenCoordinates->y = y;
-	return newScreenCoordinates;
-}
 
 /* Animation Methods */
-Animation *createAnimation(){
+Animation *as_createAnimation(){
 	Animation *newAnimation = (Animation*)malloc(sizeof(Animation));
 	newAnimation->frames = NULL;
 	newAnimation->length = 0;
 	newAnimation->frameDelay = 0;
 	newAnimation->loop = false;
-	newAnimation->coordinates = createCoordinates(0, 0, 0);
 	newAnimation->maskColor = 255;
+	newAnimation->transformationList = NULL;
 	return newAnimation;
 }
 
-Sprite *createSprite(){
+Sprite *as_createSprite(){
 	Sprite *newSprite = (Sprite*)malloc(sizeof(Sprite));
 	newSprite->bmpData = NULL;
-	newSprite->coordinates = createCoordinates(0, 0, 0);
 	newSprite->maskColor = 255;
 	return newSprite;
 }
 
-bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsigned char maskColor){
+bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	BMPfile *loadedFrame = NULL;
-	loadedFrame = loadBMPfile(fileName);
+	loadedFrame = as_loadBMPfile(fileName);
 	
 	if(!loadedFrame){
-		logger("\nError loading sprite %s", fileName);
+		logger("[as_loadSprite]: Error loading sprite %s", fileName);
 		return false;
-	}
-
-	if(coordinates){
-		if(sprite->coordinates) free(sprite->coordinates);
-		sprite->coordinates = coordinates;
-	} else if (!sprite->coordinates) {
-		sprite->coordinates = createCoordinates(0, 0, 0);
 	}
 	
 	sprite->bmpData = loadedFrame->bmpData;
@@ -78,7 +39,7 @@ bool loadSprite(Sprite *sprite, char *fileName, Coordinates *coordinates, unsign
 	return true;
 }
 
-void loadAnimationFrames(Animation *animation, char **frameArray){
+void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned char maskColor){
 	Sprite *sprite = NULL; 
 	int i;
 
@@ -86,13 +47,13 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 	if (frameArray[0] == NULL) return;
 
 	if(animation == NULL){
-		animation = createAnimation();
+		animation = as_createAnimation();
 	}
 	
 	for(i = 0; frameArray[i] != NULL; i++){
-		sprite = createSprite();
-		if(!loadSprite(sprite, frameArray[i], NULL, 0)){
-			logger("\nError loading frame sprite %s", frameArray[i]);
+		sprite = as_createSprite();
+		if(!as_loadSprite(sprite, frameArray[i], maskColor)){
+			logger("[as_loadAnimationFrames]: Error loading frame sprite %s", frameArray[i]);
 			free(sprite);
 			continue;
 		}
@@ -100,133 +61,25 @@ void loadAnimationFrames(Animation *animation, char **frameArray){
 		addGenericNode(&animation->frames, (void*)sprite);
 		animation->length++;
 
-		logger("\nLoaded frame %s", frameArray[i]);
+		logger("[as_loadAnimationFrames]: Loaded frame %s", frameArray[i]);
 	}
 }
 
-SpriteTable *initSpriteTable(){
-	SpriteTable *newSpriteTable = (SpriteTable *) malloc(sizeof(SpriteTable));
-	newSpriteTable->animationIndex = 0;
-	newSpriteTable->spriteIndex = 0;
-	return newSpriteTable;
-}
- 
-void addAnimationToTable(Animation *animation){
-	if(!animation) return;
-	
-	if(spriteTable == NULL){
-		spriteTable = initSpriteTable();
-	}
-
-	spriteTable->animations[spriteTable->animationIndex] = animation;
-	spriteTable->animationIndex++;
-}
-
-void addSpriteToTable(Sprite *sprite){
-	if(!sprite) return;
-	
-	if(spriteTable == NULL){
-		spriteTable = initSpriteTable();
-	}
-
-	spriteTable->sprites[spriteTable->spriteIndex] = sprite;
-	spriteTable->spriteIndex++;
-}
-
-void drawAnimation(SpriteTable *spriteTable, unsigned long gametick){
-	unsigned long frameToRender = 0;
-	unsigned long i;
-	Animation *animation = NULL;
-	Node *animationSpriteNode = NULL;
-	Sprite *animationSprite = NULL;
-	
-	if(spriteTable == NULL){
-		logger("\nSprite table is NULL");
-		return;
-	}
-
-	/*
-		For each animation in the sprite table, we render the current frame	
-	*/
-	for(i = 0; i < spriteTable->animationIndex ; i++){
-		animation = spriteTable->animations[i];
-		
-		if(animation == NULL || animation->length <= 0){
-			logger("\nAnimation %ld is NULL or empty", i);
-			continue;
-		}
-
-		frameToRender = gametick % animation->length;
-		animationSpriteNode = getNodeByIndex(&(animation->frames), (int)frameToRender);
-		
-		if(animationSpriteNode == NULL){
-			logger("\nAnimation sprite node %ld is NULL", frameToRender);
-			continue;
-		}
-
-		animationSprite = (Sprite *)animationSpriteNode->data;
-		
-		if(animationSprite == NULL){
-			logger("\nAnimation sprite data %ld is NULL", frameToRender);
-			continue;
-		}
-		
-		//logger("\nDrawing animation sprite %ld", frameToRender);
-		drawBitmap(&animationSprite->bmpData, (unsigned int)animation->coordinates->x, (unsigned int)animation->coordinates->y, (int)animation->maskColor);
-	}
-}
-
-void drawSprites(SpriteTable *spriteTable, unsigned long gametick){
-	unsigned long i;
-	Sprite *sprite = NULL;
-	
-	if(spriteTable == NULL){
-		logger("\nSprite table is NULL");
-		return;
-	}
-	
-	/*
-		For each sprite in the sprite table, we render it
-	*/
-	for(i = 0; i < spriteTable->spriteIndex ; i++){
-		sprite = spriteTable->sprites[i];
-		
-		if(sprite == NULL){
-			logger("\nSprite %ld is NULL", i);
-			continue;
-		}
-		
-		//logger("\nDrawing sprite %ld", i);
-		drawBitmap(&(sprite->bmpData), (unsigned int)sprite->coordinates->x, (unsigned int)sprite->coordinates->y, (int)sprite->maskColor);
-	}
-}
-
-void render2d(unsigned long gametick){
-	if(spriteTable == NULL){
-		logger("\nSprite table is NULL");
-		return;
-	}
-	
-	drawAnimation(spriteTable, gametick);
-	drawSprites(spriteTable, gametick);  // ISSUE
-}
-// ================================================================
-
-BMPfile *loadBMPfile(char *fileName){
+BMPfile *as_loadBMPfile(char *fileName){
 	FILE *fp = NULL;
 	BMPfile *newFile = NULL;
 	char *id = (char *)calloc(3, sizeof(char));
 	int padding = 0;
 	int y;
-
+	
 	fp = fopen(fileName, "rb");
-
+	
 	if (!fp){
-		logger("\nError, file not found!");
+		logger("[as_loadBMPfile]: Error, file not found!");
 		return NULL;
 	}
 
-	logger("\nLoading %s ", fileName);
+	logger("[as_loadBMPfile]: Loading %s ", fileName);
 
 	newFile = (BMPfile *)malloc(sizeof(BMPfile));
 	newFile->bmpData = (BMPdata *)malloc(sizeof(BMPdata));
@@ -234,17 +87,14 @@ BMPfile *loadBMPfile(char *fileName){
 	newFile->bmpData->palette = (Color *)malloc(256 * sizeof(Color));
 
 	if (newFile == NULL || newFile->bmpData == NULL || newFile->bmpData->palette == NULL){
-		logger("Memory allocation failed\n");
+		logger("[as_loadBMPfile]: Memory allocation failed");
 		return NULL;
 	}
 
 	fread(id, 2, 1, fp);
 
-	logger("%s", id);
-
 	if (strcmp(id, "BM") != 0){
-		/* El archivo es invalido no se crea la bmp */
-		logger("\nInvalid file. %s", id);
+		logger("[as_loadBMPfile]: Invalid file. %s", id);
 		free(newFile);
 		return NULL;
 	}
@@ -254,7 +104,7 @@ BMPfile *loadBMPfile(char *fileName){
 	fread(&(newFile->fh), 12, 1, fp);
 	fread(&(newFile->ih), 40, 1, fp);
 
-	logger("[ X : %ld, Y : %ld ]", newFile->ih.x, newFile->ih.y);
+	logger("[as_loadBMPfile]: %s [ X : %ld, Y : %ld ]", fileName, newFile->ih.x, newFile->ih.y);
 
 	newFile->bmpData->width = newFile->ih.x;
 	newFile->bmpData->height = newFile->ih.y;
@@ -268,8 +118,8 @@ BMPfile *loadBMPfile(char *fileName){
 	newFile->bmpData->bmp = (unsigned char **)malloc(sizeof(unsigned char *) * newFile->ih.y);
 
 	if (newFile->bmpData->bmp == NULL){
-		logger("\nCould not allocate bmp height.");
-		return 0;
+		logger("[as_loadBMPfile]: Could not allocate bmp height.");
+		return NULL;
 	}
 
 	while ((newFile->ih.x + padding) % 4 != 0){
@@ -281,14 +131,13 @@ BMPfile *loadBMPfile(char *fileName){
 
 		if (newFile->bmpData->bmp[y] == NULL)
 		{
-			logger("\nCould not allocate bitmap width on loop index : %d", y);
-			return 0;
+			logger("[as_loadBMPfile]: Could not allocate bitmap width on loop index : %d", y);
+			return NULL;
 		}
 		else
 		{
 			fread(newFile->bmpData->bmp[y], newFile->ih.x + padding, 1, fp);
 		}
-		
 	}
 
 	free(id);
@@ -297,165 +146,243 @@ BMPfile *loadBMPfile(char *fileName){
 	return newFile;
 }
 
-/* This will draw an image on the screen*/
-void drawBitmap(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor){
-	long i, j;
+void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
+	int i, j;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
-	unsigned int width = (*bmpData)->width;
-	unsigned int height = (*bmpData)->height;
+	int width = (int)(*bmpData)->width;
+	int height = (int)(*bmpData)->height;
+    int x_start = 0, y_start = 0;
+    int x_end = width, y_end = height;
 
-	if (bmp != NULL){
-		for (i = 0; i < height; i++){
-			if (y + i >= 200) continue; 
-			for (j = 0; j < width; j++){
-				if (x + j >= 320) continue;
-				color = bmp[i][j];
-				if (color != maskcolor){
-					putPixelX(j + x, i + y, color);
-				}
-			}
-		}
-	}
+	if (bmp == NULL) return;
+
+    /* Adjust for CENTER - as_drawBitmap */
+    x = x - (width >> 1);
+    y = y - (height >> 1);
+
+    /* Clipping for as_drawBitmap */
+    if (y < 0) { y_start = -y; }
+    if (y + height > 200) y_end = 200 - y;
+    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+
+    if (x < 0) { x_start = -x; }
+    if (x + width > 320) x_end = 320 - x;
+    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+
+    for (i = y_start; i < y_end; i++){
+        for (j = x_start; j < x_end; j++){
+            color = bmp[i][j];
+            if (color != (unsigned char)maskcolor){
+                v_putPixelX(x + j, y + i, color);
+            }
+        }
+    }
 }
 
 /* Optimized Plane-batched drawing */
-void drawBitmapPlaneBatch(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor){
-	long i, j, plane;
+void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
+	int i, j, plane;
 	unsigned char color = 0;
 	unsigned char **bmp = (*bmpData)->bmp;
-	unsigned int width = (*bmpData)->width;
-	unsigned int height = (*bmpData)->height;
+	int width = (int)(*bmpData)->width;
+	int height = (int)(*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
     unsigned long row_offs;
+    int x_start = 0, y_start = 0;
+    int x_end = width, y_end = height;
 
-	if (bmp != NULL){
-        for (plane = 0; plane < 4; plane++) {
-            // Set VGA Map Mask for this plane
-            outPortb(SEQU_ADDR, 0x02);
-            outPortb(SEQU_ADDR + 1, 0x01 << plane);
+	if (bmp == NULL) return;
 
-            for (i = 0; i < height; i++) {
-                row_offs = page_offs + (unsigned long)(i + y) * 80;
-                for (j = plane; j < width; j += 4) {
-                    color = bmp[i][j];
-                    if (color != maskcolor) {
-                        putPixelASM(row_offs + ((j + x) >> 2), color);
-                    }
+    /* Adjust for CENTER - as_drawBitmapPlaneBatch */
+    x = x - (width >> 1);
+    y = y - (height >> 1);
+
+    /* Clipping for as_drawBitmapPlaneBatch */
+    if (y < 0) { y_start = -y; }
+    if (y + height > 200) y_end = 200 - y;
+    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+
+    if (x < 0) { x_start = -x; }
+    if (x + width > 320) x_end = 320 - x;
+    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+
+    for (plane = 0; plane < 4; plane++) {
+        int start_j;
+        outPortb(SEQU_ADDR, 0x02);
+        outPortb(SEQU_ADDR + 1, 0x01 << plane);
+
+        // Find first j >= x_start such that (x + j) % 4 == plane
+        start_j = x_start + ((plane - ((x + x_start) % 4) + 4) % 4);
+
+        for (i = y_start; i < y_end; i++) {
+            row_offs = page_offs + (unsigned long)(y + i) * 80;
+            for (j = start_j; j < x_end; j += 4) {
+                color = bmp[i][j];
+                if (color != (unsigned char)maskcolor) {
+                    v_putPixelASM(row_offs + ((x + j) >> 2), color);
                 }
             }
         }
-	}
+    }
 }
 
-void addBMPtoList(List **bmpList, BMPdata *bmpData){
-	Node *newNode = (Node *)malloc(sizeof(Node));
-	newNode->data = bmpData;
-	newNode->next = NULL;
-	newNode->prev = NULL;
-
-	addToList(bmpList, newNode);
-}
-
-// GENERIC
-void addGenericNode(List **list, void *data){
-	Node *newNode = (Node *)malloc(sizeof(Node));
-	newNode->data = data;
-	newNode->next = NULL;
-	newNode->prev = NULL;
-
-	addToList(list, newNode);
-}
-
-void drawList(List *list){
-	BMPdata *currentBmp = NULL;
-	int i = 0;
-
-	if (list != NULL){
-		for (i = 0; i < list->length; i++){
-			currentBmp = getNodeByIndex(&list, i)->data;
-
-			if (currentBmp != NULL)
-			{
-				drawBitmap(&currentBmp, 1, 1, 255);
-			}
-		}
-	}
-	else{
-		return;
-	}
-}
-
-void setPalette(Color *palette){
-	int i;
-
-	for (i = 0; i < 256; i++){
-		setPal(i, palette[i].r >> 2, palette[i].g >> 2, palette[i].b >> 2);
-	}
-}
-
-
-/* This will draw an image distorted/rotated using Fixed Point Math (8.8) */
-void drawBitmapDistorted(BMPdata **bmpData, unsigned int x, unsigned int y, int maskcolor, int angle){
-	long i, j;
-	unsigned char color = 0;
-	unsigned char **bmp = (*bmpData)->bmp;
-	unsigned int width = (*bmpData)->width;
-	unsigned int height = (*bmpData)->height;
-
-    long angcos, angsin;
-    long halfx, halfy;
+/* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
+   OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
+void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
+    unsigned char **bmp = (*bmpData)->bmp;
+    unsigned int width = (*bmpData)->width;
+    unsigned int height = (*bmpData)->height;
     unsigned long page_offs = pageOffsets[nextPage];
     
-    long i_fixed, j_fixed, dx, dy, xp, yp;
-    int nearestX, nearestY;
-    unsigned char target_plane;
-    static unsigned char last_plane = 0xFF;
+    long angcos, angsin;
+    long halfw = (long)width << 7;
+    long halfh = (long)height << 7;
+    int screen_x, screen_y, plane;
+    long dx, dy, u_fixed, v_fixed;
+    long du, dv;
+    int u, v;
+    unsigned char color;
+    unsigned long dest_offs;
+    
+    // Bounding Box (A bit loose for rotation safety)
+    int min_x = (int)x - (int)(width >> 1);
+    int max_x = (int)x + (int)width + (int)(width >> 1);
+    int min_y = (int)y - (int)(height >> 1);
+    int max_y = (int)y + (int)height + (int)(height >> 1);
 
-    // Normalize angle
+    if (min_x < 0) min_x = 0;
+    if (max_x > 320) max_x = 320;
+    if (min_y < 0) min_y = 0;
+    if (max_y > 200) max_y = 200;
+
+    // Early exit
+    if (min_x >= max_x || min_y >= max_y) return;
+
     angle %= 360;
     if (angle < 0) angle += 360;
+    angcos = m_costable[angle];
+    angsin = m_sintable[angle];
 
-    if (!trigInitialized) initTrig();
+    if (angcos == -2147483648L || angsin == -2147483648L) return;
 
-    angcos = costable[angle];
-    angsin = sintable[angle];
+    du = angcos << 2;
+    dv = -angsin << 2;
 
-	halfx = (long)width << 7;  // width / 2 << 8
-	halfy = (long)height << 7; // height / 2 << 8
-
-	if (bmp != NULL){
-		for (i = 0; i < height; i++){
-            i_fixed = (long)i << 8;
-			for (j = 0; j < width; j++){
-				color = bmp[i][j];
-				if (color != maskcolor){
-                    j_fixed = (long)j << 8;
-                    
-                    dx = j_fixed - halfx;
-                    dy = i_fixed - halfy;
-
-                    // 8.8 * 8.8 = 16.16, shift right by 8 to get 8.8
-                    xp = ((angcos * dx) >> 8) + ((angsin * dy) >> 8) + ((long)(x + 160) << 8);
-                    yp = ((-angsin * dx) >> 8) + ((angcos * dy) >> 8) + ((long)(y + 100) << 8);
-					
-					nearestX = (int)(xp >> 8);
-					nearestY = (int)(yp >> 8);
-
-					if((nearestX < 320 && nearestX >= 0) && (nearestY < 200 && nearestY >= 0)){
-						// Only switch plane if it actually changed to save I/O cycles
-                        target_plane = 0x01 << (nearestX & 3);
-                        
-                        if (target_plane != last_plane) {
-                            outPortb(SEQU_ADDR, 0x02);
-                            outPortb(SEQU_ADDR + 1, target_plane);
-                            last_plane = target_plane;
-                        }
-                        putPixelASM(page_offs + (unsigned long)nearestY * 80 + (nearestX >> 2), color);
-					}
-				}
-			}
-		}
-	}
+    for (plane = 0; plane < 4; plane++) {
+        int start_x = min_x + ((plane - (min_x % 4) + 4) % 4);
+        outPortb(SEQU_ADDR, 0x02);
+        outPortb(SEQU_ADDR + 1, 0x01 << plane);
+        
+        for (screen_y = min_y; screen_y < max_y; screen_y++) {
+            dy = ((long)screen_y - ((long)y + (height >> 1))) << 8;
+            dx = ((long)start_x - ((long)x + (width >> 1))) << 8;
+            
+            // Calculate initial u, v for the start of the row
+            u_fixed = ((dx * angcos + dy * angsin) >> 8) + halfw;
+            v_fixed = ((-dx * angsin + dy * angcos) >> 8) + halfh;
+            
+            // Optimization: running destination offset
+            dest_offs = page_offs + (unsigned long)screen_y * 80 + (start_x >> 2);
+            
+            for (screen_x = start_x; screen_x < max_x; screen_x += 4) {
+                u = (int)(u_fixed >> 8);
+                v = (int)(v_fixed >> 8);
+                
+                if (u >= 0 && u < width && v >= 0 && v < height) {
+                    color = bmp[v][u];
+                    if (color != maskcolor) {
+                        v_putPixelASM(dest_offs, color);
+                    }
+                }
+                u_fixed += du;
+                v_fixed += dv;
+                dest_offs++;
+            }
+        }
+    }
 }
 
+bool as_addTransformation(Animation *animation, Transformation *transformation){
+	Node *newNode = NULL;
+
+	if(!animation || !transformation) return false;
+	
+	newNode = (Node *)malloc(sizeof(Node));
+	if(!newNode) {
+		logger("[Could not allocate memory for new node");
+		return false;
+	}
+	newNode->data = (void *)transformation;
+	newNode->next = NULL;
+	newNode->prev = NULL;
+	
+	addToList(&animation->transformationList, newNode);
+	logger("\nAdded transformation. New list length: %d", animation->transformationList->length);
+	return true;
+}
+
+bool as_removeTransformation(Animation *animation, int index){
+	if(!animation || !index) return false;
+
+	deleteNodeByIndex(&animation->transformationList, index);
+	return true;
+}
+
+RotationTransformation *as_createRotationTransformation(int angle, int current){
+	RotationTransformation *newRotationTransformation = NULL;
+
+	newRotationTransformation = (RotationTransformation *)malloc(sizeof(RotationTransformation));
+	if (!newRotationTransformation){
+		logger("[as_createRotationTransformation]: Could not allocate memory for new transformation");
+		return NULL;
+	}
+	newRotationTransformation->angle = angle;
+	newRotationTransformation->current = current;
+
+	logger("[as_createRotationTransformation]: Created rotation transformation");
+	return newRotationTransformation;
+}
+
+bool as_addRotationTransformation(Animation *animation, RotationTransformation *transformation){
+	Transformation *newTransformation = NULL;
+	RotationTransformation *newRotationTransformation = NULL;
+
+	if (!animation){
+		return false;
+	}
+
+    /* If no transformation provided, create a default one */
+	if (!transformation){
+		newRotationTransformation = (RotationTransformation *)malloc(sizeof(RotationTransformation));
+		if (!newRotationTransformation){
+			logger("[as_addRotationTransformation]: Could not allocate memory for new internal rotation data");
+			return false;
+		}
+        newRotationTransformation->angle = 0;
+        newRotationTransformation->current = 0;
+	} else {
+        newRotationTransformation = transformation;
+    }
+
+	newTransformation = (Transformation *)malloc(sizeof(Transformation));
+	
+	if (!newTransformation){
+		logger("[as_addRotationTransformation]: Could not allocate memory for new transformation wrapper");
+        if (!transformation) free(newRotationTransformation);
+		return false;
+	}
+
+	newTransformation->type = TR_ROTATION;
+	newTransformation->data = (void *)newRotationTransformation;
+
+	if (!as_addTransformation(animation, newTransformation)){
+		logger("[as_addRotationTransformation]: Could not add transformation to animation");
+        free(newTransformation);
+        if (!transformation) free(newRotationTransformation);
+		return false;
+	}
+
+	logger("[as_addRotationTransformation]: Added rotation transformation to animation");
+	return true;
+}

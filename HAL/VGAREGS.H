@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <dos.h>
 
+/* CONSTANTS ===========================================================================*/
+
 #define ATTR_ADDR 0x3c0
 #define MISC_ADDR 0x3c2
 #define VGAENABLE_ADDR 0x3c3
@@ -13,6 +15,8 @@
 #define CRTC_ADDR 0x3d4
 #define STATUS_ADDR 0x3da
 #define CHIPSTECH_ADDR 0x3d6
+
+/* PROTOYPES ===========================================================================*/
 
 void unProtectCRTC(void);
 unsigned char registerIn(int, char);

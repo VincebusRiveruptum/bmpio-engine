@@ -3,14 +3,20 @@
 
 #include "STD.H"
 
+/* CONSTANTS ===========================================================================*/
+
 #define PI 3.14159265358979323846
 #define DEG2RAD (PI / 180.0)
 
-int round(float x);
-void initTrig();
+/* PROTOYPES ===========================================================================*/
 
-extern long sintable[360];
-extern long costable[360];
-extern int trigInitialized;
+int m_round(float x);
+void m_initTrig();
+
+/* GLOBAL VARS =========================================================================*/
+
+extern long m_sintable[360];
+extern long m_costable[360];
+extern int m_trigInitialized;
 
 #endif

@@ -5,7 +5,7 @@ CFLAGS = -iAPP -iENGINE -iHAL -iDEPS\DATA -iDEPS\ENV /4r /s /otexan
 OBJDIR = BIN
 
 # Object files in BIN
-OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj $(OBJDIR)\log.obj $(OBJDIR)\math.obj
+OBJS = $(OBJDIR)\main.obj $(OBJDIR)\assets.obj $(OBJDIR)\data.obj $(OBJDIR)\vgaregs.obj $(OBJDIR)\video.obj $(OBJDIR)\env.obj $(OBJDIR)\input.obj $(OBJDIR)\log.obj $(OBJDIR)\math.obj $(OBJDIR)\game.obj $(OBJDIR)\engine.obj $(OBJDIR)\space.obj $(OBJDIR)\test.obj
 
 # Linker directive file
 LNK = $(OBJDIR)\bmpio.lnk
@@ -19,18 +19,6 @@ bmpio.exe: $(OBJS)
 	wlink @$(LNK)
 
 # Compile rules for each .c -> .obj in BIN
-$(OBJDIR)\main.obj: APP\MAIN.C
-	if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -fo=$@ $<
-
-$(OBJDIR)\assets.obj: ENGINE\ASSETS.C
-	if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -fo=$@ $<
-
-$(OBJDIR)\data.obj: DEPS\DATA\DATA.C
-	if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -fo=$@ $<
-
 $(OBJDIR)\vgaregs.obj: HAL\VGAREGS.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
@@ -39,20 +27,49 @@ $(OBJDIR)\video.obj: ENGINE\VIDEO.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)\env.obj: DEPS\ENV\ENV.C
-	if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -fo=$@ $<
-
-$(OBJDIR)\log.obj: ENGINE\LOG\LOG.C
-	if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -fo=$@ $<
-
-$(OBJDIR)\input.obj: ENGINE\INPUT.C
+$(OBJDIR)\data.obj: DEPS\DATA\DATA.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
 $(OBJDIR)\math.obj: ENGINE\MATH.C
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\space.obj: ENGINE\SPACE.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\env.obj: DEPS\ENV\ENV.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\log.obj: DEPS\LOG\LOG.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\input.obj: DEPS\INPUT\INPUT.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\game.obj: ENGINE\GAME.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\assets.obj: ENGINE\ASSETS.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\engine.obj: ENGINE\ENGINE.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\main.obj: APP\MAIN.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)\test.obj: ENGINE\TEST.C
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+	
 
 

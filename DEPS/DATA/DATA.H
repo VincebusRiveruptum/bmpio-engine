@@ -16,7 +16,7 @@ void deleteNodeByIndex(List **list, int index);
 Node *insertByIndex(List **list, Node *newNode, unsigned int index);
 Node *pop(List **list);
 List *invertList(List **list);
-
+void addGenericNode(List **list, void *data);
 void freeList(List **list);
 
 #endif

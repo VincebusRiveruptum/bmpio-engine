@@ -1,0 +1,91 @@
+Ok, the next challenges are:
+
+1. There is a sprite and animation order issue. Where sprites are rendered before 
+animation due how the sprite and animation table is designed by separate arrays.
+We need to unify both or think on a way sprites and animations have a z-index.
+
+2. Use of Coordinates and ScreenCoordinates is a bit of a mess. A solution to the sprite and animation order issue
+is to use the Coordinates object, and before rendering we need to convert it to ScreenCoordinates. 
+This way we can use the z-index to sort the rendering order. However, this could be extra overhead because we 
+need to identify which sprite or animation comes first before the rest subsesquently.
+
+3. I tested a 640x350 bmp to be rendered as a background sprite, a background should
+be an own asset type? (such as sprites and animations). But, For now, let`s treat backgrounds as
+sprites, where the z-index must be at the very bottom or far so it theorically behaves like one, 
+also, the flag IS_BACKGROUND is limiting in the future a possibility of layered and parrallax
+effect becausde there is only one valid background with the IS_BACKGROUND flag on.
+
+4. Also, big bitmaps dont clip out bounds properly. 
+
+5. I`m thinking of a better way to name variables, any suggestions? Hungarian notation 
+could be OK, also, same with structs and functions. I could follow DOOM`s naming convention
+and prefix everything with a letter that describes the task type, such as VID for video, 
+SND for sound, GFX for graphics, etc. What do you think?
+
+6. There are some cast and parameter type inconsistencies. For example, maskColor handle 
+numbers between 0 and 255, so its a unsigned char. However in some parts its treated as an int.
+
+8. Maybe we could simulate OOP by treating structs as classes and functions as methods all together on its 
+own module.                               ## OK     
+
+9. 1.1.2026
+
+	So, instead of a rendee table solution (which was wrong), we use a RenderQueue
+	that gather all the sprites that are going to be rendered on screen . However
+	the sprites are calculated depending on the actor's coordinates and
+	their position relative to the camera.
+
+	Right now there is no player implementation, no viewport, no camera, etc.
+	
+	So, i need to implement environment space first, then player, then camera, then viewport.
+
+	Then finally the render queue will be able to render the stuff on screen.
+
+        1. Environment space
+        2. Player
+        3. Camera
+        4. Viewport
+
+10. Now that we need to implement all the logic required for the render queue, the code and
+folder structure will become a bit unmaintainable. I'm thinking of refactoring separation
+of concerns by taking assets.c,         ## OK
+
+11. ENGINE.C AND ENGINE.H are the 'glue', behaves like a layer that brings all the engine related
+stuff together.                         ## OK
+
+/////////////////
+
+Grid system:
+
+I was reading about using a grid system to calculate the rendering order of sprites and animations. This grid
+will not determine the poisition of the object, as we have a coordinates system for that.  However, a grid will
+help to determine if the object is inside the viewport of the camera, so will be rendered or not. This also solves
+the issue of the render queue, as we can calculate the rendering order based on the grid position of the object.
+
+Ok, the grid system and actor system is OK. I created a test module also, which i create a simple 'Renamon'
+actor with two action states 'idle' and 'jumping', enough for creating a full Asset. The next step is 
+the render pipeline, where we need to calculate the rendering order based on the grid position of the object. 
+But, before that, i need to implement a camera object to be able to define a test viewport and rendering the
+'Renamon' actor on screen. I need your validation first to continue with the camera implementation.
+and then the render pipeline.
+
+/////////////////
+
+Grid system update:
+
+The grid system works but needs some improvements, some of them are:
+
+1. Order by z-index
+2. frustum culling
+3. Fake sprite perspective, scale transformation by z-index
+4. Zone memory or Arenas
+
+
+/////////////////
+
+Ok, found a problem, what happens if i want to have more than one assets in the same grid position? 
+block? A cheap solution would be adding another dimensioon to visGrid, however this would increase the memory
+usage by a lot. 
+
+A soultion would be to use a linked list or a tree to store the assets in the same grid position. This
+avoids having to allocate an full extra dimension to all visGrird axises.
