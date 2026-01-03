@@ -30,6 +30,7 @@ void eng_setPalette(Color *palette){
 void eng_renderFrame(unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
+	bool hflip = false;
 	Sprite *actorSprite = NULL;
 	ScreenCoordinates *screenPos = NULL;
 	Asset *asset = NULL;
@@ -132,11 +133,13 @@ void eng_renderFrame(unsigned long gametick){
 			}
 		}
 		
+		hflip = (renderQueue[i]->pointingTo->x < renderQueue[i]->coordinates->x) ? true : false;
+
 		// Optimization: Use standard draw if effectively not rotated
 		if (totalAngle % 360 != 0) {
-			as_drawBitmapTransform(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, totalAngle);
+			as_drawBitmapTransform(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, totalAngle, hflip);
 		} else {
-			as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor);
+			as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, hflip);
 		}
 		
 	}

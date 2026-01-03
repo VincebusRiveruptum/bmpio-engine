@@ -110,9 +110,9 @@ Sprite *as_createSprite();
 bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor);
 void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned char maskColor);
 
-void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor);
+void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor, bool hflip);
 void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor);
-void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle);
+void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle, bool hflip);
 
 bool as_addTransformation(Animation *animation, Transformation *transformation);
 bool as_addRotationTransformation(Animation *animation, RotationTransformation *transformation);
