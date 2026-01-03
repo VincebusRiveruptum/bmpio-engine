@@ -30,10 +30,13 @@ void eng_setPalette(Color *palette){
 void eng_renderFrame(unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
-	Animation *actorAnimation = NULL;
 	Node *actorSpriteNode = NULL;
 	Sprite *actorSprite = NULL;
 	ScreenCoordinates *screenPos = NULL;
+	Asset *asset = NULL;
+	Actor *actor = NULL;
+	Action *action = NULL;
+	Animation *actionAnimation = NULL;
 	
 	Transformation *transformation = NULL;
 	int transformationLength = 0;
@@ -60,42 +63,45 @@ void eng_renderFrame(unsigned long gametick){
 		}
 		
 		//logger("[eng_renderFrame]: Found asset at queue slot %ld", i);
-		
-		if(renderQueue[i]->actor == NULL){
-			logger("[eng_renderAssets]:Render queue %ld actor is NULL", i);
+		actor = renderQueue[i]->actor;
+
+		if(actor == NULL){
+			logger("[eng_renderFrame]:Render queue %ld actor is NULL", i);
 			continue;
 		}
 
-		if(renderQueue[i]->actor->currentAction == NULL){
-			logger("[eng_renderAssets]:Render queue %ld actor currentAction is NULL", i);
+		action = actor->currentAction;
+
+		if(action == NULL){
+			logger("[eng_renderFrame]:Render queue %ld actor currentAction is NULL", i);
 			continue;
 		}
-		if(renderQueue[i]->actor->currentAction->animation == NULL){
-			logger("[eng_renderAssets]:Render queue %ld actor currentAction animation is NULL", i);
+
+		actionAnimation = action->animation;
+
+		if(actionAnimation == NULL){
+			logger("[eng_renderFrame]:Render queue %ld actor currentAction animation is NULL", i);
 			continue;
 		}
-		if(renderQueue[i]->actor->currentAction->animation->length == 0){
-			logger("[eng_renderAssets]:Render queue %ld actor currentAction animation length is 0", i);
+		if(actionAnimation->length == 0){
+			logger("[eng_renderFrame]:Render queue %ld actor currentAction animation length is 0", i);
 			continue;
 		}
-		
-		actorAnimation = renderQueue[i]->actor->currentAction->animation;
-		
-		frameToRender = gametick % actorAnimation->length;
-		actorSpriteNode = getNodeByIndex(&(actorAnimation->frames), (int)frameToRender);
+
+		frameToRender = gametick % actionAnimation->length;
+		actorSpriteNode = getNodeByIndex(&(actionAnimation->frames), (int)frameToRender);
 		
 		if(actorSpriteNode == NULL){
-			logger("[eng_renderAssets]:Actor sprite node %ld is NULL", frameToRender);
+			logger("[eng_renderFrame]:Actor sprite node %ld is NULL", frameToRender);
 			continue;
 		}
 		
 		actorSprite = (Sprite *)actorSpriteNode->data;
 		
 		if(actorSprite == NULL){
-			logger("[eng_renderAssets]:Actor sprite data %ld is NULL", frameToRender);
+			logger("[eng_renderFrame]:Actor sprite data %ld is NULL", frameToRender);
 			continue;
 		}
-		
 		
 		totalAngle = 0;
 		
@@ -114,11 +120,11 @@ void eng_renderFrame(unsigned long gametick){
 		totalOffsetX = screenPos->x;
 		totalOffsetY = screenPos->y;
 		
-		if(actorAnimation->transformationList && actorAnimation->transformationList->length > 0){
-			transformationLength = actorAnimation->transformationList->length;
+		if(actionAnimation->transformationList && actionAnimation->transformationList->length > 0){
+			transformationLength = actionAnimation->transformationList->length;
 			
 			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
-				Node *node = getNodeByIndex(&(actorAnimation->transformationList), transformationIndex);
+				Node *node = getNodeByIndex(&(actionAnimation->transformationList), transformationIndex);
 				if(node == NULL) continue;
 				transformation = (Transformation *)node->data;
 				if(transformation == NULL) continue;
