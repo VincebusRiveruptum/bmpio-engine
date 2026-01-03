@@ -67,8 +67,14 @@ void sp_setGlobalCamera(Camera *camera);
 void sp_destroyCamera(Camera *camera);
 void sp_initCameras();
 void sp_checkCameras();
-ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera);
-bool sp_isInFrustrum(ScreenCoordinates *screenPos, struct Sprite *sprite);
-void sp_renderQueueApplyZOrdering();
+
+#define SP_WORLD_TO_SCREEN(worldX, worldY, camX, camY, resX, resY, outX, outY) \
+    do { \
+        (outX) = ((resX) >> 1) + ((worldX) - (camX)); \
+        (outY) = ((resY) >> 1) + ((worldY) - (camY)); \
+    } while (0)
+
+bool sp_isInFrustrum(int screenX, int screenY, struct Sprite *sprite);
+void sp_renderQueueApplyZOrdering(int length);
 
 #endif

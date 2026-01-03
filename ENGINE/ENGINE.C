@@ -105,20 +105,15 @@ void eng_renderFrame(unsigned long gametick){
 		
 		totalAngle = 0;
 		
-		/* Project world coordinates to screen coordinates */
-		screenPos = sp_worldToScreen(renderQueue[i]->coordinates, globalCamera);
-		if(!screenPos){
-			logger("[eng_renderFrame]: Failed to project world to screen");
-			continue;
-		}
-		
-		if(!sp_isInFrustrum(screenPos, actorSprite)){
-			free(screenPos);
-			continue;
-		}
+		/* Project world coordinates to screen coordinates via macro (zero overhead) */
+        SP_WORLD_TO_SCREEN(renderQueue[i]->coordinates->x, renderQueue[i]->coordinates->y, 
+                           globalCamera->position->x, globalCamera->position->y, 
+                           globalCamera->resolution->x, globalCamera->resolution->y, 
+                           totalOffsetX, totalOffsetY);
 
-		totalOffsetX = screenPos->x;
-		totalOffsetY = screenPos->y;
+		if(!sp_isInFrustrum(totalOffsetX, totalOffsetY, actorSprite)){
+			continue;
+		}
 		
 		if(actionAnimation->transformationList && actionAnimation->transformationList->length > 0){
 			transformationLength = actionAnimation->transformationList->length;
