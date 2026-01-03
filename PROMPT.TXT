@@ -89,3 +89,20 @@ usage by a lot.
 
 A soultion would be to use a linked list or a tree to store the assets in the same grid position. This
 avoids having to allocate an full extra dimension to all visGrird axises.
+
+--
+
+3.1.2026
+
+About the linked list or tree to store the assets in the same grid position. This is already implemented and 
+works fine. The culling was improved (fustrum culling) and the Z-indexing ordering was also improved. 
+
+Now i want to do a step further, i want to control a player. The current limitation is the basic input system, 
+which has poor input response time. 
+
+Things that could be implemented right now:
+	- Input system
+	- Heartbeat system (timing)
+	- Basic sounds (pc-speaker)
+	- Scale transformation
+	

@@ -18,6 +18,7 @@ const char *renamonJumpingFrames[] = {
     "..\\assets\\jump\\FRAME15.bmp",
     NULL
 };
+
 const char *renamonIdleFrames[] = {
     "..\\assets\\idle\\FRAME1.bmp",
     NULL
