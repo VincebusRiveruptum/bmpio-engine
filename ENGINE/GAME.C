@@ -1,4 +1,5 @@
 #include "GAME.H"
+#include "MEM.H"
 
 /*
     THIS MODULE HANDLES ALL GAME LOGIC & BUSSINES RULES
@@ -8,12 +9,13 @@ unsigned char keyPressed = 0;
 Asset *player = NULL;
 
 Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
-	Asset *newAsset = (Asset*)calloc(1, sizeof(Asset));
+	Asset *newAsset = (Asset*)mem_arena_alloc(sceneArena, sizeof(Asset));
 
 	if(!newAsset){
 		logger("\n[gm_createAsset]: Error: Could not allocate memory for asset");
 		return NULL;
 	}
+    memset(newAsset, 0, sizeof(Asset));
     
     if(!actor){
         logger("\n[gm_createAsset]: Error: Actor is NULL");
@@ -67,17 +69,15 @@ Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned cha
 }
 
 void gm_destroyAsset(Asset *asset){
-	if(!asset){
-		logger("\n[gm_destroyAsset]: Error: Asset is NULL");
-		return;
-	}
-	free(asset);
+    // Individual assets are not freed when using Arena allocation.
+    // They are released when sceneArena is reset.
 }
 
 /* ACTOR METHODS ===========================================================================*/
 Action *gm_createAction(char *name, unsigned char type, Animation *animation, void (*update)(struct Asset *self)){
-	Action *newAction = (Action*)calloc(1, sizeof(Action));
+	Action *newAction = (Action*)mem_arena_alloc(sceneArena, sizeof(Action));
     if (!newAction) return NULL;
+    memset(newAction, 0, sizeof(Action));
 	strncpy(newAction->name, name, 31);
 	newAction->type = type;
 	newAction->animation = animation;
@@ -86,8 +86,9 @@ Action *gm_createAction(char *name, unsigned char type, Animation *animation, vo
 }
 
 Stats *gm_createStats(int health, int maxHealth, int attack, int defense, int speed){
-	Stats *newStats = (Stats*)calloc(1, sizeof(Stats));
+	Stats *newStats = (Stats*)mem_arena_alloc(sceneArena, sizeof(Stats));
     if (!newStats) return NULL;
+    memset(newStats, 0, sizeof(Stats));
 	newStats->health = health;
 	newStats->maxHealth = maxHealth;
 	newStats->attack = attack;
@@ -98,9 +99,10 @@ Stats *gm_createStats(int health, int maxHealth, int attack, int defense, int sp
 
 Actor *gm_createActor(char *name, char *description, Stats *stats, Action *actions[]){
 	int i;	
-	Actor *newActor = (Actor*)calloc(1, sizeof(Actor));
+	Actor *newActor = (Actor*)mem_arena_alloc(sceneArena, sizeof(Actor));
 	Action *genericAction;
     if (!newActor) return NULL;
+    memset(newActor, 0, sizeof(Actor));
 	
     strncpy(newActor->name, name, 31);
     strncpy(newActor->description, description, 255);
@@ -141,8 +143,11 @@ bool gm_setCurrentAction(Actor *actor, unsigned char actionType){
 	Action *action;
 	int i = 0;
     if(!actor){
-        logger("\n[gm_setCurrentAction]: Error: Actor is NULL");
         return false;
+    }
+
+    if(actor->currentAction && actor->currentAction->type == actionType){
+        return true;
     }
     
     for(i = 0; i < GM_MAX_ACTIONS; i++){

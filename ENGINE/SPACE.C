@@ -1,5 +1,6 @@
 #include "SPACE.H"
 #include "GAME.H"
+#include "MEM.H"
 
 struct List *visGrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
 struct Asset *renderQueue[SP_MAX_RENDER_ASSETS] = {NULL};
@@ -7,17 +8,21 @@ struct Camera *globalCamera;
 struct Camera *cameras[SP_GRID_SIZE];
  
 Coordinates *sp_createCoordinates(long x, long y, int z){
-	Coordinates *newCoordinates = (Coordinates*)malloc(sizeof(Coordinates));
-	newCoordinates->x = x;
-	newCoordinates->y = y;
-	newCoordinates->z = z;
+	Coordinates *newCoordinates = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
+    if(newCoordinates){
+        newCoordinates->x = x;
+        newCoordinates->y = y;
+        newCoordinates->z = z;
+    }
 	return newCoordinates;
 }
 
 ScreenCoordinates *sp_createScreenCoordinates(unsigned int x, unsigned int y){
-	ScreenCoordinates *newScreenCoordinates = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
-	newScreenCoordinates->x = x;
-	newScreenCoordinates->y = y;
+	ScreenCoordinates *newScreenCoordinates = (ScreenCoordinates*)mem_arena_alloc(sceneArena, sizeof(ScreenCoordinates));
+    if(newScreenCoordinates){
+        newScreenCoordinates->x = x;
+        newScreenCoordinates->y = y;
+    }
 	return newScreenCoordinates;
 }
 // Helper Functions ============================================================================================
@@ -244,6 +249,7 @@ void sp_checkCameras(){
 	}
 }
 
+
 /* Convert world coordinates to screen coordinates relative to camera */
 ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera){
 	ScreenCoordinates *screenPos = NULL;
@@ -254,8 +260,10 @@ ScreenCoordinates *sp_worldToScreen(Coordinates *worldPos, Camera *camera){
 		return NULL;
 	}
 	
-	screenPos = (ScreenCoordinates*)malloc(sizeof(ScreenCoordinates));
+	screenPos = (ScreenCoordinates*)mem_arena_alloc(frameArena, sizeof(ScreenCoordinates));
 	
+	if(!screenPos) return NULL;
+
 	/* Calculate offset from camera position */
 
 	// offsetX = 0

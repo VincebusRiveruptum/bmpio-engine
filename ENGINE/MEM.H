@@ -9,6 +9,13 @@
 #define MEM_ARENA_CACHE 1
 #define MEM_ARENA_PURGABLE 2
 
+/* ARENA SIZES =========================================================================*/
+
+#define ARENA_SIZE_SESSION  (4096 * 1024)   // 4MB for high-level assets
+#define ARENA_SIZE_SCENE    (1024 * 1024)   // 1MB for level-specific data
+#define ARENA_SIZE_FRAME    (128 * 1024)    // 128KB for transients (reset every frame)
+#define ARENA_SIZE_TEST     (512 * 1024)    // 512KB for internal engineering tests
+
 /* TYPES ===========================================================================*/
 
 typedef struct MemoryArena{
@@ -24,8 +31,12 @@ typedef struct MemoryArena{
 extern MemoryArena *gameSessionArena;
 extern MemoryArena *sceneArena;
 extern MemoryArena *frameArena;
+extern MemoryArena *testArena;
 
 /* PROTOTYPES ===========================================================================*/
+
+void mem_init();
+void mem_shutdown();
 
 void mem_arena_init(MemoryArena *arena, char *name, unsigned char type, size_t size);
 void *mem_arena_alloc(MemoryArena *arena, size_t size);

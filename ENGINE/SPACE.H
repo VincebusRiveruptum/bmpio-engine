@@ -3,6 +3,7 @@
 #define ENGINE_SPACE_H
 
 #include "STD.H"
+#include "MEM.H"
 
 /* Forward declarations to avoid circular dependencies */
 struct Sprite;

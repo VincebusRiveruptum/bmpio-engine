@@ -24,6 +24,9 @@
 // TEST
 #include "TEST.H"
 
+// MEM
+#include "MEM.H"
+
 // HAL
 #include "../HAL/VGAREGS.H"
 

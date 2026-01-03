@@ -1,4 +1,5 @@
 #include "ASSETS.H"
+#include "MEM.H"
 
 /*
 	This module is for file handling the assets and everyhting related with interacting with sprites and animations
@@ -6,7 +7,9 @@
 
 /* Animation Methods */
 Animation *as_createAnimation(){
-	Animation *newAnimation = (Animation*)malloc(sizeof(Animation));
+	Animation *newAnimation = (Animation*)mem_arena_alloc(gameSessionArena, sizeof(Animation));
+    if(!newAnimation) return NULL;
+    memset(newAnimation, 0, sizeof(Animation));
 	newAnimation->frames = NULL;
 	newAnimation->length = 0;
 	newAnimation->frameDelay = 0;
@@ -17,7 +20,9 @@ Animation *as_createAnimation(){
 }
 
 Sprite *as_createSprite(){
-	Sprite *newSprite = (Sprite*)malloc(sizeof(Sprite));
+	Sprite *newSprite = (Sprite*)mem_arena_alloc(gameSessionArena, sizeof(Sprite));
+    if(!newSprite) return NULL;
+    memset(newSprite, 0, sizeof(Sprite));
 	newSprite->bmpData = NULL;
 	newSprite->maskColor = 255;
 	return newSprite;
@@ -35,7 +40,8 @@ bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
 	sprite->bmpData = loadedFrame->bmpData;
 	sprite->maskColor = maskColor;
 	
-	free(loadedFrame);
+    // loadedFrame itself was a temporary wrapper. 
+    // In arena mode, we don't individual free.
 	return true;
 }
 
@@ -81,15 +87,16 @@ BMPfile *as_loadBMPfile(char *fileName){
 
 	logger("[as_loadBMPfile]: Loading %s ", fileName);
 
-	newFile = (BMPfile *)malloc(sizeof(BMPfile));
-	newFile->bmpData = (BMPdata *)malloc(sizeof(BMPdata));
+	newFile = (BMPfile *)mem_arena_alloc(gameSessionArena, sizeof(BMPfile));
+	newFile->bmpData = (BMPdata *)mem_arena_alloc(gameSessionArena, sizeof(BMPdata));
 	newFile->bmpData->bmp = NULL;
-	newFile->bmpData->palette = (Color *)malloc(256 * sizeof(Color));
+	newFile->bmpData->palette = (Color *)mem_arena_alloc(gameSessionArena, 256 * sizeof(Color));
 
 	if (newFile == NULL || newFile->bmpData == NULL || newFile->bmpData->palette == NULL){
 		logger("[as_loadBMPfile]: Memory allocation failed");
 		return NULL;
 	}
+    memset(newFile->bmpData->palette, 0, 256 * sizeof(Color));
 
 	fread(id, 2, 1, fp);
 
@@ -115,7 +122,7 @@ BMPfile *as_loadBMPfile(char *fileName){
 
 	/* Lectura de imagen */
 
-	newFile->bmpData->bmp = (unsigned char **)malloc(sizeof(unsigned char *) * newFile->ih.y);
+	newFile->bmpData->bmp = (unsigned char **)mem_arena_alloc(gameSessionArena, sizeof(unsigned char *) * newFile->ih.y);
 
 	if (newFile->bmpData->bmp == NULL){
 		logger("[as_loadBMPfile]: Could not allocate bmp height.");
@@ -127,7 +134,7 @@ BMPfile *as_loadBMPfile(char *fileName){
 	};
 
 	for (y = (int) newFile->ih.y - 1; y >= 0; y--){
-		newFile->bmpData->bmp[y] = (unsigned char *)malloc(sizeof(unsigned char) * (newFile->ih.x + padding));
+		newFile->bmpData->bmp[y] = (unsigned char *)mem_arena_alloc(gameSessionArena, sizeof(unsigned char) * (newFile->ih.x + padding));
 
 		if (newFile->bmpData->bmp[y] == NULL)
 		{
@@ -140,9 +147,7 @@ BMPfile *as_loadBMPfile(char *fileName){
 		}
 	}
 
-	free(id);
 	fclose(fp);
-
 	return newFile;
 }
 
@@ -365,11 +370,10 @@ bool as_addRotationTransformation(Animation *animation, RotationTransformation *
         newRotationTransformation = transformation;
     }
 
-	newTransformation = (Transformation *)malloc(sizeof(Transformation));
+	newTransformation = (Transformation *)mem_arena_alloc(gameSessionArena, sizeof(Transformation));
 	
 	if (!newTransformation){
 		logger("[as_addRotationTransformation]: Could not allocate memory for new transformation wrapper");
-        if (!transformation) free(newRotationTransformation);
 		return false;
 	}
 
