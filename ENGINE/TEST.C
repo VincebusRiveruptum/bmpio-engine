@@ -51,10 +51,8 @@ void t_createRenamon(){
     Transformation *transformation = NULL;
 
     Actor *renamonActor = NULL;
-
     Asset *renamonAsset = NULL;
-    Asset *renamonAsset2 = NULL;
-    
+
     sprintf(renamonPath, "%s\\jump\\FRAME1.bmp", assetsPath);
     
     renamonFile = as_loadBMPfile(renamonPath);
@@ -80,6 +78,13 @@ void t_createRenamon(){
         renamonJumping,
         NULL
     );
+    renamonActions[2] = gm_createAction(
+        "Walk", 
+        GM_ACTION_WALK,
+        renamonIdle,
+        NULL
+    );
+    
     // 'Renamon' actor
     renamonActor = gm_createActor(
         "Renamon", 
@@ -92,15 +97,10 @@ void t_createRenamon(){
         renamonActor,
         sp_createCoordinates(0, 0, 0)
     );
-    renamonAsset2 = gm_createAsset(
-        renamonActor,
-        sp_createCoordinates(30, 2, 2)
-    );
 
     logger("[t_createRenamon]: Inserting asset");
     
     gm_insertAsset(renamonAsset);
-    gm_insertAsset(renamonAsset2);
   
     testPalette = renamonFile->bmpData->palette;   
 

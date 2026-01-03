@@ -169,22 +169,76 @@ void gm_listenEvents(){
 }
 
 void gm_kbdInput(){
-	keyPressed = listenKeys();
-
-	if(keyPressed){
-		logger("[gm_kbdInput]: Key pressed: %c, %d", keyPressed, keyPressed);
+	if(keyboardTable[KEY_SPACE] == true){
+		gm_mainPlayerJump();
 	}
 
-	if(keyPressed == SPACE_KEY){
-		gm_mainPlayerJump();
+	if(keyboardTable[KEY_A] == true){
+		gm_mainPlayerWalkLeft();
+	}
+
+	if(keyboardTable[KEY_D] == true){
+		gm_mainPlayerWalkRight();
+	}
+
+	if(keyboardTable[KEY_W] == true){
+		gm_mainPlayerWalkForward();
+	}
+
+	if(keyboardTable[KEY_S] == true){
+		gm_mainPlayerWalkBack();
 	}
 }
 
 void gm_mainPlayerJump(){
-	if (!player){
+	if (!player){	
 		logger("\n[gm_mainPlayerJump]: Error: Player is NULL");
 		return;
 	}
 	logger("\n[gm_mainPlayerJump]: Player jumped");
 	gm_setCurrentAction(player->actor, GM_ACTION_JUMP);
+}
+
+void gm_mainPlayerWalkLeft(){
+	if (!player){
+		logger("\n[gm_mainPlayerWalkLeft]: Error: Player is NULL");
+		return;
+	}
+	logger("\n[gm_mainPlayerWalkLeft]: Player moved left");
+	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
+
+	player->coordinates->x -= 16;
+}
+
+void gm_mainPlayerWalkRight(){
+	if (!player){
+		logger("\n[gm_mainPlayerWalkRight]: Error: Player is NULL");
+		return;
+	}
+	logger("\n[gm_mainPlayerWalkRight]: Player moved right");
+	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
+
+	player->coordinates->x += 16;
+}
+
+void gm_mainPlayerWalkForward(){
+	if (!player){
+		logger("\n[gm_mainPlayerWalkForward]: Error: Player is NULL");
+		return;
+	}
+	logger("\n[gm_mainPlayerWalkForward]: Player moved forward");
+	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
+
+	player->coordinates->y -= 16;
+}
+
+void gm_mainPlayerWalkBack(){
+	if (!player){
+		logger("\n[gm_mainPlayerWalkBack]: Error: Player is NULL");
+		return;
+	}
+	logger("\n[gm_mainPlayerWalkBack]: Player moved back");
+	gm_setCurrentAction(player->actor, GM_ACTION_WALK);
+
+	player->coordinates->y += 16;
 }

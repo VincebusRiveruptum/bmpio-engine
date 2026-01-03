@@ -144,7 +144,17 @@ typedef unsigned char bool;
 #define KEY_INSERT         82
 #define KEY_DELETE         83
 
-extern unsigned char keyboardTable[256];
+
+/* PROTOTYPES ===========================================================*/
+
+void initKeyboard();
+void closeKeyboard();
+void listenKeyboard();
+
+/* VARIABLES ============================================================*/
+
+extern volatile unsigned char keyboardTable[256];
+extern volatile unsigned char prevKeyboardTable[256];
 extern const unsigned char *keyboardMap[256];
 
 #endif

@@ -1,7 +1,9 @@
 #include "INPUT.H"
+#include <dos.h>
 
 // BIOS Data Area (BDA) addresses for 32-bit protected mode
-unsigned char keyboardTable[256];
+volatile unsigned char keyboardTable[256];          // Stores the current keys status
+volatile unsigned char prevKeyboardTable[256];      // Stores the previous keys status
 
 const unsigned char *keyboardMap[256] = {
     NULL,
@@ -107,30 +109,72 @@ const unsigned char *keyboardMap[256] = {
     NULL
 };
 
-#ifdef STANDALONE  
 
+// Variables managed by ISR
+unsigned char scanCode;
+
+// NOP in ISR mode, kept for reverse compatibility
+
+void ( __interrupt __far *oldKeyISR)();
+
+static void __interrupt __far keyISR() {
+    unsigned char status;
+    
+    // Read scan code
+    scanCode = inPortb(0x60);
+
+    // Update table
+    if (scanCode < 128) {
+        keyboardTable[scanCode] = 1;
+    } else {
+        keyboardTable[scanCode - 128] = 0;
+    }
+
+    // Acknowledge the PIC (Programmable Interrupt Controller)
+    outPortb(0x20, 0x20);
+}
+
+void initKeyboard() {
+    int i;
+    for (i = 0; i < 256; i++) keyboardTable[i] = 0;
+    oldKeyISR = _dos_getvect(0x09);
+    _dos_setvect(0x09, keyISR);
+}
+
+void closeKeyboard() {
+    _dos_setvect(0x09, oldKeyISR);
+}
+
+void listenKeyboard(){
+    // In ISR mode, this becomes a NOP or can be used for secondary processing
+    // since the table updates in the background.
+}
+
+#ifdef STANDALONE  
 // Standalone test for input
 int main(){
-    unsigned char scanCode;
-    unsigned char prevScancode;
-    bool availability;
-    while(1){
-        availability = inPortb(0x64) & 0x01;
-        if(availability){      
-            scanCode = inPortb(0x60);
-            
-            if(scanCode < 128){
-                keyboardTable[scanCode] = true;
-                printf("User pressed: %d\n", scanCode);
-            }else{
-                if(scanCode != prevScancode){
-                    keyboardTable[scanCode - 128] = false;
-                    printf("User released: %d\n", scanCode - 128);
+    int i=0;
+    printf("Input System Test (ISR)\n");
+    printf("Press ESC to exit.\n\n");
+
+    initKeyboard();
+
+    while(keyboardTable[KEY_ESC] == false) {
+        for(i = 0; i < 256; i++) {
+            // Only act if the state CHANGED since the last check
+            if(keyboardTable[i] != prevKeyboardTable[i]) {
+                if (keyboardMap[i] != NULL) {
+                    if (keyboardTable[i] == true) {
+                        printf("Key %s: PRESSED\n", keyboardMap[i]);
+                    } else {
+                        printf("Key %s: RELEASED\n", keyboardMap[i]);
+                    }
                 }
+                prevKeyboardTable[i] = keyboardTable[i]; // Update the tracker
             }
-            prevScancode = scanCode;
         }
     }
+    closeKeyboard();
     return 0;
 }
 

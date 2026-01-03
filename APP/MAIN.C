@@ -22,10 +22,9 @@ int main(int argc, char *argv[]){
     v_set200pxMode();
     eng_setPalette(testPalette);
     sp_initCameras();
-
-    while (!checkAppEnd()){
-        //fillScreen(0);
-        
+    initKeyboard();
+    
+    while (keyboardTable[KEY_ESC] == false){
         gm_listenEvents();
         sp_checkCameras();
         eng_renderFrame(gameTicks);
@@ -34,6 +33,7 @@ int main(int argc, char *argv[]){
         }
         gameTicks++;
     }
+    closeKeyboard();
     
     v_setTXTMode();
 
