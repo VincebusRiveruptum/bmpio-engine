@@ -193,16 +193,12 @@ void sp_initCameras(){
 				assetList = visGrid[i][j][k];
 
 				if(assetList == NULL){
-					logger("[sp_initCameras]: Error, Asset list is NULL");
 					continue;
 				}
 				
-				assetListLength = assetList->length;
+				node = assetList->firstNode;
 
-				for(assetListIndex = 0; assetListIndex < assetListLength; assetListIndex++){
-					node = getNodeByIndex(&assetList, assetListIndex);
-                    if(node == NULL) continue;
-					
+				while(node != NULL){
                     asset = (Asset*)node->data;
 					
 					asset->vis_prevX = asset->vis_currentX;
@@ -217,6 +213,7 @@ void sp_initCameras(){
 					    renderQueue[qIndex] = asset;
 					    qIndex++;
                     }
+					node = node->next;
 				}
 			}
 		}

@@ -30,7 +30,6 @@ void eng_setPalette(Color *palette){
 void eng_renderFrame(unsigned long gametick){
 	unsigned long frameToRender = 0;
 	unsigned long i;
-	Node *actorSpriteNode = NULL;
 	Sprite *actorSprite = NULL;
 	ScreenCoordinates *screenPos = NULL;
 	Asset *asset = NULL;
@@ -39,7 +38,6 @@ void eng_renderFrame(unsigned long gametick){
 	Animation *actionAnimation = NULL;
 	
 	Transformation *transformation = NULL;
-	int transformationLength = 0;
 	int transformationIndex = 0;
 	
 	int totalAngle = 0;
@@ -89,17 +87,10 @@ void eng_renderFrame(unsigned long gametick){
 		}
 
 		frameToRender = gametick % actionAnimation->length;
-		actorSpriteNode = getNodeByIndex(&(actionAnimation->frames), (int)frameToRender);
-		
-		if(actorSpriteNode == NULL){
-			logger("[eng_renderFrame]:Actor sprite node %ld is NULL", frameToRender);
-			continue;
-		}
-		
-		actorSprite = (Sprite *)actorSpriteNode->data;
+		actorSprite = actionAnimation->frames[frameToRender];
 		
 		if(actorSprite == NULL){
-			logger("[eng_renderFrame]:Actor sprite data %ld is NULL", frameToRender);
+			logger("[eng_renderFrame]:Actor sprite %ld is NULL", frameToRender);
 			continue;
 		}
 		
@@ -115,35 +106,29 @@ void eng_renderFrame(unsigned long gametick){
 			continue;
 		}
 		
-		if(actionAnimation->transformationList && actionAnimation->transformationList->length > 0){
-			transformationLength = actionAnimation->transformationList->length;
+		for(transformationIndex = 0; transformationIndex < GM_ANIMATION_MAX_TRANSFORMATIONS; transformationIndex++){
+			transformation = actionAnimation->transformationList[transformationIndex];
+			if(transformation == NULL) continue;
 			
-			for(transformationIndex = 0; transformationIndex < transformationLength; transformationIndex++){
-				Node *node = getNodeByIndex(&(actionAnimation->transformationList), transformationIndex);
-				if(node == NULL) continue;
-				transformation = (Transformation *)node->data;
-				if(transformation == NULL) continue;
+			// ROTATION
+			if (transformation->type == TR_ROTATION){
+				rot = (RotationTransformation *)transformation->data;
 				
-				// ROTATION
-				if (transformation->type == TR_ROTATION){
-					rot = (RotationTransformation *)transformation->data;
-					
-					// Every frame we add the 'angle' step to 'current'
-					rot->current += rot->angle;
-					
-					// Keep it bounded 0-359
-					if (rot->current >= 360) rot->current %= 360;
-					if (rot->current < 0) rot->current = (rot->current % 360) + 360;
-					
-					totalAngle += rot->current;
-				}
+				// Every frame we add the 'angle' step to 'current'
+				rot->current += rot->angle;
 				
-				// TRANSLATION
-				if (transformation->type == TR_TRANSLATION){
-					//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
-					//TODO: Implement asset translation in space, instead of fake sprite translation
-					logger("[eng_renderAssets]: Translation transformation PENDING"); 
-				}
+				// Keep it bounded 0-359
+				if (rot->current >= 360) rot->current %= 360;
+				if (rot->current < 0) rot->current = (rot->current % 360) + 360;
+				
+				totalAngle += rot->current;
+			}
+			
+			// TRANSLATION
+			if (transformation->type == TR_TRANSLATION){
+				//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+				//TODO: Implement asset translation in space, instead of fake sprite translation
+				logger("[eng_renderFrame]: Translation transformation PENDING"); 
 			}
 		}
 		

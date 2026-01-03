@@ -7,15 +7,23 @@
 
 /* Animation Methods */
 Animation *as_createAnimation(){
+	int i;
 	Animation *newAnimation = (Animation*)mem_arena_alloc(gameSessionArena, sizeof(Animation));
     if(!newAnimation) return NULL;
     memset(newAnimation, 0, sizeof(Animation));
-	newAnimation->frames = NULL;
+
+	for(i = 0; i < GM_ANIMATION_MAX_FRAMES; i++){
+		newAnimation->frames[i] = NULL;
+	}
+
+	for(i = 0; i < GM_ANIMATION_MAX_TRANSFORMATIONS; i++){
+		newAnimation->transformationList[i] = NULL;
+	}
+
 	newAnimation->length = 0;
 	newAnimation->frameDelay = 0;
 	newAnimation->loop = false;
 	newAnimation->maskColor = 255;
-	newAnimation->transformationList = NULL;
 	return newAnimation;
 }
 
@@ -56,15 +64,14 @@ void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned ch
 		animation = as_createAnimation();
 	}
 	
-	for(i = 0; frameArray[i] != NULL; i++){
+	for(i = 0; frameArray[i] != NULL && i < GM_ANIMATION_MAX_FRAMES; i++){
 		sprite = as_createSprite();
 		if(!as_loadSprite(sprite, frameArray[i], maskColor)){
 			logger("[as_loadAnimationFrames]: Error loading frame sprite %s", frameArray[i]);
-			free(sprite);
 			continue;
 		}
 
-		addGenericNode(&animation->frames, (void*)sprite);
+		animation->frames[i] = sprite;
 		animation->length++;
 
 		logger("[as_loadAnimationFrames]: Loaded frame %s", frameArray[i]);
@@ -309,28 +316,26 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
 }
 
 bool as_addTransformation(Animation *animation, Transformation *transformation){
-	Node *newNode = NULL;
+	int i;
 
 	if(!animation || !transformation) return false;
 	
-	newNode = (Node *)malloc(sizeof(Node));
-	if(!newNode) {
-		logger("[Could not allocate memory for new node");
-		return false;
+	for(i = 0; i < GM_ANIMATION_MAX_TRANSFORMATIONS; i++){
+		if(animation->transformationList[i] == NULL){
+			animation->transformationList[i] = transformation;
+			logger("\nAdded transformation at slot %d", i);
+			return true;
+		}
 	}
-	newNode->data = (void *)transformation;
-	newNode->next = NULL;
-	newNode->prev = NULL;
-	
-	addToList(&animation->transformationList, newNode);
-	logger("\nAdded transformation. New list length: %d", animation->transformationList->length);
-	return true;
+
+	logger("[as_addTransformation]: Error: Transformation list full");
+	return false;
 }
 
 bool as_removeTransformation(Animation *animation, int index){
-	if(!animation || !index) return false;
+	if(!animation || index < 0 || index >= GM_ANIMATION_MAX_TRANSFORMATIONS) return false;
 
-	deleteNodeByIndex(&animation->transformationList, index);
+	animation->transformationList[index] = NULL;
 	return true;
 }
 
