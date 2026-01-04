@@ -329,6 +329,55 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
     }
 }
 
+void as_drawBox(Shape *boxShape, int x, int y){
+	int i, j, plane;
+	int start_j;
+    int width, height;
+    int x_start = 0, y_start = 0;
+    int x_end, y_end;
+    unsigned long page_offs = pageOffsets[nextPage];
+    unsigned long row_offs;
+	Box *box = NULL;
+	if(boxShape == NULL || boxShape->shapeObject == NULL) return;
+
+	box = (Box *)boxShape->shapeObject;
+    width = (int)box->width;
+    height = (int)box->height;
+
+    /* Adjust for CENTER - as_drawBox matches as_drawBitmap behavior */
+    x = x - (width >> 1);
+    y = y - (height >> 1);
+
+    x_end = width;
+    y_end = height;
+
+    /* Clipping */
+    if (y < 0) { y_start = -y; }
+    if (y + height > 200) y_end = 200 - y;
+    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+
+    if (x < 0) { x_start = -x; }
+    if (x + width > 320) x_end = 320 - x;
+    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+
+    /* Mode X Plane Batched Fill */
+    for (plane = 0; plane < 4; plane++) {
+       
+        outPortb(SEQU_ADDR, 0x02);
+        outPortb(SEQU_ADDR + 1, 0x01 << plane);
+
+        // Find first j >= x_start such that (x + j) % 4 == plane
+        start_j = x_start + ((plane - ((x + x_start) % 4) + 4) % 4);
+
+        for (i = y_start; i < y_end; i++) {
+            row_offs = page_offs + (unsigned long)(y + i) * 80;
+            for (j = start_j; j < x_end; j += 4) {
+                v_putPixelASM(row_offs + ((x + j) >> 2), boxShape->color);
+            }
+        }
+    }
+}
+
 bool as_addTransformation(Animation *animation, Transformation *transformation){
 	int i;
 

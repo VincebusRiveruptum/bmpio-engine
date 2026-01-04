@@ -23,6 +23,10 @@
 
 #define GM_MAX_ACTIONS 16
 
+#define GM_SHAPE_TYPE_BOX 0x01
+#define GM_SHAPE_TYPE_SPHERE 0x02
+#define GM_SHAPE_TYPE_CYLINDER 0x03
+
 /* TYPES ===================================================================================*/
 
 typedef struct Stats{
@@ -98,10 +102,10 @@ typedef struct Actor{
 /* This cound be an actor instance that is currently playing */
 typedef struct Asset{
 	unsigned long id;
-	struct Actor *actor;
+	struct Actor *actor;				// Just for rendering
+	struct Shape *shape;				// Could be used for collision or rendering as can be invisible
 
 	struct Coordinates *coordinates;
-	struct Coordinates *previousCoordinates;		// Used for checking movement
 	struct Coordinates *pointingTo;
 
 	struct Collision collisions[MAX_COLLISIONS];
@@ -119,7 +123,6 @@ typedef struct Asset{
 typedef struct AssetList{
 	struct List *assets;
 }AssetList;
-
 
 /* 	GLOBAL VARIABLES ===========================================================================*/
 extern Asset *player;
