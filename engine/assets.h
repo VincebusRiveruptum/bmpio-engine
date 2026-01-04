@@ -133,4 +133,6 @@ bool as_removeTransformation(Animation *animation, int index);
 
 void as_drawBox(Shape *boxShape, int x, int y);
 RotationTransformation *as_createRotationTransformation(int angle, int current);
+Shape *as_createShape(void *shapeObject, unsigned char color, unsigned char type, bool isVisible);
+Box *as_createBox(unsigned int width, unsigned int height, unsigned int depth);
 #endif

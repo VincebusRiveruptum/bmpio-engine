@@ -106,3 +106,63 @@ Things that could be implemented right now:
 	- Basic sounds (pc-speaker)
 	- Scale transformation
 	
+/////////////////
+
+4.1.2026
+
+I'm thinking of which part of the engine is the most inneficient. Maybe it's the architecture which is too 
+scalable, should the logic be more tighter and wired? That's a matter which i can leave behind for a 
+while, but not too long. 
+
+The current complexity of the engine is starting to become a problem for me, i have little experience
+working game engines so some parts such as bitmap drawing, worldToScreen projection are a bit blurry
+in my head, they work but i don't know how, lol.
+
+Ok. So, the next steps are:
+1. Hitboxes / Simple shape assets, which is implemented but not tested yet.
+2. Collision system
+3. Gravity
+
+After that, the player character 'Renamon' will be able to move and jump naturally
+
+Next steps would be:
+
+1. Other assets: 
+	- Items
+	- Props
+	- Enemys
+	- Asset scanning and updating: This opens to a bunch of questions, visible assets are the ones the camera can see, so,
+	these are the ones that are in the same visGrid position as the camera, at the moment, the visible ones are the only
+	to be updated, but what happen to the rest that are no visible? They will be static until the player sees them?.
+	The asset scanner will listen the environment and depending on it will detect if assets are moving, are mid-action, 
+	mid-air, gravity affected, etc.
+
+2. NPCs: 
+	- AI: I have no idea how to implement AI yet, nor ideas of secondary NPCs. So first i have to create a character,
+	define its behavior, and then implement the AI.
+
+I want this engine to be super escalable, maybe we could optimize it in a lower lever way in the future, maybe this engine
+will require a 486DX2/66 as minimum requirement.I need to be this way because in the future i want to tinker on it again and
+implement 3D without having to do it from scratch. I want to avoid tight logic because it breaks scalability, its a tradeoff i know. 
+Tight logic = +perfomance, Scalability =  -perfomance. 
+
+Right now i'll test the shape implementation, any bugs i will report them to you and we will fix them together. After that i
+will see the colission system, i think i will need you on the gravity implementation.
+
+---
+
+Architecture diagram :
+
+-------------------------------------------------------------------------------------------------
+|																								|
+|												MAIN											|
+|																								|
+-------------------------------------------------------------------------------------------------
+|														|						|
+|						ENGINE.C						|						|				
+|														|			-----------------------------							
+---------------------------------------------------------			|  LOG	|	INPUT	|	ENV	|	<--- DEPS
+|		GAME		|		ASSETS		|		MEM		|			-----------------------------									
+---------------------------------------------------------			-----------------------------
+|						RENDERER 						|___________|     HAL      /    VGA		|
+---------------------------------------------------------			-----------------------------

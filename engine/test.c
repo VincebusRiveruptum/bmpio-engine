@@ -93,7 +93,7 @@ void t_createRenamon(){
     Animation *renamonRunning = NULL;
     Animation *renamonSprint = NULL;
     Animation *renamonCrouch = NULL;
-    
+
     Actor *renamonActor = NULL;
     Asset *renamonAsset = NULL;
 
@@ -163,6 +163,7 @@ void t_createRenamon(){
     
     renamonAsset = gm_createAsset(
         renamonActor,
+        NULL,
         sp_createCoordinates(0, 0, 0)
     );
 
@@ -202,6 +203,7 @@ void t_skullBgTest(){
 
     skullAsset = gm_createAsset(
         gm_createActor("Skulls Background", "An impaled skulls background", gm_createStats(100, 100, 10, 10, 10), skullBgActions),
+        NULL,
         sp_createCoordinates(0, 0, -100)
     );
 
