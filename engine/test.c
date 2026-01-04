@@ -163,7 +163,7 @@ void t_createRenamon(){
     
     renamonAsset = gm_createAsset(
         renamonActor,
-        NULL,
+        as_createShape(as_createBox(10, 10, 10), 250, GM_SHAPE_TYPE_BOX, true),
         sp_createCoordinates(0, 0, 0)
     );
 

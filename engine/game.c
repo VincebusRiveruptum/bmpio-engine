@@ -25,7 +25,8 @@ Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates){
 	}
 
 	newAsset->actor = actor;
-	newAsset->shape = shape ? shape : NULL; 
+	newAsset->shape = shape; 
+	
 	newAsset->coordinates = coordinates;
 	newAsset->pointingTo = pointingTo;			// pointing to nothing for now
 
