@@ -266,6 +266,34 @@ bool sp_isInFrustrum(int screenX, int screenY, struct Sprite *sprite){
 	return true;
 }
 
+bool sp_isShapeInFrustrum(int screenX, int screenY, struct Shape *shape){
+	int boxWidth;
+	int boxHeight;
+	int boxDepth;
+	Box *box = NULL;
+	
+	if(!shape){
+		logger("[sp_isShapeInFrustrum]: Error, shape is NULL");
+		return false;
+	}
+
+	if(shape->type == GM_SHAPE_TYPE_BOX){
+		box = (Box *)shape->shapeObject;
+		boxWidth = (int)box->width;
+		boxHeight = (int)box->height;
+		boxDepth = (int)box->depth;
+		/* Treat screenX/Y as CENTER */
+		if(
+			screenX + (boxWidth / 2) < 0 ||
+			screenX - (boxWidth / 2) > VID_WIDTH ||
+			screenY + (boxHeight / 2) < 0 ||
+			screenY - (boxHeight / 2) > VID_HEIGHT
+		) return false;
+	}
+	
+	return true;
+}
+
 void sp_renderQueueApplyZOrdering(int length){
 	int i, j;
 	Asset *temp;

@@ -69,6 +69,19 @@ typedef struct BMPdata{                     // Raw bmp data
     long height;
 }BMPdata;
 
+typedef struct Box{
+	unsigned int width;
+	unsigned int height;
+	unsigned int depth;						//z axis
+}Box;
+
+typedef struct Shape{
+	void *shapeObject;						// BOX OR ANY SHAPE
+	unsigned char color;					// SHAPE COLOR
+	unsigned char type;						// SHAPE TYPE
+	bool isVisible;							// SHAPE IS VISIBLE
+}Shape;
+
 typedef struct Sprite{
 	struct BMPdata *bmpData;
 	char maskColor;
@@ -118,5 +131,6 @@ bool as_addTransformation(Animation *animation, Transformation *transformation);
 bool as_addRotationTransformation(Animation *animation, RotationTransformation *transformation);
 bool as_removeTransformation(Animation *animation, int index);
 
+void as_drawBox(Shape *boxShape, int x, int y);
 RotationTransformation *as_createRotationTransformation(int angle, int current);
 #endif

@@ -11,7 +11,6 @@ Asset *player = NULL;
 Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 	Asset *newAsset = (Asset*)mem_arena_alloc(sceneArena, sizeof(Asset));
 	Coordinates *pointingTo = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
-	Coordinates *previousCoordinates = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
 
 	if(!newAsset){
 		logger("\n[gm_createAsset]: Error: Could not allocate memory for asset");
@@ -31,11 +30,6 @@ Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 	newAsset->pointingTo->x = coordinates->x;
 	newAsset->pointingTo->y = coordinates->y;
 	newAsset->pointingTo->z = coordinates->z;
-
-	newAsset->previousCoordinates = previousCoordinates;	// If current coordinates are different from previous, then the asset is moving
-	newAsset->previousCoordinates->x = coordinates->x;
-	newAsset->previousCoordinates->y = coordinates->y;
-	newAsset->previousCoordinates->z = coordinates->z;
 
 	newAsset->vis_prevX = 0;
 	newAsset->vis_prevY = 0;
@@ -181,21 +175,6 @@ void gm_listenEvents(){
 	// Environment events
 
 	gm_kbdInput();
-	gm_assetEvents();
-}
-void gm_assetEvents(){
-	checkAssetsMoving();
-}
-
-void checkAssetsMoving(){
-	// Player asset separated from others for now (renderQueue) as if were more assets around the complexity increases
-	if(	player->coordinates->x == player->previousCoordinates->x &&
-		player->coordinates->y == player->previousCoordinates->y && 
-		player->coordinates->z == player->previousCoordinates->z)
-	{
-		logger("[checkAssetsMoving]: Player is not moving");
-		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
-	}
 }
 
 void gm_kbdInput(){
