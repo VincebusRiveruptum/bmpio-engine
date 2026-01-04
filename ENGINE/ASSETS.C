@@ -458,3 +458,37 @@ bool as_addRotationTransformation(Animation *animation, RotationTransformation *
 	logger("[as_addRotationTransformation]: Added rotation transformation to animation");
 	return true;
 }
+
+Shape *as_createShape(void *shapeObject, unsigned char color, unsigned char type, bool isVisible){
+	Shape *newShape = NULL;
+	
+	newShape = (Shape *)mem_arena_alloc(gameSessionArena, sizeof(Shape));
+	if (!newShape){
+		logger("[as_createShape]: Could not allocate memory for new shape");
+		return NULL;
+	}
+	
+	newShape->shapeObject = shapeObject;
+	newShape->color = color;
+	newShape->type = type;
+	newShape->isVisible = isVisible;
+
+	return newShape;
+}	
+
+Box *as_createBox(unsigned int width, unsigned int height, unsigned int depth){
+	Box *newBox = NULL;
+
+	newBox = (Box *)mem_arena_alloc(gameSessionArena, sizeof(Box));
+
+	if(!newBox){
+		logger("[as_createBox]: Could not allocate memory for new box");
+		return NULL;
+	}
+
+	newBox->width = width;
+	newBox->height = height;
+	newBox->depth = depth;
+
+	return newBox;
+}

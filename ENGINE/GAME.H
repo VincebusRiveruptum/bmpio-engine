@@ -136,7 +136,7 @@ extern Asset *player;
 	defend
 */
 
-Asset *gm_createAsset(Actor *actor, Coordinates *coordinates);
+Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates);
 void gm_insertAsset(Asset *asset);
 Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index);
 void gm_destroyAsset(Asset *asset);

@@ -8,7 +8,7 @@
 unsigned char keyPressed = 0;
 Asset *player = NULL;
 
-Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
+Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates){
 	Asset *newAsset = (Asset*)mem_arena_alloc(sceneArena, sizeof(Asset));
 	Coordinates *pointingTo = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
 
@@ -16,6 +16,7 @@ Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 		logger("\n[gm_createAsset]: Error: Could not allocate memory for asset");
 		return NULL;
 	}
+
     memset(newAsset, 0, sizeof(Asset));
     
     if(!actor){
@@ -24,6 +25,7 @@ Asset *gm_createAsset(Actor *actor, Coordinates *coordinates){
 	}
 
 	newAsset->actor = actor;
+	newAsset->shape = shape ? shape : NULL; 
 	newAsset->coordinates = coordinates;
 	newAsset->pointingTo = pointingTo;			// pointing to nothing for now
 
