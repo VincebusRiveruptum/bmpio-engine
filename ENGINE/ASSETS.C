@@ -1,6 +1,6 @@
 #include "ASSETS.H"
 #include "MEM.H"
-
+#include "GAME.H"
 /*
 	This module is for file handling the assets and everyhting related with interacting with sprites and animations
 */
@@ -466,6 +466,10 @@ Shape *as_createShape(void *shapeObject, unsigned char color, unsigned char type
 	if (!newShape){
 		logger("[as_createShape]: Could not allocate memory for new shape");
 		return NULL;
+	}
+
+	if(type == GM_SHAPE_TYPE_BOX){
+		logger("\n[as_createShape]: Created box shape: color:%d, w:%d h:%d d:%d", color, ((Box*)shapeObject)->width, ((Box*)shapeObject)->height, ((Box*)shapeObject)->depth);
 	}
 	
 	newShape->shapeObject = shapeObject;
