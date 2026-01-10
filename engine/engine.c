@@ -91,7 +91,9 @@ void eng_renderFrame(unsigned long gametick){
 				if(shape){
 					if(shape->type == GM_SHAPE_TYPE_BOX){
 						if(sp_isShapeInFrustrum(totalOffsetX, totalOffsetY, shape)){
-							as_drawBox(shape, totalOffsetX, totalOffsetY);
+							if(shape->isVisible && shape->color != GM_MASK_COLOR){
+								as_drawBox(shape, totalOffsetX, totalOffsetY);
+							}
 						}
 					}
 					// ...
