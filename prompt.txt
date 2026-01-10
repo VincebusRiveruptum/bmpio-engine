@@ -175,3 +175,8 @@ There is a z-indexing issue, where no matter if positive or negative z-index, th
 rendered in the same order.
 
 Now i'm about to implement the collision system.
+
+I've made a method, g_checkCollisions(), which checks for collisions between an asset and the environment 
+(renderQueue). so each time an asset moves, posterior to the movement, the asset must check for collisions.
+This approach is better than listening to the environment (check collisions on ALL assets in render queue on each tick) 
+which is inneficent.

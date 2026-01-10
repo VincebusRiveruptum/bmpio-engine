@@ -66,10 +66,6 @@ void eng_renderFrame(unsigned long gametick){
 		actor = renderQueue[i]->actor;
 		
 		if(actor){		
-			
-			// if the actor walks, it will check for collisions nearby
-			gm_checkCollisions(renderQueue[i]);
-
 			action = actor->currentAction;
 			
 			if(action == NULL){
