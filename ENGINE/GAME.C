@@ -189,6 +189,16 @@ void gm_checkCollisions(Asset *asset){
 	unsigned int i;
 	Asset *otherAsset;
 	Shape *hitBox;
+	Box *aBox;
+	Box *oBox;
+	long aLeft;
+	long aRight;
+	long aTop;
+	long aBottom;
+	long oLeft;
+	long oRight;
+	long oTop;
+	long oBottom;
 	
 	// Always clear collisions at the start of the check
 	gm_clearCollisions(asset);
@@ -219,10 +229,22 @@ void gm_checkCollisions(Asset *asset){
 				asset->shape->shapeObject != NULL &&
 				otherAsset->shape->type == GM_SHAPE_TYPE_BOX &&
 				otherAsset->shape->shapeObject != NULL){
-				if(	asset->coordinates->y <= otherAsset->coordinates->y + ((Box*)(otherAsset->shape->shapeObject))->height	&&	// CHECK TOP
-					asset->coordinates->y + ((Box*)(asset->shape->shapeObject))->height >= otherAsset->coordinates->y 		&&	// CHECK BOTTOM
-					asset->coordinates->x <= otherAsset->coordinates->x + ((Box*)(otherAsset->shape->shapeObject))->width 	&&	// CHECK RIGHT
-					asset->coordinates->x + ((Box*)(asset->shape->shapeObject))->width >= otherAsset->coordinates->x){			// CHECK LEFT
+				
+				aBox = (Box*)asset->shape->shapeObject;
+				oBox = (Box*)otherAsset->shape->shapeObject;
+
+				aLeft = asset->coordinates->x - (aBox->width >> 1);
+				aRight = asset->coordinates->x + (aBox->width >> 1);
+				aTop = asset->coordinates->y - (aBox->height >> 1);
+				aBottom = asset->coordinates->y + (aBox->height >> 1);
+
+				oLeft = otherAsset->coordinates->x - (oBox->width >> 1);
+				oRight = otherAsset->coordinates->x + (oBox->width >> 1);
+				oTop = otherAsset->coordinates->y - (oBox->height >> 1);
+				oBottom = otherAsset->coordinates->y + (oBox->height >> 1);
+
+				if( aLeft < oRight && aRight > oLeft &&
+					aTop < oBottom && aBottom > oTop){
 					
 					gm_addCollisions(asset, otherAsset);
 				}
