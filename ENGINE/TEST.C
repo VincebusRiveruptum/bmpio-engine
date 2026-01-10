@@ -80,6 +80,7 @@ bool t_initTests(){
     t_createRenamon();
     t_skullBgTest();
     t_testFloor();
+    t_testFloor2();
 
     return true;
 }
@@ -164,7 +165,7 @@ void t_createRenamon(){
     
     renamonAsset = gm_createAsset(
         renamonActor,
-        as_createShape(as_createBox(45, 52, 10), 250, GM_SHAPE_TYPE_BOX, true),
+        as_createShape(as_createBox(45, 52, 10), 255, GM_SHAPE_TYPE_BOX, false),
         sp_createCoordinates(0, 0, 0)
     );
 
@@ -207,6 +208,37 @@ void t_testFloor(){
     
     floorShape = as_createShape(as_createBox(100, 100, 0), 123, GM_SHAPE_TYPE_BOX, true);
     floorCoordinates = sp_createCoordinates(105, 0, 0);
+    
+    floorAsset = gm_createAsset(
+        floorActor,
+        floorShape,
+        floorCoordinates
+    );
+    
+    gm_insertAsset(floorAsset);
+}
+void t_testFloor2(){
+    /*
+        This asset will be just a shape of solid color, just for testing
+        the collision system
+    */    
+
+    Asset *floorAsset = NULL;
+    Actor *floorActor = NULL;
+    Action *floorAction = NULL;
+    Animation *floorAnimation = NULL;
+    Shape *floorShape = NULL;
+    Coordinates *floorCoordinates = NULL;
+    
+    floorActor = gm_createActor(
+        "Floor 2", 
+        "A floor 2", 
+        gm_createStats(100, 100, 10, 10, 10),
+        NULL
+    );
+    
+    floorShape = as_createShape(as_createBox(100, 50, 0), 55, GM_SHAPE_TYPE_BOX, true);
+    floorCoordinates = sp_createCoordinates(-60, 70, 0);
     
     floorAsset = gm_createAsset(
         floorActor,
