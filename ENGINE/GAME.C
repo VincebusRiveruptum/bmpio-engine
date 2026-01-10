@@ -253,6 +253,12 @@ void gm_checkCollisions(Asset *asset){
 	}
 }
 
+void gm_bounceBack(Asset *asset, int prevX, int prevY, int prevZ){
+	asset->coordinates->x -= prevX;
+	asset->coordinates->y -= prevY;
+	asset->coordinates->z -= prevZ;
+}
+
 void gm_addCollisions(Asset *asset, Asset *otherAsset){
 	unsigned char i;
 	for(i = 0; i < MAX_COLLISIONS; i++){
@@ -327,9 +333,7 @@ void gm_mainPlayerWalk(int x, int y, int z){
 	gm_checkCollisions(player);
 	if(gm_isColliding(player)){
 		// Revert to old position
-		player->coordinates->x -= x;
-		player->coordinates->y -= y;
-		player->coordinates->z -= z;
+		gm_bounceBack(player, x, y, z);
 		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
 		return;
 	}
