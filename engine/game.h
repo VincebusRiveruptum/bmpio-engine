@@ -108,7 +108,7 @@ typedef struct Asset{
 	struct Coordinates *coordinates;
 	struct Coordinates *pointingTo;
 
-	struct Collision collisions[MAX_COLLISIONS];
+	struct Asset *collisions[MAX_COLLISIONS];
 
 	// Stuff for culling
 	unsigned char vis_prevX;
@@ -150,5 +150,8 @@ void gm_listenEvents();
 void gm_kbdInput();
 
 bool gm_setCurrentAction(Actor *actor, unsigned char actionType);
-
+void gm_addCollisions(Asset *asset, Asset *otherAsset);
+void gm_checkCollisions(Asset *asset);
+void gm_clearCollisions(Asset *asset);
+bool gm_isColliding(Asset *asset);
 #endif
