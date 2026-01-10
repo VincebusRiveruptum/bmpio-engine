@@ -72,6 +72,11 @@ const char *skullFrames[] = {
     NULL
 };
 
+const char *cokeCanFrames[] = {
+    "..\\assets\\coke.BMP",
+    NULL
+};
+
 struct Color *testPalette;
 
 bool t_initTests(){
@@ -81,6 +86,7 @@ bool t_initTests(){
     t_skullBgTest();
     t_testFloor();
     t_testFloor2();
+    t_cokeCanTest();
 
     return true;
 }
@@ -247,6 +253,44 @@ void t_testFloor2(){
     );
     
     gm_insertAsset(floorAsset);
+}
+
+void t_cokeCanTest(){
+    Asset *cokeCanAsset = NULL;
+    Actor *cokeCanActor = NULL;
+    Action *cokeCanActions[GM_MAX_ACTIONS] = {NULL};   
+    Animation *cokeCanAnimation = NULL;
+    Shape *cokeCanShape = NULL;
+    Coordinates *cokeCanCoordinates = NULL;
+
+    cokeCanAnimation = as_createAnimation(); 
+    as_loadAnimationFrames(cokeCanAnimation, cokeCanFrames, 255);  
+
+    as_addRotationTransformation(cokeCanAnimation, as_createRotationTransformation(10, 10));
+    
+    cokeCanActions[0] = gm_createAction(
+        "Idle", 
+        GM_ACTION_IDLE,
+        cokeCanAnimation,
+        NULL
+    );
+
+    cokeCanActor = gm_createActor(
+        "Coke Can", 
+        "A coke can", 
+        gm_createStats(100, 100, 10, 10, 10),
+        cokeCanActions
+    );
+    
+    cokeCanCoordinates = sp_createCoordinates(-60, 70, 0);
+    
+    cokeCanAsset = gm_createAsset(
+        cokeCanActor,
+        cokeCanAnimation,
+        cokeCanCoordinates
+    );
+    
+    gm_insertAsset(cokeCanAsset);    
 }
 
 void t_skullBgTest(){
