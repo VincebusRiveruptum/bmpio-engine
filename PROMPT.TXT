@@ -166,3 +166,12 @@ Architecture diagram :
 ---------------------------------------------------------			-----------------------------
 |						RENDERER 						|___________|     HAL      /    VGA		|
 ---------------------------------------------------------			-----------------------------
+
+/////////////////
+
+9.1.2026
+
+There is a z-indexing issue, where no matter if positive or negative z-index, the assets are always 
+rendered in the same order.
+
+Now i'm about to implement the collision system.

@@ -56,42 +56,27 @@ void eng_renderFrame(unsigned long gametick){
 	
 	//logger("[eng_renderFrame]: Starting render, scanning %d slots", SP_GRID_SIZE);
 	
-	for(i = 0; i < SP_GRID_SIZE; i++){
+	for(i = 0; i < SP_MAX_RENDER_ASSETS; i++){
+		
+		
 		if(renderQueue[i] == NULL){
 			continue;
 		}
-
+		
 		actor = renderQueue[i]->actor;
-
+		
 		if(actor){		
+			
+			// if the actor walks, it will check for collisions nearby
+			gm_checkCollisions(renderQueue[i]);
+
 			action = actor->currentAction;
 			
 			if(action == NULL){
 				logger("[eng_renderFrame]:Render queue %ld actor currentAction is NULL", i);
 				continue;
 			}
-			
-			actionAnimation = action->animation;
-			
-			if(actionAnimation == NULL){
-				logger("[eng_renderFrame]:Render queue %ld actor currentAction animation is NULL", i);
-				continue;
-			}
-			if(actionAnimation->length == 0){
-				logger("[eng_renderFrame]:Render queue %ld actor currentAction animation length is 0", i);
-				continue;
-			}
-			
-			frameToRender = gametick % actionAnimation->length;
-			actorSprite = actionAnimation->frames[frameToRender];
-			
-			if(actorSprite == NULL){
-				logger("[eng_renderFrame]:Actor sprite %ld is NULL", frameToRender);
-				continue;
-			}
-			
-			totalAngle = 0;
-			
+
 			/* Project world coordinates to screen coordinates via macro (zero overhead) */
 			SP_WORLD_TO_SCREEN(
 				renderQueue[i]->coordinates->x, 
@@ -115,44 +100,53 @@ void eng_renderFrame(unsigned long gametick){
 					}
 					// ...
 				}
+
+				actionAnimation = action->animation;
+
+				frameToRender = gametick % actionAnimation->length;
+				actorSprite = actionAnimation->frames[frameToRender];
 				
-				if(!sp_isInFrustrum(totalOffsetX, totalOffsetY, actorSprite)){
-					continue;
-				}
-				
-				for(transformationIndex = 0; transformationIndex < GM_ANIMATION_MAX_TRANSFORMATIONS; transformationIndex++){
-					transformation = actionAnimation->transformationList[transformationIndex];
-					if(transformation == NULL) continue;
-					
-					// ROTATION
-					if (transformation->type == TR_ROTATION){
-						rot = (RotationTransformation *)transformation->data;
-						
-						// Every frame we add the 'angle' step to 'current'
-						rot->current += rot->angle;
-						
-						// Keep it bounded 0-359
-						if (rot->current >= 360) rot->current %= 360;
-						if (rot->current < 0) rot->current = (rot->current % 360) + 360;
-						
-						totalAngle += rot->current;
+				totalAngle = 0;
+			
+				if(actorSprite){
+					if(!sp_isInFrustrum(totalOffsetX, totalOffsetY, actorSprite)){
+						continue;
 					}
 					
-					// TRANSLATION
-					if (transformation->type == TR_TRANSLATION){
-						//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
-						//TODO: Implement asset translation in space, instead of fake sprite translation
-						logger("[eng_renderFrame]: Translation transformation PENDING"); 
+					for(transformationIndex = 0; transformationIndex < GM_ANIMATION_MAX_TRANSFORMATIONS; transformationIndex++){
+						transformation = actionAnimation->transformationList[transformationIndex];
+						if(transformation == NULL) continue;
+						
+						// ROTATION
+						if (transformation->type == TR_ROTATION){
+							rot = (RotationTransformation *)transformation->data;
+							
+							// Every frame we add the 'angle' step to 'current'
+							rot->current += rot->angle;
+							
+							// Keep it bounded 0-359
+							if (rot->current >= 360) rot->current %= 360;
+							if (rot->current < 0) rot->current = (rot->current % 360) + 360;
+							
+							totalAngle += rot->current;
+						}
+						
+						// TRANSLATION
+						if (transformation->type == TR_TRANSLATION){
+							//sp_calculateTranslation(transformation, &totalOffsetX, &totalOffsetY, gametick);
+							//TODO: Implement asset translation in space, instead of fake sprite translation
+							logger("[eng_renderFrame]: Translation transformation PENDING"); 
+						}
 					}
-				}
-				
-				hflip = (renderQueue[i]->pointingTo->x < renderQueue[i]->coordinates->x) ? true : false;
-				
-				// Optimization: Use standard draw if effectively not rotated
-				if (totalAngle % 360 != 0) {
-					as_drawBitmapTransform(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, totalAngle, hflip);
-				} else {
-					as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, hflip);
+					
+					hflip = (renderQueue[i]->pointingTo->x < renderQueue[i]->coordinates->x) ? true : false;
+					
+					// Optimization: Use standard draw if effectively not rotated
+					if (totalAngle % 360 != 0) {
+						as_drawBitmapTransform(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, totalAngle, hflip);
+					} else {
+						as_drawBitmap(&actorSprite->bmpData, (unsigned int)totalOffsetX, (unsigned int)totalOffsetY, (int)actorSprite->maskColor, hflip);
+					}
 				}
 			} else {
 				logger("[eng_renderFrame]:Render queue %ld actor is NULL", i);

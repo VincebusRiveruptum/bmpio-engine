@@ -1,5 +1,7 @@
 #include "GAME.H"
 #include "MEM.H"
+#include "SPACE.H"
+#include "ASSETS.H"
 
 /*
     THIS MODULE HANDLES ALL GAME LOGIC & BUSSINES RULES
@@ -180,6 +182,79 @@ void gm_listenEvents(){
 	gm_kbdInput();
 }
 
+void gm_checkCollisions(Asset *asset){
+	// gm_checkCollisions() will be in eng_renderFrame loop because it
+	// is the main place we have access to the camera's visGrid and assets
+	// that are in the renderQueue.
+	unsigned int i;
+	Asset *otherAsset;
+	Shape *hitBox;
+	
+	// Always clear collisions at the start of the check
+	gm_clearCollisions(asset);
+
+	// If current actor has no hitbox, skip it
+	if(asset->shape == NULL){
+		return;
+	}
+
+	// Check for collisions if the actor is moving
+	if( asset->actor->currentAction->type == GM_ACTION_WALK ||
+		asset->actor->currentAction->type == GM_ACTION_RUN ||
+		asset->actor->currentAction->type == GM_ACTION_JUMP
+	){
+		for(i = 0; i < SP_MAX_RENDER_ASSETS; i++){
+			if(renderQueue[i] == NULL || renderQueue[i]->actor == NULL ){
+				continue;
+			}
+			
+			otherAsset = renderQueue[i];
+
+			if(asset == otherAsset || otherAsset->shape == NULL){
+				continue;
+			}
+
+			// IF HITBOX IS A BOX SHAPE
+			if(	asset->shape->type == GM_SHAPE_TYPE_BOX &&
+				asset->shape->shapeObject != NULL &&
+				otherAsset->shape->type == GM_SHAPE_TYPE_BOX &&
+				otherAsset->shape->shapeObject != NULL){
+				if(	asset->coordinates->y <= otherAsset->coordinates->y + ((Box*)(otherAsset->shape->shapeObject))->height	&&	// CHECK TOP
+					asset->coordinates->y + ((Box*)(asset->shape->shapeObject))->height >= otherAsset->coordinates->y 		&&	// CHECK BOTTOM
+					asset->coordinates->x <= otherAsset->coordinates->x + ((Box*)(otherAsset->shape->shapeObject))->width 	&&	// CHECK RIGHT
+					asset->coordinates->x + ((Box*)(asset->shape->shapeObject))->width >= otherAsset->coordinates->x){			// CHECK LEFT
+					
+					gm_addCollisions(asset, otherAsset);
+				}
+			}
+		}
+	}
+}
+
+void gm_addCollisions(Asset *asset, Asset *otherAsset){
+	unsigned char i;
+	for(i = 0; i < MAX_COLLISIONS; i++){
+		if(asset->collisions[i] == NULL){
+			asset->collisions[i] = otherAsset;
+			return;
+		}
+	}
+}
+
+void gm_clearCollisions(Asset *asset){
+	memset(asset->collisions, 0, sizeof(asset->collisions));
+}
+
+bool gm_isColliding(Asset *asset){
+	unsigned char i;
+	for(i = 0; i < MAX_COLLISIONS; i++){
+		if(asset->collisions[i] != NULL){
+			return true;
+		}
+	}
+	return false;
+}
+
 void gm_kbdInput(){
 	// Camera movement (LSHIFT + WASD)
     if(keyboardTable[KEY_LSHIFT] == true){
@@ -225,6 +300,17 @@ void gm_mainPlayerWalk(int x, int y, int z){
 	player->coordinates->x += x;
 	player->coordinates->y += y;
 	player->coordinates->z += z;
+
+	// Check if the NEW position is colliding
+	gm_checkCollisions(player);
+	if(gm_isColliding(player)){
+		// Revert to old position
+		player->coordinates->x -= x;
+		player->coordinates->y -= y;
+		player->coordinates->z -= z;
+		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
+		return;
+	}
 
     // Track new grid position
     newVisX = (int)(player->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
