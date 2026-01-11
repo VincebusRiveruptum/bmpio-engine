@@ -77,9 +77,10 @@ char *getConfigValue(char *line) {
   strncpy(val, line + index + 1, valLen);
   val[valLen] = '\0';
   
-  // Strip trailing newline if any
-  if (valLen > 0 && val[valLen-1] == '\n') val[valLen-1] = '\0';
-  if (valLen > 1 && val[valLen-2] == '\r') val[valLen-2] = '\0';
+  // Strip trailing newline/carriage return
+  while (valLen > 0 && (val[valLen-1] == '\n' || val[valLen-1] == '\r')) {
+      val[--valLen] = '\0';
+  }
 
   return val;
 }
@@ -169,7 +170,7 @@ Config *loadEnv() {
   // Parse the contents of the .env
   // Return the Config type object
 
-  FILE *fp = fopen(".env", "r");
+  FILE *fp = fopen(ENV_FILENAME, "r");
   char tmpBuffer[256];
   char *key;
   char *value;
@@ -177,7 +178,12 @@ Config *loadEnv() {
   int i = 0;
 
   if (!fp) {
-    printf("No config file found.");
+    logger("[loadEnv]: %s not found, trying %s", ENV_FILENAME, CFG_FILENAME);
+    fp = fopen(CFG_FILENAME, "r");
+  }
+
+  if (!fp) {
+    logger("[loadEnv]: No config file found (%s or %s)", ENV_FILENAME, CFG_FILENAME);
     return NULL;
   }
 
@@ -254,8 +260,10 @@ void freeConf(Config *conf) {
 void *getEnv(char *key){
   int i=0;
 
+  if(!config) return NULL;
+
   for(i=0; i< config->length; i++) {
-    if (strcmp(config->entries[i].key, key) == 0) {
+    if (config->entries[i].key && strcmp(config->entries[i].key, key) == 0) {
       return config->entries[i].value;
     }
   }
