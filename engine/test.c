@@ -286,7 +286,7 @@ void t_cokeCanTest(){
     
     cokeCanAsset = gm_createAsset(
         cokeCanActor,
-        cokeCanAnimation,
+        as_createShape(as_createBox(16, 32, 10), 255, GM_SHAPE_TYPE_BOX, false),
         cokeCanCoordinates
     );
     

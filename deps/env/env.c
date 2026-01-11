@@ -232,11 +232,11 @@ char *getEnv(char *key, const char *defaultValueFormat, ...){
   
   va_list args;
 
-  if(config){ 
-    for(i=0; i< config->length; i++) {
-      if (config->entries[i].key && strcmp(config->entries[i].key, key) == 0) {
-        return config->entries[i].value;
-      }
+  if(!config) return NULL;
+
+  for(i=0; i< config->length; i++) {
+    if (config->entries[i].key && strcmp(config->entries[i].key, key) == 0) {
+      return config->entries[i].value;
     }
   }
 

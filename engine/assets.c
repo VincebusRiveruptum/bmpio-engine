@@ -110,9 +110,10 @@ BMPfile *as_loadBMPfile(char *fileName){
 
 	if (strcmp(id, "BM") != 0){
 		logger("[as_loadBMPfile]: Invalid file. %s", id);
-		free(newFile);
+        free(id);
 		return NULL;
 	}
+    free(id); // Free the temporary ID buffer
 
 	strncpy(newFile->fh.id, id, 2);
 
@@ -451,8 +452,6 @@ bool as_addRotationTransformation(Animation *animation, RotationTransformation *
 
 	if (!as_addTransformation(animation, newTransformation)){
 		logger("[as_addRotationTransformation]: Could not add transformation to animation");
-        free(newTransformation);
-        if (!transformation) free(newRotationTransformation);
 		return false;
 	}
 
