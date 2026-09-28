@@ -6,7 +6,7 @@ APPNAME = bmpio
 OBJDIR = bin
 
 # Object files in BIN
-OBJS = $(OBJDIR)/main.obj $(OBJDIR)/assets.obj $(OBJDIR)/data.obj $(OBJDIR)/vgaregs.obj $(OBJDIR)/video.obj $(OBJDIR)/env.obj $(OBJDIR)/input.obj $(OBJDIR)/log.obj $(OBJDIR)/math.obj $(OBJDIR)/game.obj $(OBJDIR)/engine.obj $(OBJDIR)/space.obj $(OBJDIR)/test.obj $(OBJDIR)/mem.obj $(OBJDIR)/deps_mem.obj
+OBJS = $(OBJDIR)/main.obj $(OBJDIR)/assets.obj $(OBJDIR)/data.obj $(OBJDIR)/vgaregs.obj $(OBJDIR)/video.obj $(OBJDIR)/env.obj $(OBJDIR)/input.obj $(OBJDIR)/log.obj $(OBJDIR)/math.obj $(OBJDIR)/game.obj $(OBJDIR)/engine.obj $(OBJDIR)/space.obj $(OBJDIR)/test.obj $(OBJDIR)/mem.obj $(OBJDIR)/deps_mem.obj $(OBJDIR)/settings.obj
 
 # Linker directive file
 LNK = $(OBJDIR)/bmpio.lnk
@@ -60,6 +60,10 @@ $(OBJDIR)/input.obj: deps/input/input.c
 	$(CC) $(CFLAGS) -fo=$@ $<
 
 $(OBJDIR)/game.obj: engine/game.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)/settings.obj: engine/settings/settings.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 

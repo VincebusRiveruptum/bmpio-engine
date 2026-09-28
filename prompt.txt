@@ -84,7 +84,7 @@ The grid system works but needs some improvements, some of them are:
 /////////////////
 
 Ok, found a problem, what happens if i want to have more than one assets in the same grid position? 
-block? A cheap solution would be adding another dimensioon to visGrid, however this would increase the memory
+block? A cheap solution would be adding another dimensioon to sp_visgrid, however this would increase the memory
 usage by a lot. 
 
 A soultion would be to use a linked list or a tree to store the assets in the same grid position. This
@@ -132,7 +132,7 @@ Next steps would be:
 	- Props
 	- Enemys
 	- Asset scanning and updating: This opens to a bunch of questions, visible assets are the ones the camera can see, so,
-	these are the ones that are in the same visGrid position as the camera, at the moment, the visible ones are the only
+	these are the ones that are in the same sp_visgrid position as the camera, at the moment, the visible ones are the only
 	to be updated, but what happen to the rest that are no visible? They will be static until the player sees them?.
 	The asset scanner will listen the environment and depending on it will detect if assets are moving, are mid-action, 
 	mid-air, gravity affected, etc.

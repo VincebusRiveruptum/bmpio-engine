@@ -1,373 +1,438 @@
 #include "game.h"
 #include "mem.h"
-#include "space.h"
-#include "assets.h"
-/*
-    THIS MODULE HANDLES ALL GAME LOGIC & BUSSINES RULES
-*/
 
-unsigned char keyPressed = 0;
-Asset *player = NULL;
+Asset *gm_player = NULL;
+static unsigned long _gm_assetIdCounter = 1;
 
-Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates){
-	Asset *newAsset = (Asset*)mem_arena_alloc(sceneArena, sizeof(Asset));
-	Coordinates *pointingTo = (Coordinates*)mem_arena_alloc(sceneArena, sizeof(Coordinates));
+Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates)
+{
+    Asset *newAsset = NULL;
+    Coordinates *pointingTo = NULL;
 
-	if(!newAsset){
-		logger("\n[gm_createAsset]: Error: Could not allocate memory for asset");
-		return NULL;
-	}
-
-    memset(newAsset, 0, sizeof(Asset));
-    
-    if(!actor){
-        logger("\n[gm_createAsset]: Error: Actor is NULL");
+    newAsset = (Asset *)mem_arena_alloc(sceneArena, sizeof(Asset));
+    if (!newAsset) {
         return NULL;
-	}
+    }
+    memset(newAsset, 0, sizeof(Asset));
 
-	newAsset->actor = actor;
-	newAsset->shape = shape; 
-	
-	newAsset->coordinates = coordinates;
-	newAsset->pointingTo = pointingTo;			// pointing to nothing for now
+    pointingTo = (Coordinates *)mem_arena_alloc(
+        sceneArena,
+        sizeof(Coordinates)
+    );
+    if (!pointingTo) {
+        return NULL;
+    }
+    pointingTo->x = 0;
+    pointingTo->y = 0;
+    pointingTo->z = 0;
 
-	newAsset->pointingTo->x = coordinates->x;
-	newAsset->pointingTo->y = coordinates->y;
-	newAsset->pointingTo->z = coordinates->z;
+    newAsset->id = _gm_assetIdCounter++;
+    newAsset->actor = actor;
+    newAsset->shape = shape;
+    newAsset->coordinates = coordinates;
+    newAsset->pointingTo = pointingTo;
 
-	newAsset->vis_prevX = 0;
-	newAsset->vis_prevY = 0;
-	newAsset->vis_prevZ = 0;
-	newAsset->vis_currentX = 0;
-	newAsset->vis_currentY = 0;
-	newAsset->vis_currentZ = 0;
-
-	return newAsset;
+    return newAsset;
 }
 
-void gm_insertAsset(Asset *asset){
-    unsigned int vis_x;
-    unsigned int vis_y;
-    unsigned int vis_z;
-    
-	if(!asset){
-		logger("\n[gm_insertAsset]: Error: Asset is NULL");
-		return;
-	}
+void gm_insertAsset(Asset *asset)
+{
+    int vis_x = 0;
+    int vis_y = 0;
+    int vis_z = 0;
+
+    if (!asset || !asset->coordinates) {
+        logger("[gm_insertAsset]: Error, asset or coordinates NULL");
+        return;
+    }
 
     vis_x = (int)(asset->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
     vis_y = (int)(asset->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
     vis_z = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
 
-    logger("[gm_insertAsset]: Inserting asset at %d, %d, %d", vis_x, vis_y, vis_z);
-   
-	addGenericNode(&visGrid[vis_x][vis_y][vis_z], (void *)asset, sceneArena);
-	
+    if (vis_x < 0 || vis_x >= SP_GRID_SIZE ||
+        vis_y < 0 || vis_y >= SP_GRID_SIZE ||
+        vis_z < 0 || vis_z >= SP_GRID_SIZE) {
+        logger("[gm_insertAsset]: Error, asset out of bounds");
+        return;
+    }
+
+    asset->vis_currentX = (unsigned char)vis_x;
+    asset->vis_currentY = (unsigned char)vis_y;
+    asset->vis_currentZ = (unsigned char)vis_z;
+
+    asset->vis_prevX = (unsigned char)vis_x;
+    asset->vis_prevY = (unsigned char)vis_y;
+    asset->vis_prevZ = (unsigned char)vis_z;
+
+    logger(
+        "[gm_insertAsset]: Inserting asset at %d, %d, %d",
+        vis_x,
+        vis_y,
+        vis_z
+    );
+    sp_addAssetToVisGrid(asset);
 }
 
-Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index){
+Asset *gm_getAssetByIndex(
+    unsigned char vis_x,
+    unsigned char vis_y,
+    unsigned char vis_z,
+    unsigned int index
+) {
     Node *node = NULL;
-	if(vis_x >= SP_GRID_SIZE || vis_y >= SP_GRID_SIZE || vis_z >= SP_GRID_SIZE){
-		logger("\n[gm_getAssetByIndex]: Error: Index out of bounds");
-		return NULL;
-	}
-    
-    node = getNodeByIndex(&visGrid[vis_x][vis_y][vis_z], index);
-    if(node) return (Asset *)node->data;
-    
-	return NULL;
+
+    if (sp_visgrid[vis_x][vis_y][vis_z] == NULL) {
+        return NULL;
+    }
+
+    node = dat_getNodeByIndex(&sp_visgrid[vis_x][vis_y][vis_z], index);
+    if (!node) {
+        return NULL;
+    }
+
+    return (Asset *)node->data;
 }
 
-void gm_destroyAsset(Asset *asset){
-    // Individual assets are not freed when using Arena allocation.
-    // They are released when sceneArena is reset.
+void gm_destroyAsset(Asset *asset)
+{
+    if (!asset) {
+        return;
+    }
+    /* Assets are released when sceneArena is reset */
 }
 
-/* ACTOR METHODS ===========================================================================*/
-Action *gm_createAction(char *name, unsigned char type, Animation *animation, void (*update)(struct Asset *self)){
-	Action *newAction = (Action*)mem_arena_alloc(sceneArena, sizeof(Action));
-    if (!newAction) return NULL;
-    memset(newAction, 0, sizeof(Action));
-	strncpy(newAction->name, name, 31);
-	newAction->type = type;
-	newAction->animation = animation;
-	newAction->update = update;
-	return newAction;
+/* ACTOR METHODS =========================================================== */
+
+Stats *gm_createStats(
+    int health,
+    int maxHealth,
+    int attack,
+    int defense,
+    int speed
+) {
+    Stats *newStats = NULL;
+
+    newStats = (Stats *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Stats)
+    );
+    if (!newStats) {
+        return NULL;
+    }
+
+    newStats->health = health;
+    newStats->maxHealth = maxHealth;
+    newStats->attack = attack;
+    newStats->defense = defense;
+    newStats->speed = speed;
+    newStats->intelligence = 10;
+    newStats->agility = 10;
+    newStats->luck = 10;
+    newStats->experience = 0;
+    newStats->level = 1;
+
+    return newStats;
 }
 
-Stats *gm_createStats(int health, int maxHealth, int attack, int defense, int speed){
-	Stats *newStats = (Stats*)mem_arena_alloc(sceneArena, sizeof(Stats));
-    if (!newStats) return NULL;
-    memset(newStats, 0, sizeof(Stats));
-	newStats->health = health;
-	newStats->maxHealth = maxHealth;
-	newStats->attack = attack;
-	newStats->defense = defense;
-	newStats->speed = speed;
-	return newStats;
+Action *gm_createAction(
+    char *name,
+    unsigned char type,
+    Animation *animation,
+    void (*update)(struct Asset *self)
+) {
+    Action *newAction = NULL;
+
+    newAction = (Action *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Action)
+    );
+    if (!newAction) {
+        return NULL;
+    }
+
+    if (name) {
+        strncpy(newAction->name, name, 31);
+        newAction->name[31] = '\0';
+    } else {
+        newAction->name[0] = '\0';
+    }
+
+    newAction->type = type;
+    newAction->animation = animation;
+    newAction->update = update;
+
+    return newAction;
 }
 
-Actor *gm_createActor(char *name, char *description, Stats *stats, Action *actions[]){
-	int i;	
-	Actor *newActor = (Actor*)mem_arena_alloc(sceneArena, sizeof(Actor));
-	Action *genericAction;
-    if (!newActor) return NULL;
-    memset(newActor, 0, sizeof(Actor));
-	
-    strncpy(newActor->name, name, 31);
-    strncpy(newActor->description, description, 255);
+Actor *gm_createActor(
+    char *name,
+    char *description,
+    Stats *stats,
+    Action *actions[]
+) {
+    int i = 0;
+    Actor *newActor = NULL;
+    Action *genericAction = NULL;
+
+    newActor = (Actor *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Actor)
+    );
+    if (!newActor) {
+        return NULL;
+    }
+
+    if (name) {
+        strncpy(newActor->name, name, 31);
+        newActor->name[31] = '\0';
+    } else {
+        newActor->name[0] = '\0';
+    }
+
+    if (description) {
+        strncpy(newActor->description, description, 255);
+        newActor->description[255] = '\0';
+    } else {
+        newActor->description[0] = '\0';
+    }
 
     newActor->stats = stats;
-    newActor->currentAction = NULL;
-	
 
-    if(!actions){
-        logger("[gm_createActor]: No actions provided, generic one assigned instead");
-
-		genericAction = gm_createAction("Generic", GM_ACTION_DEFAULT, NULL, NULL);
-		newActor->actions[0] = genericAction;
-
-		// TODO: This is a temporary fix, should be refactored because it is not including
-		// a default animation to the generic action, making it not renderable.
-    }else{	
-		for(i = 0; i < GM_MAX_ACTIONS; i++){
-			newActor->actions[i] = actions[i];
-			if (actions[i]) {
-				logger("[gm_createActor]: Assigned action %d: %s (type %d)", i, actions[i]->name, (int)actions[i]->type);
-			}
-		}
-	}
-	
-	// Set first action as default
-	if(newActor->actions[0] != NULL){
-		newActor->currentAction = newActor->actions[0];
-	}
-
-    if(!stats){
-        newActor->stats = gm_createStats(100, 100, 10, 10, 10);
+    for (i = 0; i < GM_MAX_ACTIONS; i++) {
+        newActor->actions[i] = NULL;
     }
-	return newActor;
+
+    if (actions) {
+        for (i = 0; i < GM_MAX_ACTIONS && actions[i] != NULL; i++) {
+            newActor->actions[i] = actions[i];
+        }
+    }
+
+    if (newActor->actions[0] == NULL) {
+        logger("[gm_createActor]: Generic action assigned");
+        genericAction = gm_createAction(
+            "Generic",
+            GM_ACTION_DEFAULT,
+            NULL,
+            NULL
+        );
+        newActor->actions[0] = genericAction;
+    }
+
+    newActor->currentAction = newActor->actions[0];
+    return newActor;
 }
 
-bool gm_setCurrentAction(Actor *actor, unsigned char actionType){
-	Action *action;
-	int i = 0;
-    if(!actor){
+bool gm_setCurrentAction(Actor *actor, unsigned char actionType)
+{
+    int i = 0;
+
+    if (!actor) {
         return false;
     }
 
-    if(actor->currentAction && actor->currentAction->type == actionType){
-        return true;
+    for (i = 0; i < GM_MAX_ACTIONS; i++) {
+        if (actor->actions[i] != NULL &&
+            actor->actions[i]->type == actionType) {
+            actor->currentAction = actor->actions[i];
+            return true;
+        }
     }
-    
-    for(i = 0; i < GM_MAX_ACTIONS; i++){
-		if(actor->actions[i]){
-			if(actor->actions[i]->type == actionType){
-				actor->currentAction = actor->actions[i];
-				return true;
-			}
-		}
-	}
+
+    logger(
+        "[gm_setCurrentAction]: Action type %d not found for %s",
+        actionType,
+        actor->name
+    );
     return false;
 }
 
-void gm_listenEvents(){
-	// Listen to events such as
-	// Key presses
-	// Mouse clicks
-	// Gamepad inputs
-	// Environment events
+void gm_addCollisions(Asset *asset, Asset *otherAsset)
+{
+    int i = 0;
 
-	gm_kbdInput();
-}
-
-void gm_checkCollisions(Asset *asset){
-	// gm_checkCollisions() will be in eng_renderFrame loop because it
-	// is the main place we have access to the camera's visGrid and assets
-	// that are in the renderQueue.
-	unsigned int i;
-	Asset *otherAsset;
-	Shape *hitBox;
-	Box *aBox;
-	Box *oBox;
-	long aLeft;
-	long aRight;
-	long aTop;
-	long aBottom;
-	long oLeft;
-	long oRight;
-	long oTop;
-	long oBottom;
-	
-	// Always clear collisions at the start of the check
-	gm_clearCollisions(asset);
-
-	// If current actor has no hitbox, skip it
-	if(asset->shape == NULL){
-		return;
-	}
-
-	// Check for collisions if the actor is moving
-	if( asset->actor->currentAction->type == GM_ACTION_WALK ||
-		asset->actor->currentAction->type == GM_ACTION_RUN ||
-		asset->actor->currentAction->type == GM_ACTION_JUMP
-	){
-		for(i = 0; i < SP_MAX_RENDER_ASSETS; i++){
-			if(renderQueue[i] == NULL || renderQueue[i]->actor == NULL ){
-				continue;
-			}
-			
-			otherAsset = renderQueue[i];
-
-			if(asset == otherAsset || otherAsset->shape == NULL){
-				continue;
-			}
-
-			// IF HITBOX IS A BOX SHAPE
-			if(	asset->shape->type == GM_SHAPE_TYPE_BOX &&
-				asset->shape->shapeObject != NULL &&
-				otherAsset->shape->type == GM_SHAPE_TYPE_BOX &&
-				otherAsset->shape->shapeObject != NULL){
-				
-				aBox = (Box*)asset->shape->shapeObject;
-				oBox = (Box*)otherAsset->shape->shapeObject;
-
-				aLeft = asset->coordinates->x - (aBox->width >> 1);
-				aRight = asset->coordinates->x + (aBox->width >> 1);
-				aTop = asset->coordinates->y - (aBox->height >> 1);
-				aBottom = asset->coordinates->y + (aBox->height >> 1);
-
-				oLeft = otherAsset->coordinates->x - (oBox->width >> 1);
-				oRight = otherAsset->coordinates->x + (oBox->width >> 1);
-				oTop = otherAsset->coordinates->y - (oBox->height >> 1);
-				oBottom = otherAsset->coordinates->y + (oBox->height >> 1);
-
-				if( aLeft < oRight && aRight > oLeft &&
-					aTop < oBottom && aBottom > oTop){
-					
-					gm_addCollisions(asset, otherAsset);
-				}
-			}
-		}
-	}
-}
-
-void gm_bounceBack(Asset *asset, int prevX, int prevY, int prevZ){
-	asset->coordinates->x -= prevX;
-	asset->coordinates->y -= prevY;
-	asset->coordinates->z -= prevZ;
-}
-
-void gm_addCollisions(Asset *asset, Asset *otherAsset){
-	unsigned char i;
-	for(i = 0; i < MAX_COLLISIONS; i++){
-		if(asset->collisions[i] == NULL){
-			asset->collisions[i] = otherAsset;
-			return;
-		}
-	}
-}
-
-void gm_clearCollisions(Asset *asset){
-	memset(asset->collisions, 0, sizeof(asset->collisions));
-}
-
-bool gm_isColliding(Asset *asset){
-	unsigned char i;
-	for(i = 0; i < MAX_COLLISIONS; i++){
-		if(asset->collisions[i] != NULL){
-			return true;
-		}
-	}
-	return false;
-}
-
-void gm_kbdInput(){
-	// Camera movement (LSHIFT + WASD)
-    if(keyboardTable[KEY_LSHIFT] == true){
-        if(keyboardTable[KEY_A] == true) gm_cameraMove(-16, 0, 0);
-        if(keyboardTable[KEY_D] == true) gm_cameraMove(16, 0, 0);
-        if(keyboardTable[KEY_W] == true) gm_cameraMove(0, -16, 0);
-        if(keyboardTable[KEY_S] == true) gm_cameraMove(0, 16, 0);
-        return; // Don't move player if camera is moving
+    if (!asset || !otherAsset) {
+        return;
     }
 
-    // Player movement (WASD)
-	if(keyboardTable[KEY_A] == true) {
-		gm_mainPlayerWalk(-16, 0, 0);
-	}else if(keyboardTable[KEY_D] == true){
-		gm_mainPlayerWalk(16, 0, 0);
-	}else if(keyboardTable[KEY_W] == true){
-		gm_mainPlayerWalk(0, -16, 0);
-	}else if(keyboardTable[KEY_S] == true){
-		gm_mainPlayerWalk(0, 16, 0);
-	}else{
-		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
-	}
-
-	if(keyboardTable[KEY_SPACE] == true) gm_mainPlayerJump();
-}
-
-// due to perfomance, we will assume that player is always there
-void gm_mainPlayerJump(){
-	gm_setCurrentAction(player->actor, GM_ACTION_JUMP);
-}
-
-void gm_mainPlayerWalk(int x, int y, int z){
-    int oldVisX, oldVisY, oldVisZ;
-    int newVisX, newVisY, newVisZ;
-
-	gm_setCurrentAction(player->actor, GM_ACTION_RUN);
-
-    // Track old grid position
-    oldVisX = (int)(player->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
-    oldVisY = (int)(player->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
-    oldVisZ = (int)(player->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
-
-	player->coordinates->x += x;
-	player->coordinates->y += y;
-	player->coordinates->z += z;
-
-	// Check if the NEW position is colliding
-	gm_checkCollisions(player);
-	if(gm_isColliding(player)){
-		// Revert to old position
-		gm_bounceBack(player, x, y, z);
-		gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
-		return;
-	}
-
-    // Track new grid position
-    newVisX = (int)(player->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
-    newVisY = (int)(player->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
-    newVisZ = (int)(player->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
-
-	// Flip character if moving left
-	if(x < 0){
-		player->pointingTo->x = player->coordinates->x - 1;
-	}else{
-		player->pointingTo->x = player->coordinates->x + 1;
-	}
-
-    // If we crossed a grid boundary, update the visibility grid
-    if(oldVisX != newVisX || oldVisY != newVisY || oldVisZ != newVisZ){
-        // TODO: This requires a search in the old list to remove the asset. 
-        // For now, we will re-init the cameras because the list is small.
-        sp_initCameras(); 
+    for (i = 0; i < MAX_COLLISIONS; i++) {
+        if (asset->collisions[i] == NULL) {
+            asset->collisions[i] = otherAsset;
+            return;
+        }
     }
 }
 
-void gm_mainPlayerIdle(){
-	gm_setCurrentAction(player->actor, GM_ACTION_IDLE);
-}	
+static void _gm_bounceBack(
+    Asset *asset,
+    int prevX,
+    int prevY,
+    int prevZ
+) {
+    if (!asset || !asset->coordinates) {
+        return;
+    }
 
-void gm_cameraMove(int x, int y, int z){
+    asset->coordinates->x = prevX;
+    asset->coordinates->y = prevY;
+    asset->coordinates->z = prevZ;
+}
 
-	globalCamera->prevPos->x = globalCamera->position->x;
-	globalCamera->prevPos->y = globalCamera->position->y;
-	globalCamera->prevPos->z = globalCamera->position->z;
+void gm_checkCollisions(Asset *asset)
+{
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int gridX = 0;
+    int gridY = 0;
+    int gridZ = 0;
+    List *list = NULL;
+    Node *node = NULL;
+    Asset *other = NULL;
 
-	globalCamera->position->x += x;
-	globalCamera->position->y += y;
-	globalCamera->position->z += z;
+    if (!asset || !asset->coordinates) {
+        return;
+    }
+
+    gridX = (int)(asset->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridY = (int)(asset->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridZ = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
+
+    gm_clearCollisions(asset);
+
+    for (i = gridX - 1; i <= gridX + 1; i++) {
+        for (j = gridY - 1; j <= gridY + 1; j++) {
+            for (k = gridZ - 1; k <= gridZ + 1; k++) {
+                if (i < 0 || i >= SP_GRID_SIZE ||
+                    j < 0 || j >= SP_GRID_SIZE ||
+                    k < 0 || k >= SP_GRID_SIZE) {
+                    continue;
+                }
+
+                list = sp_visgrid[i][j][k];
+                if (!list) {
+                    continue;
+                }
+
+                node = list->firstNode;
+                while (node != NULL) {
+                    other = (Asset *)node->data;
+                    if (other && other != asset) {
+                        if (abs((int)(asset->coordinates->x -
+                                     other->coordinates->x)) < 50 &&
+                            abs((int)(asset->coordinates->y -
+                                     other->coordinates->y)) < 50 &&
+                            abs((int)(asset->coordinates->z -
+                                     other->coordinates->z)) < 50) {
+                            gm_addCollisions(asset, other);
+                        }
+                    }
+                    node = node->next;
+                }
+            }
+        }
+    }
+}
+
+void gm_clearCollisions(Asset *asset)
+{
+    int i = 0;
+
+    if (!asset) {
+        return;
+    }
+
+    for (i = 0; i < MAX_COLLISIONS; i++) {
+        asset->collisions[i] = NULL;
+    }
+}
+
+bool gm_isColliding(Asset *asset)
+{
+    if (!asset) {
+        return false;
+    }
+    return (asset->collisions[0] != NULL);
+}
+
+void gm_mainPlayerWalk(Asset *self)
+{
+    if (!self || !self->coordinates) {
+        return;
+    }
+    self->coordinates->x += 2;
+}
+
+void gm_mainPlayerJump(Asset *self)
+{
+    if (!self || !self->coordinates) {
+        return;
+    }
+    self->coordinates->z += 5;
+}
+
+void gm_mainPlayerIdle(Asset *self)
+{
+    if (!self) {
+        return;
+    }
+    /* Idle tick update logic */
+}
+
+void gm_cameraMove(Asset *self)
+{
+    if (!self || !sp_globalCamera || !sp_globalCamera->position) {
+        return;
+    }
+    sp_globalCamera->position->x = self->coordinates->x;
+    sp_globalCamera->position->y = self->coordinates->y;
+    sp_globalCamera->position->z = self->coordinates->z;
+}
+
+void gm_kbdInput(void)
+{
+    int prevX = 0;
+    int prevY = 0;
+    int prevZ = 0;
+
+    if (!gm_player || !gm_player->coordinates) {
+        return;
+    }
+
+    prevX = (int)gm_player->coordinates->x;
+    prevY = (int)gm_player->coordinates->y;
+    prevZ = (int)gm_player->coordinates->z;
+
+    if (in_keys[IN_KEY_UP] || in_keys[IN_KEY_W]) {
+        gm_player->coordinates->y -= 4;
+    }
+    if (in_keys[IN_KEY_DOWN] || in_keys[IN_KEY_S]) {
+        gm_player->coordinates->y += 4;
+    }
+    if (in_keys[IN_KEY_LEFT] || in_keys[IN_KEY_A]) {
+        gm_player->coordinates->x -= 4;
+    }
+    if (in_keys[IN_KEY_RIGHT] || in_keys[IN_KEY_D]) {
+        gm_player->coordinates->x += 4;
+    }
+
+    if (in_keys[IN_KEY_SPACE]) {
+        gm_setCurrentAction(gm_player->actor, GM_ACTION_JUMP);
+        gm_player->coordinates->z += 4;
+    } else {
+        gm_setCurrentAction(gm_player->actor, GM_ACTION_IDLE);
+    }
+
+    gm_checkCollisions(gm_player);
+    if (gm_isColliding(gm_player)) {
+        _gm_bounceBack(gm_player, prevX, prevY, prevZ);
+    }
+
+    gm_cameraMove(gm_player);
+}
+
+void gm_listenEvents(void)
+{
+    gm_kbdInput();
 }

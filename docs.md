@@ -14,7 +14,7 @@ The engine uses three distinct coordinate spaces:
 
 ### 1.2 Grid Coordinates (Spatial Partitioning)
 
-- **Structure**: A 3D grid (`visGrid`) of dimensions 63x63x63.
+- **Structure**: A 3D grid (`sp_visgrid`) of dimensions 63x63x63.
 - **Scale**: Each grid cell covers `100` world units (`SP_GRID_SCALE`).
 - **Insertion**: High-performance spatial lookup using O(1) grid hashing.
 - **Origin**: Grid cell `[31][31][31]` maps to world origin `(0,0,0)`.
@@ -29,13 +29,13 @@ The engine uses three distinct coordinate spaces:
 
 ## 2. Architecture Components
 
-### 2.1 Multi-Asset Grid (`visGrid`)
+### 2.1 Multi-Asset Grid (`sp_visgrid`)
 
-`struct List *visGrid[63][63][63];`
+`struct List *sp_visgrid[63][63][63];`
 
 - Refactored from single pointers to **Linked Lists**.
 - Allows multiple assets (players, enemies, decorations) to occupy the same grid cell.
-- Managed via `gm_insertAsset` and `sp_removeAssetFromVisGrid`.
+- Managed via `gm_insertAsset` and `sp_removeAssetFromsp_visgrid`.
 
 ### 2.2 Render Queue (`renderQueue`)
 
@@ -59,8 +59,8 @@ The frame life cycle follows these steps:
 
 1.  **Event Handling**: `gm_listenEvents()` processes BIOS keyboard interrupts.
 2.  **Logic Update**: Actions/Animations updated based on game rules.
-3.  **Culling & Queueing** (`sp_initCameras`):
-    - Scans grid cells visible to `globalCamera`.
+3.  **Culling & Queueing** (`sp_initsp_cameras`):
+    - Scans grid cells visible to `sp_globalCamera`.
     - Adds all assets in those cells' lists to the `renderQueue`.
 4.  **Z-Sorting**: `sp_renderQueueApplyZOrdering()` sorts the queue by depth.
 5.  **Frustum Culling**: `sp_isInFrustrum()` checks if the asset's center + radius is actually within the 320x200 viewport.

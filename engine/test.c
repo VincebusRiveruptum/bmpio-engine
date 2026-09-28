@@ -1,64 +1,66 @@
 #include "test.h"
+#include "settings/settings.h"
 
 char *renamonJumpingFrames[] = {
-    "../assets/jump/frame1.bmp",
-    "../assets/jump/frame2.bmp",
-    "../assets/jump/frame3.bmp",
-    "../assets/jump/frame4.bmp",
-    "../assets/jump/frame5.bmp",
-    "../assets/jump/frame6.bmp",
-    "../assets/jump/frame7.bmp",
-    "../assets/jump/frame8.bmp",
-    "../assets/jump/frame9.bmp",
-    "../assets/jump/frame10.bmp",
-    "../assets/jump/frame11.bmp",
-    "../assets/jump/frame12.bmp",
-    "../assets/jump/frame13.bmp",
-    "../assets/jump/frame14.bmp",
-    "../assets/jump/frame15.bmp",
+    "..\\jump\\frame1.bmp",
+    "..\\jump\\frame2.bmp",
+    "..\\jump\\frame3.bmp",
+    "..\\jump\\frame4.bmp",
+    "..\\jump\\frame5.bmp",
+    "..\\jump\\frame6.bmp",
+    "..\\jump\\frame7.bmp",
+    "..\\jump\\frame8.bmp",
+    "..\\jump\\frame9.bmp",
+    "..\\jump\\frame10.bmp",
+    "..\\jump\\frame11.bmp",
+    "..\\jump\\frame12.bmp",
+    "..\\jump\\frame13.bmp",
+    "..\\jump\\frame14.bmp",
+    "..\\jump\\frame15.bmp",
     NULL
 };
+
 const char *renamonJumpingAltFrames[] = {
-    "..\\assets\\jump2\\FRAME1.bmp",
-    "..\\assets\\jump2\\FRAME2.bmp",
-    "..\\assets\\jump2\\FRAME3.bmp",
-    "..\\assets\\jump2\\FRAME4.bmp",
-    "..\\assets\\jump2\\FRAME5.bmp",
-    "..\\assets\\jump2\\FRAME6.bmp",
-    "..\\assets\\jump2\\FRAME7.bmp",
-    "..\\assets\\jump2\\FRAME8.bmp",
-    "..\\assets\\jump2\\FRAME9.bmp",
-    "..\\assets\\jump2\\FRAME10.bmp",
-    "..\\assets\\jump2\\FRAME11.bmp",
-    "..\\assets\\jump2\\FRAME12.bmp",
+    "..\\jump2\\FRAME1.bmp",
+    "..\\jump2\\FRAME2.bmp",
+    "..\\jump2\\FRAME3.bmp",
+    "..\\jump2\\FRAME4.bmp",
+    "..\\jump2\\FRAME5.bmp",
+    "..\\jump2\\FRAME6.bmp",
+    "..\\jump2\\FRAME7.bmp",
+    "..\\jump2\\FRAME8.bmp",
+    "..\\jump2\\FRAME9.bmp",
+    "..\\jump2\\FRAME10.bmp",
+    "..\\jump2\\FRAME11.bmp",
+    "..\\jump2\\FRAME12.bmp",
     NULL
 };
 
 const char *renamonRunningFrames[] = {
-    "..\\assets\\run\\FRAME1.bmp",
-    "..\\assets\\run\\FRAME2.bmp",
-    "..\\assets\\run\\FRAME4.bmp",
-    "..\\assets\\run\\FRAME5.bmp",
-    "..\\assets\\run\\FRAME6.bmp",
-    "..\\assets\\run\\FRAME11.bmp",
+    "..\\run\\FRAME1.bmp",
+    "..\\run\\FRAME2.bmp",
+    "..\\run\\FRAME4.bmp",
+    "..\\run\\FRAME5.bmp",
+    "..\\run\\FRAME6.bmp",
+    "..\\run\\FRAME11.bmp",
     NULL
 };
 
 const char *renamonSprintFrames[] = {
-    "..\\assets\\sprint\\FRAME1.bmp",
-    "..\\assets\\sprint\\FRAME2.bmp",
-    "..\\assets\\sprint\\FRAME4.bmp",
+    "..\\sprint\\FRAME1.bmp",
+    "..\\sprint\\FRAME2.bmp",
+    "..\\sprint\\FRAME4.bmp",
     NULL
 };
 
 const char *renamonCrouchFrames[] = {
-    "..\\assets\\crouch\\FRAME1.bmp",
-    "..\\assets\\crouch\\FRAME2.bmp",
-    "..\\assets\\crouch\\FRAME3.bmp",
-    "..\\assets\\crouch\\FRAME4.bmp",
-    "..\\assets\\crouch\\FRAME5.bmp",
-    "..\\assets\\crouch\\FRAME6.bmp",
-    "..\\assets\\crouch\\FRAME7.bmp",
+    "..\\crouch\\FRAME1.bmp",
+    "..\\crouch\\FRAME2.bmp",
+    "..\\crouch\\FRAME3.bmp",
+    "..\\crouch\\FRAME4.bmp",
+    "..\\crouch\\FRAME5.bmp",
+    "..\\crouch\\FRAME6.bmp",
+    "..\\crouch\\FRAME7.bmp",
     NULL
 };
 
@@ -77,10 +79,11 @@ const char *cokeCanFrames[] = {
     NULL
 };
 
-struct Color *testPalette;
+struct Color *testPalette = NULL;
 
-bool t_initTests(){
-    logger("\n[t_initTests`]: Testing initialization");
+bool t_initTests(void)
+{
+    logger("\n[t_initTests]: Testing initialization");
 
     t_createRenamon();
     t_skullBgTest();
@@ -91,10 +94,12 @@ bool t_initTests(){
     return true;
 }
 
-void t_createRenamon(){
-    char *assetsPath = (char*)getEnv("ASSETS_PATH", "../assets");
+void t_createRenamon(void)
+{
+    int i = 0;
     char renamonPath[128] = {0};
-    Action *renamonActions[GM_MAX_ACTIONS] = {NULL};
+    Action *renamonActions[GM_MAX_ACTIONS];
+
     BMPfile *renamonFile = NULL;
     Animation *renamonJumping = NULL;  
     Animation *renamonIdle = NULL;    
@@ -104,31 +109,43 @@ void t_createRenamon(){
 
     Actor *renamonActor = NULL;
     Asset *renamonAsset = NULL;
+    Stats *renamonStats = NULL;
+    Shape *renamonShape = NULL;
+    Box *renamonBox = NULL;
+    Coordinates *renamonPos = NULL;
 
-    sprintf(renamonPath, "%s/jump/frame1.bmp", assetsPath);
-    
+    for (i = 0; i < GM_MAX_ACTIONS; i++) {
+        renamonActions[i] = NULL;
+    }
+
+    sprintf(
+        renamonPath,
+        "%s/jump/frame1.bmp",
+        settings.TEST_ASSETS_PATH
+    );
+
     renamonFile = as_loadBMPfile(renamonPath);
-    if(!renamonFile){
+    if (!renamonFile) {
         logger("[t_createRenamon]: Error: renamonFile is NULL");
         return;
     }
-    
+
     /* Renamon's actions */
     renamonIdle = as_createAnimation(); 
     as_loadAnimationFrames(renamonIdle, renamonIdleFrames, 255);
-    
+
     renamonRunning = as_createAnimation(); 
-    as_loadAnimationFrames(renamonRunning, renamonRunningFrames, 255);
-    
+    as_loadAnimationFrames(renamonRunning, (char **)renamonRunningFrames, 255);
+
     renamonJumping = as_createAnimation(); 
     as_loadAnimationFrames(renamonJumping, renamonJumpingFrames, 255);
-    
+
     renamonSprint = as_createAnimation(); 
-    as_loadAnimationFrames(renamonSprint, renamonSprintFrames, 255);
-    
+    as_loadAnimationFrames(renamonSprint, (char **)renamonSprintFrames, 255);
+
     renamonCrouch = as_createAnimation(); 
-    as_loadAnimationFrames(renamonCrouch, renamonCrouchFrames, 255);
-    
+    as_loadAnimationFrames(renamonCrouch, (char **)renamonCrouchFrames, 255);
+
     renamonActions[0] = gm_createAction(
         "Idle", 
         GM_ACTION_IDLE,
@@ -160,114 +177,151 @@ void t_createRenamon(){
         renamonCrouch,
         NULL
     );
-    
-    // 'Renamon' actor
+
+    /* Renamon actor */
+    renamonStats = gm_createStats(100, 100, 10, 10, 10);
     renamonActor = gm_createActor(
         "Renamon", 
-        "A hot furry digimon, yellow fox-like", 
-        gm_createStats(100, 100, 10, 10, 10),
+        "A yellow fox-like digimon", 
+        renamonStats,
         renamonActions
     );
-    
+
+    renamonBox = as_createBox(45, 52, 10);
+    renamonShape = as_createShape(
+        renamonBox,
+        255,
+        GM_SHAPE_TYPE_BOX,
+        false
+    );
+    renamonPos = sp_createCoordinates(0, 0, 0);
+
     renamonAsset = gm_createAsset(
         renamonActor,
-        as_createShape(as_createBox(45, 52, 10), 255, GM_SHAPE_TYPE_BOX, false),
-        sp_createCoordinates(0, 0, 0)
+        renamonShape,
+        renamonPos
     );
 
     logger("[t_createRenamon]: Inserting asset");
-    
     gm_insertAsset(renamonAsset);
-  
+
     testPalette = renamonFile->bmpData->palette;   
 
-    // Global camera setup
-    sp_setGlobalCamera(sp_createCamera(sp_createCoordinates(0, 0, 0), sp_createScreenCoordinates(VID_WIDTH, VID_HEIGHT)));
-    
-    /* SET RENAMON AS PLAYER*/
-    if(renamonAsset) player = renamonAsset;
+    /* Global camera setup */
+    sp_setGlobalCamera(
+        sp_createCamera(
+            sp_createCoordinates(0, 0, 0), 
+            sp_createScreenCoordinates(VID_WIDTH, VID_HEIGHT)
+        )
+    );
+
+    if (renamonAsset) {
+        gm_player = renamonAsset;
+    }
 }
 
-void t_freeRenamonTest(){
-    sp_destroyCamera(globalCamera); 
+void t_freeRenamonTest(void)
+{
+    sp_destroyCamera(sp_globalCamera); 
 }
 
-void t_testFloor(){
-    /*
-        This asset will be just a shape of solid color, just for testing
-        the collision system
-    */    
-
+void t_testFloor(void)
+{
     Asset *floorAsset = NULL;
     Actor *floorActor = NULL;
-    Action *floorAction = NULL;
-    Animation *floorAnimation = NULL;
     Shape *floorShape = NULL;
+    Box *floorBox = NULL;
     Coordinates *floorCoordinates = NULL;
-    
+    Stats *floorStats = NULL;
+
+    floorStats = gm_createStats(100, 100, 10, 10, 10);
     floorActor = gm_createActor(
         "Floor", 
         "A floor", 
-        gm_createStats(100, 100, 10, 10, 10),
+        floorStats,
         NULL
     );
-    
-    floorShape = as_createShape(as_createBox(100, 100, 0), 123, GM_SHAPE_TYPE_BOX, true);
+
+    floorBox = as_createBox(100, 100, 0);
+    floorShape = as_createShape(
+        floorBox,
+        123,
+        GM_SHAPE_TYPE_BOX,
+        true
+    );
     floorCoordinates = sp_createCoordinates(105, 0, 0);
-    
+
     floorAsset = gm_createAsset(
         floorActor,
         floorShape,
         floorCoordinates
     );
-    
+
     gm_insertAsset(floorAsset);
 }
-void t_testFloor2(){
-    /*
-        This asset will be just a shape of solid color, just for testing
-        the collision system
-    */    
 
+void t_testFloor2(void)
+{
     Asset *floorAsset = NULL;
     Actor *floorActor = NULL;
-    Action *floorAction = NULL;
-    Animation *floorAnimation = NULL;
     Shape *floorShape = NULL;
+    Box *floorBox = NULL;
     Coordinates *floorCoordinates = NULL;
-    
+    Stats *floorStats = NULL;
+
+    floorStats = gm_createStats(100, 100, 10, 10, 10);
     floorActor = gm_createActor(
         "Floor 2", 
         "A floor 2", 
-        gm_createStats(100, 100, 10, 10, 10),
+        floorStats,
         NULL
     );
-    
-    floorShape = as_createShape(as_createBox(100, 50, 0), 55, GM_SHAPE_TYPE_BOX, true);
+
+    floorBox = as_createBox(100, 50, 0);
+    floorShape = as_createShape(
+        floorBox,
+        55,
+        GM_SHAPE_TYPE_BOX,
+        true
+    );
     floorCoordinates = sp_createCoordinates(-60, 70, 0);
-    
+
     floorAsset = gm_createAsset(
         floorActor,
         floorShape,
         floorCoordinates
     );
-    
+
     gm_insertAsset(floorAsset);
 }
 
-void t_cokeCanTest(){
+void t_cokeCanTest(void)
+{
+    int i = 0;
+    Action *cokeCanActions[GM_MAX_ACTIONS];
     Asset *cokeCanAsset = NULL;
     Actor *cokeCanActor = NULL;
-    Action *cokeCanActions[GM_MAX_ACTIONS] = {NULL};   
     Animation *cokeCanAnimation = NULL;
     Shape *cokeCanShape = NULL;
+    Box *cokeCanBox = NULL;
     Coordinates *cokeCanCoordinates = NULL;
+    Stats *cokeCanStats = NULL;
+    RotationTransformation *rotTr = NULL;
+
+    for (i = 0; i < GM_MAX_ACTIONS; i++) {
+        cokeCanActions[i] = NULL;
+    }
 
     cokeCanAnimation = as_createAnimation(); 
-    as_loadAnimationFrames(cokeCanAnimation, cokeCanFrames, 255);  
+    as_loadAnimationFrames(
+        cokeCanAnimation,
+        (char **)cokeCanFrames,
+        255
+    );  
 
-    as_addRotationTransformation(cokeCanAnimation, as_createRotationTransformation(10, 10));
-    
+    rotTr = as_createRotationTransformation(10, 10);
+    as_addRotationTransformation(cokeCanAnimation, rotTr);
+
     cokeCanActions[0] = gm_createAction(
         "Idle", 
         GM_ACTION_IDLE,
@@ -275,34 +329,53 @@ void t_cokeCanTest(){
         NULL
     );
 
+    cokeCanStats = gm_createStats(100, 100, 10, 10, 10);
     cokeCanActor = gm_createActor(
         "Coke Can", 
         "A coke can", 
-        gm_createStats(100, 100, 10, 10, 10),
+        cokeCanStats,
         cokeCanActions
     );
-    
+
     cokeCanCoordinates = sp_createCoordinates(-60, 70, 0);
-    
+
+    cokeCanBox = as_createBox(16, 32, 10);
+    cokeCanShape = as_createShape(
+        cokeCanBox,
+        255,
+        GM_SHAPE_TYPE_BOX,
+        false
+    );
+
     cokeCanAsset = gm_createAsset(
         cokeCanActor,
-        as_createShape(as_createBox(16, 32, 10), 255, GM_SHAPE_TYPE_BOX, false),
+        cokeCanShape,
         cokeCanCoordinates
     );
-    
+
     gm_insertAsset(cokeCanAsset);    
 }
 
-void t_skullBgTest(){
-    char *assetsPath = (char*)getEnv("ASSETS_PATH", "../assets");
-    char skullPath[128] = {0};
+void t_skullBgTest(void)
+{
+    int i = 0;
     Animation *skullAnimation = NULL;
-    Action *skullBgActions[GM_MAX_ACTIONS] = {NULL};
+    Action *skullBgActions[GM_MAX_ACTIONS];
     Asset *skullAsset = NULL;
-    
+    Actor *skullActor = NULL;
+    Stats *skullStats = NULL;
+
+    for (i = 0; i < GM_MAX_ACTIONS; i++) {
+        skullBgActions[i] = NULL;
+    }
+
     skullAnimation = as_createAnimation(); 
-    as_loadAnimationFrames(skullAnimation, skullFrames, 255);  
-    
+    as_loadAnimationFrames(
+        skullAnimation, 
+        skullFrames, 
+        255
+    );  
+
     skullBgActions[0] = gm_createAction(
         "Idle", 
         GM_ACTION_IDLE,
@@ -310,8 +383,16 @@ void t_skullBgTest(){
         NULL
     );
 
+    skullStats = gm_createStats(100, 100, 10, 10, 10);
+    skullActor = gm_createActor(
+        "Skulls Background", 
+        "An impaled skulls background", 
+        skullStats, 
+        skullBgActions
+    );
+
     skullAsset = gm_createAsset(
-        gm_createActor("Skulls Background", "An impaled skulls background", gm_createStats(100, 100, 10, 10, 10), skullBgActions),
+        skullActor,
         NULL,
         sp_createCoordinates(0, 0, -100)
     );

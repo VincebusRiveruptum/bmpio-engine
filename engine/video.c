@@ -5,123 +5,133 @@ unsigned char nextPage = 1;
 
 unsigned long pageOffsets[NUM_PAGES];
 
-    
-void v_setTXTMode(){
+void v_setTXTMode(void)
+{
     v_setTXTModeASM();
-};
+}
 
-void v_set200pxMode(){
-    int i;
-    v_setVideoMode13(); // Call the BIOS to set mode 13h
+void v_set200pxMode(void)
+{
+    int i = 0;
 
-    // Set VGA registers (these remain the same as in Borland C)
-    outPortw(CRTC_ADDR, 0x0011); // Unprotect CRTC registers
+    v_setVideoMode13();
+
+    outPortw(CRTC_ADDR, 0x0011);
     outPortw(SEQU_ADDR, 0x0604);
     outPortw(CRTC_ADDR, 0xE317);
     outPortw(CRTC_ADDR, 0x0014);
     outPortw(SEQU_ADDR, 0x0F02);
 
-    // Initialize page offsets
     for (i = 0; i < NUM_PAGES; i++) {
         pageOffsets[i] = (unsigned long)i * PAGE_SIZE;
     }
 
-    v_clearScreen(); // Call the clear screen function
+    v_clearScreen();
 }
 
-// Basic pixel plotting
-void v_putPixelX(int x, int y, char color){
-    unsigned long offs;
+/* Basic pixel plotting */
+void v_putPixelX(int x, int y, char color)
+{
+    unsigned long offs = 0;
 
-    // Set the VGA plane and calculate the offset
     outPortb(SEQU_ADDR, 0x02);
-    outPortb(SEQU_ADDR + 1, 0x01 << (x & 3));
+    outPortb(SEQU_ADDR + 1, (unsigned char)(0x01 << (x & 3)));
 
-    if(ENABLE_PAGE_FLIPPING == 1){
-        offs = (y << 6) + (y << 4) + (x >> 2) + pageOffsets[nextPage];
-    }else{
-        offs = (y << 6) + (y << 4) + (x >> 2);
+    if (ENABLE_PAGE_FLIPPING == 1) {
+        offs = (unsigned long)((y << 6) + (y << 4) + (x >> 2)) +
+            pageOffsets[nextPage];
+    } else {
+        offs = (unsigned long)((y << 6) + (y << 4) + (x >> 2));
     }
-    
-    v_putPixelASM(offs, color); // Place the pixel
+
+    v_putPixelASM(offs, (unsigned char)color);
 }
 
-// Page buffering functions
-void setPage(unsigned char page) {
-    unsigned short start_addr = (unsigned short)pageOffsets[page];
+/* Page buffering functions */
+static void _v_setPage(unsigned char page)
+{
+    unsigned short start_addr = 0;
 
-    // Standard VGA practice: Write Start Address High then Low
-    // Register 0x0C: Start Address High, Register 0x0D: Start Address Low
+    start_addr = (unsigned short)pageOffsets[page];
+
     outPortw(CRTC_ADDR, (unsigned short)(0x0C | (start_addr & 0xFF00)));
-    outPortw(CRTC_ADDR, (unsigned short)(0x0D | ((start_addr << 8) & 0xFF00)));
+    outPortw(
+        CRTC_ADDR,
+        (unsigned short)(0x0D | ((start_addr << 8) & 0xFF00))
+    );
 }
 
-
-#pragma aux clearPage =    \
-    "mov edi, 0xA0000" /* VGA memory segment for mode 13h */ \
-    "add edi, eax"                                          \
-    "mov eax, ebx"                                          \
-    "mov ecx, 16000"    /* Zero-fill the register */          \
-    "rep stosd"        /* Fill VGA memory with zeros */      \
-    parm[eax][ebx]                                               \
-    modify[eax ebx ecx edi];
-
-
-#pragma aux fastFill = \
-    
-
-void v_flipPage() {
+void v_flipPage(void)
+{
     v_waitVsync();
-    setPage(nextPage);      // Show the page we just finished drawing
-    currentPage = nextPage; // This is now the visible page
-    nextPage = (currentPage + 1) % NUM_PAGES; // Target the next one for drawing
+    _v_setPage(nextPage);
+    currentPage = nextPage;
+    nextPage = (currentPage + 1) % NUM_PAGES;
 }
 
-void v_setPal(char color, unsigned char r, unsigned char g, unsigned char b){
-    outPortb(0x3c8, color);
+void v_setPal(
+    char color,
+    unsigned char r,
+    unsigned char g,
+    unsigned char b
+) {
+    outPortb(0x3c8, (unsigned char)color);
     outPortb(0x3c9, r);
     outPortb(0x3c9, g);
     outPortb(0x3c9, b);
 }
 
-void fillScreen(unsigned char color){
-    clearPage(pageOffsets[nextPage], color);
-}
+void v_drawRect(
+    unsigned int x1,
+    unsigned int y1,
+    unsigned int x2,
+    unsigned int y2,
+    unsigned char color
+) {
+    unsigned int i = 0;
+    unsigned int j = 0;
+    unsigned long offs = 0;
 
-void v_drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color){
-	int i = 0, j = 0;
-    unsigned long offs;
-
-	for(j = y1 ; j < y2 ; j++ ){
-        for(i = x1; i < x2 ; i++){
-            if(ENABLE_PAGE_FLIPPING == 1){
-                offs = (j << 6) + (j << 4) + (i >> 2) + pageOffsets[nextPage];
-            }else{
-                offs = (j << 6) + (j << 4) + (i >> 2);
+    for (j = y1; j < y2; j++) {
+        for (i = x1; i < x2; i++) {
+            if (ENABLE_PAGE_FLIPPING == 1) {
+                offs = (unsigned long)((j << 6) + (j << 4) + (i >> 2)) +
+                    pageOffsets[nextPage];
+            } else {
+                offs = (unsigned long)((j << 6) + (j << 4) + (i >> 2));
             }
-            
+
             outPortb(SEQU_ADDR, 0x02);
-            outPortb(SEQU_ADDR + 1, 0xF);
-		    v_putPixelASM(offs, color); // Place the pixel
+            outPortb(SEQU_ADDR + 1, 0x0F);
+            v_putPixelASM(offs, color);
         }
-	}
+    }
 }
 
-void v_fastFillRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color) {
-    int y;
-    unsigned long row_offs;
-    unsigned int width_pixels = x2 - x1;
-    unsigned int width_bytes = width_pixels >> 2;
-    unsigned int start_x_byte = x1 >> 2;
-    unsigned long page_offs = pageOffsets[nextPage];
+void v_fastFillRect(
+    unsigned int x1,
+    unsigned int y1,
+    unsigned int x2,
+    unsigned int y2,
+    unsigned char color
+) {
+    unsigned int y = 0;
+    unsigned int width_pixels = 0;
+    unsigned int width_bytes = 0;
+    unsigned int start_x_byte = 0;
+    unsigned long page_offs = 0;
+    unsigned long row_offs = 0;
 
-    // Set Map Mask to all planes
+    width_pixels = x2 - x1;
+    width_bytes = width_pixels >> 2;
+    start_x_byte = x1 >> 2;
+    page_offs = pageOffsets[nextPage];
+
     outPortb(SEQU_ADDR, 0x02);
     outPortb(SEQU_ADDR + 1, 0x0F);
 
     for (y = y1; y < y2; y++) {
         row_offs = page_offs + (y << 6) + (y << 4) + start_x_byte;
-        // Use optimized pragma routine instead of incompatible _asm block
         v_memsetVGAASM(row_offs, color, width_bytes);
     }
 }

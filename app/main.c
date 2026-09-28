@@ -24,12 +24,12 @@ int main(int argc, char *argv[]){
     m_initTrig();
     v_set200pxMode();
     eng_setPalette(testPalette);
-    sp_initCameras();
+    sp_initsp_cameras();
     initKeyboard();
     
     while (keyboardTable[KEY_ESC] == false){
         gm_listenEvents();
-        sp_checkCameras();
+        sp_checksp_cameras();
         eng_renderFrame(gameTicks);
         if(ENABLE_PAGE_FLIPPING == 1){
             v_flipPage(); 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     printf("\n96 Tears...");
 
     if(globalPalette) free(globalPalette);
-    if(globalCamera) sp_destroyCamera(globalCamera);
+    if(sp_globalCamera) sp_destroyCamera(sp_globalCamera);
     log_shutdown();
     return 0;
 }

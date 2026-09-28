@@ -4,13 +4,19 @@
 #include "assets.h"
 #include "game.h"
 
-/* CONSTANTS ===========================================================================*/
+/* CONSTANTS =============================================================== */
 
-/* PROTOTYPES ===========================================================================*/
-bool t_initTests();
-void t_createRenamon();
-void t_skullBgTest();
-/* GLOBAL VARS =========================================================================*/
+/* PROTOTYPES ============================================================== */
+
+bool t_initTests(void);
+void t_createRenamon(void);
+void t_skullBgTest(void);
+void t_testFloor(void);
+void t_testFloor2(void);
+void t_cokeCanTest(void);
+
+/* GLOBAL VARS ============================================================= */
+
 extern struct Color *testPalette;
 
 #endif

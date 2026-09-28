@@ -4,7 +4,7 @@
 #include "std.h"
 #include "../hal/vgaregs.h"
 
-/* CONSTANTS ===========================================================================*/
+/* CONSTANTS =============================================================== */
 
 #define PAGE_SIZE 16000
 #define NUM_PAGES 3
@@ -12,81 +12,106 @@
 #define VID_WIDTH 320
 #define VID_HEIGHT 200
 
-/* PROTOYPES ===========================================================================*/
+/* PROTOTYPES ============================================================== */
 
-void v_clearScreen();
-void v_setVideoMode13();
+void v_clearScreen(void);
+void v_setVideoMode13(void);
 void v_set200pxMode(void);
 void v_setTXTMode(void);
-void v_putPixelX(int, int, char);
+void v_putPixelX(int x, int y, char color);
 void v_putPixelASM(unsigned long offset, unsigned char color);
-unsigned char v_getPixelX(int, int);
-void v_setPal(char color, unsigned char r, unsigned char g, unsigned char b);
-void v_drawPalette();
-void v_waitVsync();
+unsigned char v_getPixelX(int x, int y);
+void v_setPal(
+    char color,
+    unsigned char r,
+    unsigned char g,
+    unsigned char b
+);
+void v_drawPalette(void);
+void v_waitVsync(void);
 
-void v_drawRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
-void v_fastFillRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned char color);
-void v_memsetVGAASM(unsigned long offset, unsigned char color, unsigned int count);
-void v_flipPage();
+void v_drawRect(
+    unsigned int x1,
+    unsigned int y1,
+    unsigned int x2,
+    unsigned int y2,
+    unsigned char color
+);
+void v_fastFillRect(
+    unsigned int x1,
+    unsigned int y1,
+    unsigned int x2,
+    unsigned int y2,
+    unsigned char color
+);
+void v_memsetVGAASM(
+    unsigned long offset,
+    unsigned char color,
+    unsigned int count
+);
+void v_flipPage(void);
 
-#pragma aux v_clearScreen =                                   \
-    "mov dx, 0x3C4"        \
-    "mov ax, 0x0F02"       \
-    "out dx, ax"           \
-    "mov eax, 0x00"        \
-    "mov ecx, 16000"       \
-    "mov edi, 0xA0000"     \
-    "rep stosd"            \
+/* Alias matching vid_ module naming scheme rule example */
+#define vid_putPixel v_putPixelX
+#define vid_clearScreen v_clearScreen
+#define vid_flipPage v_flipPage
+
+#pragma aux v_clearScreen = \
+    "mov dx, 0x3C4" \
+    "mov ax, 0x0F02" \
+    "out dx, ax" \
+    "mov eax, 0x00" \
+    "mov ecx, 16000" \
+    "mov edi, 0xA0000" \
+    "rep stosd" \
     modify[eax ecx edi edx];
 
-#pragma aux v_putPixelASM =                                  \
-    "mov edi, 0xA0000"     \
-    "add edi, eax"         \
-    "mov [edi], dl"        \
-    parm[eax][dl]          \
+#pragma aux v_putPixelASM = \
+    "mov edi, 0xA0000" \
+    "add edi, eax" \
+    "mov [edi], dl" \
+    parm[eax][dl] \
     modify[edi];
 
 #pragma aux v_clearPageASM = \
-    "mov edi, 0xA0000"     \
-    "add edi, eax"         \
-    "mov eax, ebx"         \
-    "mov ecx, 16000"       \
-    "rep stosb"            \
-    parm [eax] [ebx]       \
+    "mov edi, 0xA0000" \
+    "add edi, eax" \
+    "mov eax, ebx" \
+    "mov ecx, 16000" \
+    "rep stosb" \
+    parm [eax] [ebx] \
     modify [edi eax ecx];
 
 #pragma aux v_memsetVGAASM = \
-    "mov edi, 0xA0000"     \
-    "add edi, eax"         \
-    "mov eax, ebx"         \
-    "rep stosb"            \
+    "mov edi, 0xA0000" \
+    "add edi, eax" \
+    "mov eax, ebx" \
+    "rep stosb" \
     parm [eax] [ebx] [ecx] \
     modify [edi eax ecx];
 
 #pragma aux v_setVideoMode13 = \
-    "cld"                    \
-    "mov ax, 0x0013",        \
+    "cld" \
+    "mov ax, 0x0013" \
     "int 0x10";
-#pragma aux v_setTXTModeASM =    \
-        "mov ax, 0x03",     \
-        "int 0x10";
+
+#pragma aux v_setTXTModeASM = \
+    "mov ax, 0x03" \
+    "int 0x10";
 
 #pragma aux v_waitVsync = \
-    "mov dx, 0x3DA"     \
-    "v_wait1:"          \
-    "in al, dx"         \
-    "test al, 0x08"     \
-    "jnz v_wait1"       \
-    "v_wait2:"          \
-    "in al, dx"         \
-    "test al, 0x08"     \
-    "jz v_wait2"        \
+    "mov dx, 0x3DA" \
+    "v_wait1:" \
+    "in al, dx" \
+    "test al, 0x08" \
+    "jnz v_wait1" \
+    "v_wait2:" \
+    "in al, dx" \
+    "test al, 0x08" \
+    "jz v_wait2" \
     modify [eax edx];
 
-
-
-/* GLOBAL VARS =========================================================================*/
+/* GLOBAL VARS ============================================================= */
 
 extern unsigned long pageOffsets[NUM_PAGES];
 

@@ -3,47 +3,47 @@
 
 #include "std.h"
 
-// EXTERNAL DEPENDENCES
+/* EXTERNAL DEPENDENCIES */
 #include "../deps/log/log.h"
 #include "../deps/data/data.h"
 #include "../deps/env/env.h"
 #include "../deps/input/input.h"
 
-// VIDEO
+/* VIDEO */
 #include "video.h"
 
-// ENGINE
+/* ENGINE */
 #include "math.h"
 
-// SPACE
+/* SPACE */
 #include "space.h"
 
-// ASSETS
+/* ASSETS */
 #include "assets.h"
 
-// TEST
+/* TEST */
 #include "test.h"
 
-// MEM
+/* MEM */
 #include "mem.h"
 
-// HAL
+/* HAL */
 #include "../hal/vgaregs.h"
 
-// CONSTANTS ====================================================================
+/* CONSTANTS =============================================================== */
 
 #define ACTOR_FLAG_ACTIVE     0x01
 #define ACTOR_FLAG_VISIBLE    0x02
 #define ACTOR_FLAG_COLLIDABLE 0x04
 
-// TYPES ========================================================================
+/* TYPES =================================================================== */
 
-typedef struct RenderQueue{
-	struct List *renderList;
-	struct List *renderOrder;
-}RenderQueue;
+typedef struct RenderQueue {
+    struct List *renderList;
+    struct List *renderOrder;
+} RenderQueue;
 
-// VARS ========================================================================
+/* VARS ==================================================================== */
 
 extern unsigned long gameTicks;
 extern unsigned long index;
@@ -51,10 +51,10 @@ extern unsigned long index;
 extern Config *gameConfig;
 extern Color *globalPalette;
 
-// PROTOYPES ====================================================================
+/* PROTOTYPES ============================================================== */
 
 void eng_renderFrame(unsigned long gametick);
-bool eng_checkConfig();
+bool eng_checkConfig(void);
 void eng_setPalette(Color *palette);
 
 #endif
