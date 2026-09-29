@@ -9,8 +9,9 @@
 #include <dos.h>
 #include <time.h>
 #include <ctype.h>
-
-#include "../../hal/vgaregs.h"
+#if defined(__WATCOMC__) || defined(__MSDOS__) || defined(DOS)
+#include "../../platform/dos/video/vgaregs.h"
+#endif
 
 #ifndef __cplusplus
 typedef unsigned char bool;

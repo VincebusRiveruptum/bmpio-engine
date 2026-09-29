@@ -2,80 +2,80 @@
 #include "settings/settings.h"
 
 char *renamonJumpingFrames[] = {
-    "..\\jump\\frame1.bmp",
-    "..\\jump\\frame2.bmp",
-    "..\\jump\\frame3.bmp",
-    "..\\jump\\frame4.bmp",
-    "..\\jump\\frame5.bmp",
-    "..\\jump\\frame6.bmp",
-    "..\\jump\\frame7.bmp",
-    "..\\jump\\frame8.bmp",
-    "..\\jump\\frame9.bmp",
-    "..\\jump\\frame10.bmp",
-    "..\\jump\\frame11.bmp",
-    "..\\jump\\frame12.bmp",
-    "..\\jump\\frame13.bmp",
-    "..\\jump\\frame14.bmp",
-    "..\\jump\\frame15.bmp",
+    "..\\..\\assets\\jump\\frame1.bmp",
+    "..\\..\\assets\\jump\\frame2.bmp",
+    "..\\..\\assets\\jump\\frame3.bmp",
+    "..\\..\\assets\\jump\\frame4.bmp",
+    "..\\..\\assets\\jump\\frame5.bmp",
+    "..\\..\\assets\\jump\\frame6.bmp",
+    "..\\..\\assets\\jump\\frame7.bmp",
+    "..\\..\\assets\\jump\\frame8.bmp",
+    "..\\..\\assets\\jump\\frame9.bmp",
+    "..\\..\\assets\\jump\\frame10.bmp",
+    "..\\..\\assets\\jump\\frame11.bmp",
+    "..\\..\\assets\\jump\\frame12.bmp",
+    "..\\..\\assets\\jump\\frame13.bmp",
+    "..\\..\\assets\\jump\\frame14.bmp",
+    "..\\..\\assets\\jump\\frame15.bmp",
     NULL
 };
 
 const char *renamonJumpingAltFrames[] = {
-    "..\\jump2\\FRAME1.bmp",
-    "..\\jump2\\FRAME2.bmp",
-    "..\\jump2\\FRAME3.bmp",
-    "..\\jump2\\FRAME4.bmp",
-    "..\\jump2\\FRAME5.bmp",
-    "..\\jump2\\FRAME6.bmp",
-    "..\\jump2\\FRAME7.bmp",
-    "..\\jump2\\FRAME8.bmp",
-    "..\\jump2\\FRAME9.bmp",
-    "..\\jump2\\FRAME10.bmp",
-    "..\\jump2\\FRAME11.bmp",
-    "..\\jump2\\FRAME12.bmp",
+    "..\\..\\assets\\jump2\\FRAME1.bmp",
+    "..\\..\\assets\\jump2\\FRAME2.bmp",
+    "..\\..\\assets\\jump2\\FRAME3.bmp",
+    "..\\..\\assets\\jump2\\FRAME4.bmp",
+    "..\\..\\assets\\jump2\\FRAME5.bmp",
+    "..\\..\\assets\\jump2\\FRAME6.bmp",
+    "..\\..\\assets\\jump2\\FRAME7.bmp",
+    "..\\..\\assets\\jump2\\FRAME8.bmp",
+    "..\\..\\assets\\jump2\\FRAME9.bmp",
+    "..\\..\\assets\\jump2\\FRAME10.bmp",
+    "..\\..\\assets\\jump2\\FRAME11.bmp",
+    "..\\..\\assets\\jump2\\FRAME12.bmp",
     NULL
 };
 
 const char *renamonRunningFrames[] = {
-    "..\\run\\FRAME1.bmp",
-    "..\\run\\FRAME2.bmp",
-    "..\\run\\FRAME4.bmp",
-    "..\\run\\FRAME5.bmp",
-    "..\\run\\FRAME6.bmp",
-    "..\\run\\FRAME11.bmp",
+    "..\\..\\assets\\run\\FRAME1.bmp",
+    "..\\..\\assets\\run\\FRAME2.bmp",
+    "..\\..\\assets\\run\\FRAME4.bmp",
+    "..\\..\\assets\\run\\FRAME5.bmp",
+    "..\\..\\assets\\run\\FRAME6.bmp",
+    "..\\..\\assets\\run\\FRAME11.bmp",
     NULL
 };
 
 const char *renamonSprintFrames[] = {
-    "..\\sprint\\FRAME1.bmp",
-    "..\\sprint\\FRAME2.bmp",
-    "..\\sprint\\FRAME4.bmp",
+    "..\\..\\assets\\sprint\\FRAME1.bmp",
+    "..\\..\\assets\\sprint\\FRAME2.bmp",
+    "..\\..\\assets\\sprint\\FRAME4.bmp",
     NULL
 };
 
 const char *renamonCrouchFrames[] = {
-    "..\\crouch\\FRAME1.bmp",
-    "..\\crouch\\FRAME2.bmp",
-    "..\\crouch\\FRAME3.bmp",
-    "..\\crouch\\FRAME4.bmp",
-    "..\\crouch\\FRAME5.bmp",
-    "..\\crouch\\FRAME6.bmp",
-    "..\\crouch\\FRAME7.bmp",
+    "..\\..\\assets\\crouch\\FRAME1.bmp",
+    "..\\..\\assets\\crouch\\FRAME2.bmp",
+    "..\\..\\assets\\crouch\\FRAME3.bmp",
+    "..\\..\\assets\\crouch\\FRAME4.bmp",
+    "..\\..\\assets\\crouch\\FRAME5.bmp",
+    "..\\..\\assets\\crouch\\FRAME6.bmp",
+    "..\\..\\assets\\crouch\\FRAME7.bmp",
     NULL
 };
 
 char *renamonIdleFrames[] = {
-    "../assets/idle/frame1.bmp",
+    "../../assets/idle/frame1.bmp",
     NULL
 };
 
 char *skullFrames[] = {
-    "../assets/sk256.bmp",
+    "../../assets/sk256.bmp",
     NULL
 };
 
 const char *cokeCanFrames[] = {
-    "..\\assets\\coke.BMP",
+    "..\\..\\assets\\coke.BMP",
     NULL
 };
 

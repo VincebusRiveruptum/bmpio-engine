@@ -8,7 +8,7 @@
 /* STD IMPORTS */
 #include "std.h"
 #include "space.h"
-#include "video.h"
+#include "../hal/hal_vid.h"
 #include "../deps/data/data.h"
 
 /* CONSTANTS */

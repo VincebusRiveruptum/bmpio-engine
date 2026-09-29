@@ -89,32 +89,34 @@ Directory *hal_fs_getDirectoryFileList(const char *path){
     return d;
 }
 
-// We get where the file extension starts
-char *fs_getFileExtension(char *filename){
-    size_t i=strlen(filename);
-    
-    while(i > 0 && filename[i] != '.'){ // Find the last dot
-        i--;
+/* Returns pointer to file extension */
+char *hal_fs_getFileExtension(const char *filename)
+{
+    if (!filename) {
+        return NULL;
     }
-
     return strrchr(filename, '.');
 }
 
-// We get where the file name starts
-char *fs_getFileName(char *filename){
+/* Returns pointer to filename within path */
+char *hal_fs_getFileName(const char *filename)
+{
     size_t length = 0;
-    char *end = NULL;
-	if(!filename) return NULL;
-    
-	length = strlen(filename);
-	end = filename + length;
+    const char *end = NULL;
 
-    while(end >= filename){ 
-        if(*end == FS_PATH_SEPARATOR[0] ){ 
-			return end + 1;
+    if (!filename) {
+        return NULL;
+    }
+
+    length = strlen(filename);
+    end = filename + length;
+
+    while (end >= filename) {
+        if (*end == FS_PATH_SEPARATOR[0]) {
+            return (char *)(end + 1);
         }
         end--;
     }
 
-	return filename;
+    return (char *)filename;
 }

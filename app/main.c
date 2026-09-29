@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
     sp_init_cameras();
     hal_inp_initKeyboard();
     
-    while (hal_isKeyDown(HAL_KEY_ESC) == false){
+    while (hal_inp_isKeyDown(HAL_KEY_ESC) == false){
         gm_listenEvents();
         sp_check_cameras();
         eng_renderFrame(gameTicks);

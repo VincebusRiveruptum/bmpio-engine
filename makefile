@@ -1,12 +1,20 @@
 # Compile with Watcom 10.6 or OpenWatcom
 
 CC = wcc386
-CFLAGS = -i=app -i=engine -i=hal -i=deps/data -i=deps/env -4r -s -otexan
+CFLAGS = -i=app -i=engine -i=hal -i=deps/data -i=deps/env &
+         -i=platform/dos/video -i=platform/dos/input -i=platform/dos/fs &
+         -4r -s -otexan
 APPNAME = bmpio
 OBJDIR = bin
 
 # Object files in BIN
-OBJS = $(OBJDIR)/main.obj $(OBJDIR)/assets.obj $(OBJDIR)/data.obj $(OBJDIR)/vgaregs.obj $(OBJDIR)/video.obj $(OBJDIR)/env.obj $(OBJDIR)/input.obj $(OBJDIR)/log.obj $(OBJDIR)/math.obj $(OBJDIR)/game.obj $(OBJDIR)/engine.obj $(OBJDIR)/space.obj $(OBJDIR)/test.obj $(OBJDIR)/mem.obj $(OBJDIR)/deps_mem.obj $(OBJDIR)/settings.obj
+OBJS = $(OBJDIR)/main.obj $(OBJDIR)/assets.obj $(OBJDIR)/data.obj &
+       $(OBJDIR)/vgaregs.obj $(OBJDIR)/video.obj $(OBJDIR)/modex.obj &
+       $(OBJDIR)/text.obj $(OBJDIR)/env.obj $(OBJDIR)/input.obj &
+       $(OBJDIR)/log.obj $(OBJDIR)/math.obj $(OBJDIR)/game.obj &
+       $(OBJDIR)/engine.obj $(OBJDIR)/space.obj $(OBJDIR)/test.obj &
+       $(OBJDIR)/mem.obj $(OBJDIR)/deps_mem.obj $(OBJDIR)/settings.obj &
+       $(OBJDIR)/fs.obj
 
 # Linker directive file
 LNK = $(OBJDIR)/bmpio.lnk
@@ -23,11 +31,20 @@ bmpio.exe: $(OBJS)
 $(OBJDIR)/deps_mem.obj: deps/mem/mem.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
-$(OBJDIR)/vgaregs.obj: hal/vgaregs.c
+
+$(OBJDIR)/vgaregs.obj: platform/dos/video/vgaregs.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)/video.obj: engine/video.c
+$(OBJDIR)/video.obj: platform/dos/video/video.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)/modex.obj: platform/dos/video/modex.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)/text.obj: platform/dos/video/text.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
@@ -55,7 +72,11 @@ $(OBJDIR)/log.obj: deps/log/log.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-$(OBJDIR)/input.obj: deps/input/input.c
+$(OBJDIR)/input.obj: platform/dos/input/input.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)/fs.obj: platform/dos/fs/fs.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
@@ -82,7 +103,6 @@ $(OBJDIR)/main.obj: app/main.c
 $(OBJDIR)/test.obj: engine/test.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
-
 
 preclean: .SYMBOLIC
 	@if exist $(OBJDIR)/*.obj del $(OBJDIR)/*.obj

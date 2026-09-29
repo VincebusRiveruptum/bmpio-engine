@@ -318,7 +318,7 @@ void as_drawBitmap(
             for (j = x_start; j < x_end; j++) {
                 color = bmp[i][j];
                 if (color != (unsigned char)maskcolor) {
-                    v_putPixelX(x + j, y + i, color);
+                    hal_vid_putPixelX(x + j, y + i, color);
                 }
             }
         }
@@ -327,7 +327,7 @@ void as_drawBitmap(
             for (j = x_start; j < x_end; j++) {
                 color = bmp[i][width - 1 - j];
                 if (color != (unsigned char)maskcolor) {
-                    v_putPixelX(x + j, y + i, color);
+                    hal_vid_putPixelX(x + j, y + i, color);
                 }
             }
         }

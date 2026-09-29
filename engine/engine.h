@@ -7,10 +7,10 @@
 #include "../deps/log/log.h"
 #include "../deps/data/data.h"
 #include "../deps/env/env.h"
-#include "../deps/input/input.h"
+#include "../hal/hal_inp.h"
 
 /* VIDEO */
-#include "video.h"
+#include "../hal/hal_vid.h"
 
 /* ENGINE */
 #include "math.h"
@@ -27,8 +27,11 @@
 /* MEM */
 #include "mem.h"
 
-/* HAL */
-#include "../hal/vgaregs.h"
+/* PLATFORM HARDWARE (DOS) */
+#if defined(__WATCOMC__) || defined(__MSDOS__) || defined(DOS)
+#include "../platform/dos/video/video.h"
+#include "../platform/dos/video/vgaregs.h"
+#endif
 
 /* CONSTANTS =============================================================== */
 

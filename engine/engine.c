@@ -14,7 +14,7 @@ void eng_setPalette(Color *palette)
     }
 
     for (i = 0; i < 256; i++) {
-        v_setPal(
+        hal_vid_setPal(
             (char)i,
             palette[i].r >> 2,
             palette[i].g >> 2,

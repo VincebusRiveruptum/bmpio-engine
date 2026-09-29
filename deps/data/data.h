@@ -27,4 +27,6 @@ Node *getNodeByDataPtr(List **list, void *data);
 
 void freeList(List **list);
 
+#define dat_getNodeByIndex getNodeByIndex
+
 #endif
