@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[]){
     log_init(); // OPEN LOG FILE ONCE
-    loadEnv();
+    s_loadSettings();
     mem_init(); // CRITICAL: Initialize memory FIRST
     
     t_initTests();
