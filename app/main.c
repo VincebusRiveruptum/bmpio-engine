@@ -17,26 +17,24 @@ int main(int argc, char *argv[]){
     loadEnv();
     mem_init(); // CRITICAL: Initialize memory FIRST
     
-    logger("[main]: ENV and Memory initialized!");
-   
     t_initTests();
 
     m_initTrig();
     v_set200pxMode();
     eng_setPalette(testPalette);
-    sp_initsp_cameras();
-    initKeyboard();
+    sp_init_cameras();
+    hal_inp_initKeyboard();
     
-    while (keyboardTable[KEY_ESC] == false){
+    while (hal_isKeyDown(HAL_KEY_ESC) == false){
         gm_listenEvents();
-        sp_checksp_cameras();
+        sp_check_cameras();
         eng_renderFrame(gameTicks);
         if(ENABLE_PAGE_FLIPPING == 1){
-            v_flipPage(); 
+            hal_vid_flipPage(); 
         }
         gameTicks++;
     }
-    closeKeyboard();
+    hal_inp_closeKeyboard();
     
     v_setTXTMode();
     mem_shutdown();

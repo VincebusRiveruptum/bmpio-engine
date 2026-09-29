@@ -59,7 +59,7 @@ The frame life cycle follows these steps:
 
 1.  **Event Handling**: `gm_listenEvents()` processes BIOS keyboard interrupts.
 2.  **Logic Update**: Actions/Animations updated based on game rules.
-3.  **Culling & Queueing** (`sp_initsp_cameras`):
+3.  **Culling & Queueing** (`sp_init_cameras`):
     - Scans grid cells visible to `sp_globalCamera`.
     - Adds all assets in those cells' lists to the `renderQueue`.
 4.  **Z-Sorting**: `sp_renderQueueApplyZOrdering()` sorts the queue by depth.

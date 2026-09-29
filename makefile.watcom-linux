@@ -6,7 +6,10 @@ APPNAME = bmpio
 OBJDIR = bin
 
 # Object files in BIN
-OBJS = $(OBJDIR)/main.obj $(OBJDIR)/assets.obj $(OBJDIR)/data.obj $(OBJDIR)/vgaregs.obj $(OBJDIR)/video.obj $(OBJDIR)/env.obj $(OBJDIR)/input.obj $(OBJDIR)/log.obj $(OBJDIR)/math.obj $(OBJDIR)/game.obj $(OBJDIR)/engine.obj $(OBJDIR)/space.obj $(OBJDIR)/test.obj $(OBJDIR)/mem.obj $(OBJDIR)/deps_mem.obj $(OBJDIR)/settings.obj
+ENGOBJS = $(OBJDIR)/main.obj $(OBJDIR)/assets.obj $(OBJDIR)/data.obj $(OBJDIR)/vgaregs.obj $(OBJDIR)/video.obj $(OBJDIR)/env.obj $(OBJDIR)/input.obj $(OBJDIR)/log.obj $(OBJDIR)/math.obj $(OBJDIR)/game.obj $(OBJDIR)/engine.obj $(OBJDIR)/space.obj $(OBJDIR)/test.obj $(OBJDIR)/mem.obj $(OBJDIR)/deps_mem.obj $(OBJDIR)/settings.obj
+HALOBJS = $(OBJDIR)/input.obj $(OBJDIR)/fs.obj $(OBJDIR)/video.obj
+
+OBJS = $(ENGOBJS) $(HALOBJS)
 
 # Linker directive file
 LNK = $(OBJDIR)/bmpio.lnk
@@ -83,6 +86,18 @@ $(OBJDIR)/test.obj: engine/test.c
 	if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
+# HAL Stuff
+$(OBJDIR)/video.obj: platform/dos/video/video.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+	
+$(OBJDIR)/fs.obj: platform/dos/fs/fs.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+$(OBJDIR)/input.obj: platform/dos/input/input.c
+	if not exist $(OBJDIR) mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) -fo=$@ $<
 
 preclean: .SYMBOLIC
 	rm -f $(OBJDIR)/*.obj $(DEPSDIR)/*.obj $(OBJDIR)/*.lnk *.obj *.exe *.err *.lnk

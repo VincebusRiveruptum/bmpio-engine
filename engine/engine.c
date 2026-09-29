@@ -5,14 +5,6 @@ Color *globalPalette = NULL;
 unsigned long gameTicks = 0;
 unsigned long index = 0;
 
-bool eng_checkConfig(void)
-{
-    if (config) {
-        return true;
-    }
-    return false;
-}
-
 void eng_setPalette(Color *palette)
 {
     int i = 0;

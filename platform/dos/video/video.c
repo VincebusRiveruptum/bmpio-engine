@@ -1,21 +1,18 @@
 #include "video.h"
 #include "vgaregs.h"
-#include "../../../core/draw/draw.h"
-#include "../../../core/editor/editor.h"
 
-unsigned short *textmemptr;
-unsigned short *editormemptr = NULL;
-int v_currentMode = HAL_VID_80X25;
+#include "video.h"
 
-char tempBuffer[HAL_VIDEO_BUFFER_SIZE];
+unsigned short *textmemptr = NULL;
+unsigned short *backbuffer = NULL;
+int hal_vid_currentMode = HAL_VID_80X25;
 
-void hal_vid_init(void){
-    hal_vid_setVideoMode(0, HAL_NO_MSG);
+// Graphics global vars
+unsigned char currentPage = 0;
+unsigned char nextPage = 1;
 
-    textmemptr = (unsigned short *)0xB8000;
-    editormemptr = (unsigned short *)malloc(HAL_VIDEO_BUFFER_SIZE * sizeof(unsigned short));
-    dw_cls(textmemptr);
-}
+unsigned long pageOffsets[NUM_PAGES];
+
 
 void hal_vid_set25Lines(void){
     VIDEO_ROWS = 25;
@@ -65,6 +62,41 @@ void hal_vid_set132x60(void){
     _set132x60_asm();
 }
 
+unsigned char hal_vid_setVideoMode(VideoMode mode){
+    switch(mode){
+        case HAL_VID_80X25:
+            hal_vid_set25Lines();
+            break;
+        case HAL_VID_80X43:
+            hal_vid_set43Lines();
+            break;
+        case HAL_VID_80X50:
+            hal_vid_set50Lines();
+            break;
+        case HAL_VID_80X60:
+            hal_vid_set80x60();
+            break;
+        case HAL_VID_132X25:
+            hal_vid_set132x25();
+            break;
+        case HAL_VID_132X43:
+            hal_vid_set132x43();
+            break;
+        case HAL_VID_132X50:
+            hal_vid_set132x50();
+            break;
+        case HAL_VID_132X60:
+            hal_vid_set132x60();
+            break;
+        case HAL_VID_MODE13:
+        case HAL_VID_MODEX:
+        case HAL_VID_MODEY:
+            _set200pxMode();
+            break;
+    }
+
+    return mode;
+}
 unsigned short hal_vid_getVideoBufferSize(void){
     return VIDEO_COLS * VIDEO_ROWS;
 }
@@ -75,63 +107,6 @@ void hal_vid_clearBuffer(unsigned short *buffer){
         buffer[i] = ' ';
         i++;
     }
-}
-
-unsigned char hal_vid_setVideoMode(unsigned char mode, unsigned char show_msg){
-    unsigned char recmode;
-
-    switch(mode){
-        case HAL_VID_80X25:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("Set 80x25 video mode (%d)", mode);
-            hal_vid_set25Lines();
-            break;
-        case HAL_VID_80X43:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("Set 80x43 video mode (%d)", mode);       
-            hal_vid_set43Lines();
-            break;
-        case HAL_VID_80X50:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("Set 80x50 video mode (%d)", mode);       
-            hal_vid_set50Lines();
-            break;
-        case HAL_VID_80X60:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("80x60 video mode NOT SUPPORTED YET (%d)", mode);       
-            /* hal_vid_set80x60(); */
-            break;
-        case HAL_VID_132X25:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("132x25 video mode NOT SUPPORTED YET (%d)", mode);       
-            /* hal_vid_set132x25(); */
-            break;
-        case HAL_VID_132X43:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("132x43 video mode NOT SUPPORTED YET (%d)", mode);       
-            /* hal_vid_set132x43(); */
-            break;
-        case HAL_VID_132X50:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("Set 132x50 video mode (%d)", mode);       
-            hal_vid_set132x50();
-            break;
-        case HAL_VID_132X60:
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("Set 132x60 video mode (%d)", mode);       
-            hal_vid_set132x60();
-            break;
-        default:        /* if mode is 0 or whatever */
-            recmode = hal_vid_setVideoMode(settings.DEFAULT_TEXT_MODE, show_msg);
-
-            if(show_msg == HAL_SHOW_MSG) ed_statusBarMessage("Set default video mode (%d)", settings.DEFAULT_TEXT_MODE);
-            return recmode;
-    }
-
-    return mode;
-}
-
-void hal_vid_cycleVideoModes(void){
-    v_currentMode++;
-
-    if(v_currentMode > 8) v_currentMode = 0;
-
-    hal_vid_setVideoMode(v_currentMode, HAL_SHOW_MSG);
-	
-	dw_renderEvent = true;
-	dw_renderEventType = DW_RENDER_ALL;
 }
 
 void hal_vid_refresh(void){
@@ -151,10 +126,126 @@ void hal_vid_putCursor(unsigned char x, unsigned char y){
     outPortb(0x3D5, temp);
 }
 
-void hal_vid_close(void){
-    hal_vid_set25Lines();
-    if (editormemptr) {
-        free(editormemptr);
-        editormemptr = NULL;
+// Graphics Modes =========================================
+
+void _set200pxMode(){
+    int i = 0;
+
+    _setVideoMode13();
+
+    outPortw(CRTC_ADDR, 0x0011);
+    outPortw(SEQU_ADDR, 0x0604);
+    outPortw(CRTC_ADDR, 0xE317);
+    outPortw(CRTC_ADDR, 0x0014);
+    outPortw(SEQU_ADDR, 0x0F02);
+
+    for (i = 0; i < NUM_PAGES; i++) {
+        pageOffsets[i] = (unsigned long)i * PAGE_SIZE;
+    }
+
+    hal_vid_clearScreen();
+}
+
+/* Page buffering functions */
+static void _setPage(unsigned char page){
+    unsigned short start_addr = 0;
+
+    start_addr = (unsigned short)pageOffsets[page];
+
+    outPortw(CRTC_ADDR, (unsigned short)(0x0C | (start_addr & 0xFF00)));
+    outPortw(
+        CRTC_ADDR,
+        (unsigned short)(0x0D | ((start_addr << 8) & 0xFF00))
+    );
+}
+
+void hal_vid_flipPage(){
+    hal_vid_waitVsync();
+    _setPage(nextPage);
+    currentPage = nextPage;
+    nextPage = (currentPage + 1) % NUM_PAGES;
+}
+
+void hal_vid_setPal(
+    char color,
+    unsigned char r,
+    unsigned char g,
+    unsigned char b
+) {
+    outPortb(0x3c8, (unsigned char)color);
+    outPortb(0x3c9, r);
+    outPortb(0x3c9, g);
+    outPortb(0x3c9, b);
+}
+
+/* Basic pixel plotting */
+void hal_vid_putPixelX(int x, int y, char color){
+    unsigned long offs = 0;
+
+    outPortb(SEQU_ADDR, 0x02);
+    outPortb(SEQU_ADDR + 1, (unsigned char)(0x01 << (x & 3)));
+
+    if (ENABLE_PAGE_FLIPPING == 1) {
+        offs = (unsigned long)((y << 6) + (y << 4) + (x >> 2)) +
+            pageOffsets[nextPage];
+    } else {
+        offs = (unsigned long)((y << 6) + (y << 4) + (x >> 2));
+    }
+
+    v_putPixelASM(offs, (unsigned char)color);
+}
+
+void hal_vid_drawRect(
+    unsigned int x1,
+    unsigned int y1,
+    unsigned int x2,
+    unsigned int y2,
+    unsigned char color
+) {
+    unsigned int i = 0;
+    unsigned int j = 0;
+    unsigned long offs = 0;
+
+    for (j = y1; j < y2; j++) {
+        for (i = x1; i < x2; i++) {
+            if (ENABLE_PAGE_FLIPPING == 1) {
+                offs = (unsigned long)((j << 6) + (j << 4) + (i >> 2)) +
+                    pageOffsets[nextPage];
+            } else {
+                offs = (unsigned long)((j << 6) + (j << 4) + (i >> 2));
+            }
+
+            outPortb(SEQU_ADDR, 0x02);
+            outPortb(SEQU_ADDR + 1, 0x0F);
+            v_putPixelASM(offs, color);
+        }
+    }
+}
+
+void hal_vid_fastFillRect(
+    unsigned int x1,
+    unsigned int y1,
+    unsigned int x2,
+    unsigned int y2,
+    unsigned char color
+) {
+    unsigned int y = 0;
+    unsigned int width_pixels = 0;
+    unsigned int width_bytes = 0;
+    unsigned int start_x_byte = 0;
+    unsigned long page_offs = 0;
+    unsigned long row_offs = 0;
+
+    width_pixels = x2 - x1;
+    width_bytes = width_pixels >> 2;
+    start_x_byte = x1 >> 2;
+    page_offs = pageOffsets[nextPage];
+
+    outPortb(SEQU_ADDR, 0x02);
+    outPortb(SEQU_ADDR + 1, 0x0F);
+
+    for (y = y1; y < y2; y++) {
+        row_offs = page_offs + (y << 6) + (y << 4) + start_x_byte;
+        v_memsetVGAASM(row_offs, color, width_bytes);
     }
 }

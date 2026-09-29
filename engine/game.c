@@ -404,20 +404,20 @@ void gm_kbdInput(void)
     prevY = (int)gm_player->coordinates->y;
     prevZ = (int)gm_player->coordinates->z;
 
-    if (in_keys[IN_KEY_UP] || in_keys[IN_KEY_W]) {
+    if (hal_inp_isKeyDown[HAL_INP_KEY_UP] || hal_inp_isKeyDown[HAL_INP_KEY_W]) {
         gm_player->coordinates->y -= 4;
     }
-    if (in_keys[IN_KEY_DOWN] || in_keys[IN_KEY_S]) {
+    if (hal_inp_isKeyDown[HAL_INP_KEY_DOWN] || hal_inp_isKeyDown[HAL_INP_KEY_S]) {
         gm_player->coordinates->y += 4;
     }
-    if (in_keys[IN_KEY_LEFT] || in_keys[IN_KEY_A]) {
+    if (hal_inp_isKeyDown[HAL_INP_KEY_LEFT] || hal_inp_isKeyDown[HAL_INP_KEY_A]) {
         gm_player->coordinates->x -= 4;
     }
-    if (in_keys[IN_KEY_RIGHT] || in_keys[IN_KEY_D]) {
+    if (hal_inp_isKeyDown[HAL_INP_KEY_RIGHT] || hal_inp_isKeyDown[HAL_INP_KEY_D]) {
         gm_player->coordinates->x += 4;
     }
 
-    if (in_keys[IN_KEY_SPACE]) {
+    if (hal_inp_isKeyDown[HAL_INP_KEY_SPACE]) {
         gm_setCurrentAction(gm_player->actor, GM_ACTION_JUMP);
         gm_player->coordinates->z += 4;
     } else {

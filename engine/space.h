@@ -95,7 +95,7 @@ void sp_renderQueueApplyZOrdering(int length);
 #define sp_addAssetTosp_visgrid sp_addAssetToVisGrid
 #define sp_removeAssetFromsp_visgrid sp_removeAssetFromVisGrid
 #define sp_setsp_globalCamera sp_setGlobalCamera
-#define sp_initsp_cameras sp_initCameras
-#define sp_checksp_cameras sp_checkCameras
+#define sp_init_cameras sp_initCameras
+#define sp_check_cameras sp_checkCameras
 
 #endif

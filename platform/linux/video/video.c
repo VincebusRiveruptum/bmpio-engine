@@ -6,10 +6,8 @@
 #include <unistd.h>
 
 unsigned short *textmemptr = NULL;
-unsigned short *editormemptr = NULL;
-int v_currentMode = HAL_VID_80X25;
-
-char tempBuffer[HAL_VIDEO_BUFFER_SIZE];
+unsigned short *backbuffer = NULL;
+int hal_vid_currentMode = HAL_VID_80X25;
 
 void hal_vid_init(void) {
     struct winsize w;
@@ -22,9 +20,9 @@ void hal_vid_init(void) {
     }
 
     textmemptr = (unsigned short *)malloc(VIDEO_COLS * VIDEO_ROWS * sizeof(unsigned short));
-    editormemptr = (unsigned short *)malloc(VIDEO_COLS * VIDEO_ROWS * sizeof(unsigned short));
+    backbuffer = (unsigned short *)malloc(VIDEO_COLS * VIDEO_ROWS * sizeof(unsigned short));
     hal_vid_clearBuffer(textmemptr);
-    hal_vid_clearBuffer(editormemptr);
+    hal_vid_clearBuffer(backbuffer);
     
     // Hide cursor and clear terminal screen
     printf("\033[?25l\033[2J");
@@ -36,9 +34,9 @@ void hal_vid_close(void) {
         free(textmemptr);
         textmemptr = NULL;
     }
-    if (editormemptr) {
-        free(editormemptr);
-        editormemptr = NULL;
+    if (backbuffer) {
+        free(backbuffer);
+        backbuffer = NULL;
     }
     // Show cursor, reset colors, clear screen
     printf("\033[0m\033[2J\033[?25h\033[H");
@@ -53,6 +51,7 @@ void hal_vid_clearBuffer(unsigned short *buffer) {
     }
 }
 
+// TODO: Centralize both text-modes and graphics modes.
 unsigned char hal_vid_setVideoMode(unsigned char mode, unsigned char show_msg) {
     struct winsize w;
     (void)show_msg;
@@ -65,7 +64,7 @@ unsigned char hal_vid_setVideoMode(unsigned char mode, unsigned char show_msg) {
         VIDEO_ROWS = 25;
     }
     
-    v_currentMode = mode;
+    hal_vid_currentMode = mode;
     // Clear screen to match mode change
     printf("\033[2J");
     fflush(stdout);
@@ -73,9 +72,9 @@ unsigned char hal_vid_setVideoMode(unsigned char mode, unsigned char show_msg) {
 }
 
 void hal_vid_cycleVideoModes(void) {
-    v_currentMode++;
-    if (v_currentMode > 8) v_currentMode = 1;
-    hal_vid_setVideoMode(v_currentMode, HAL_SHOW_MSG);
+    hal_vid_currentMode++;
+    if (hal_vid_currentMode > 8) hal_vid_currentMode = 1;
+    hal_vid_setVideoMode(hal_vid_currentMode, HAL_SHOW_MSG);
 }
 
 void hal_vid_set25Lines(void) { hal_vid_setVideoMode(HAL_VID_80X25, HAL_NO_MSG); }
@@ -150,10 +149,10 @@ void hal_vid_refresh(void) {
             VIDEO_ROWS = w.ws_row;
             
             textmemptr = (unsigned short *)realloc(textmemptr, VIDEO_COLS * VIDEO_ROWS * sizeof(unsigned short));
-            editormemptr = (unsigned short *)realloc(editormemptr, VIDEO_COLS * VIDEO_ROWS * sizeof(unsigned short));
+            backbuffer = (unsigned short *)realloc(backbuffer, VIDEO_COLS * VIDEO_ROWS * sizeof(unsigned short));
             
             hal_vid_clearBuffer(textmemptr);
-            hal_vid_clearBuffer(editormemptr);
+            hal_vid_clearBuffer(backbuffer);
             
             printf("\033[2J");
             fflush(stdout);

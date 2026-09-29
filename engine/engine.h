@@ -54,7 +54,6 @@ extern Color *globalPalette;
 /* PROTOTYPES ============================================================== */
 
 void eng_renderFrame(unsigned long gametick);
-bool eng_checkConfig(void);
 void eng_setPalette(Color *palette);
 
 #endif
