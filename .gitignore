@@ -7,8 +7,6 @@ old
 *.err
 *.ERR
 *.DS_Store
-assets
-ASSETS
 bin
 BIN
 errors.txt
