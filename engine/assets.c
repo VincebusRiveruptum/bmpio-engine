@@ -2,229 +2,403 @@
 #include "mem.h"
 
 /*
-	This module is for file handling the assets and everyhting related with interacting with sprites and animations
-*/
+ * This module is for file handling the assets and everything related
+ * with interacting with sprites and animations.
+ */
 
 /* Animation Methods */
-Animation *as_createAnimation(){
-	int i;
-	Animation *newAnimation = (Animation*)mem_arena_alloc(gameSessionArena, sizeof(Animation));
-    if(!newAnimation) return NULL;
+Animation *as_createAnimation(void)
+{
+    int i = 0;
+    Animation *newAnimation = NULL;
+
+    newAnimation = (Animation *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Animation)
+    );
+    if (!newAnimation) {
+        return NULL;
+    }
     memset(newAnimation, 0, sizeof(Animation));
 
-	for(i = 0; i < GM_ANIMATION_MAX_FRAMES; i++){
-		newAnimation->frames[i] = NULL;
-	}
+    for (i = 0; i < GM_ANIMATION_MAX_FRAMES; i++) {
+        newAnimation->frames[i] = NULL;
+    }
 
-	for(i = 0; i < GM_ANIMATION_MAX_TRANSFORMATIONS; i++){
-		newAnimation->transformationList[i] = NULL;
-	}
+    for (i = 0; i < GM_ANIMATION_MAX_TRANSFORMATIONS; i++) {
+        newAnimation->transformationList[i] = NULL;
+    }
 
-	newAnimation->length = 0;
-	newAnimation->frameDelay = 0;
-	newAnimation->loop = false;
-	newAnimation->maskColor = 255;
-	return newAnimation;
+    newAnimation->length = 0;
+    newAnimation->frameDelay = 0;
+    newAnimation->loop = false;
+    newAnimation->maskColor = (char)GM_MASK_COLOR;
+    return newAnimation;
 }
 
-Sprite *as_createSprite(){
-	Sprite *newSprite = (Sprite*)mem_arena_alloc(gameSessionArena, sizeof(Sprite));
-    if(!newSprite) return NULL;
+Sprite *as_createSprite(void)
+{
+    Sprite *newSprite = NULL;
+
+    newSprite = (Sprite *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Sprite)
+    );
+    if (!newSprite) {
+        return NULL;
+    }
     memset(newSprite, 0, sizeof(Sprite));
-	newSprite->bmpData = NULL;
-	newSprite->maskColor = 255;
-	return newSprite;
+    newSprite->bmpData = NULL;
+    newSprite->maskColor = (char)GM_MASK_COLOR;
+    return newSprite;
 }
 
-bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
-	BMPfile *loadedFrame = NULL;
-	loadedFrame = as_loadBMPfile(fileName);
-	
-	if(!loadedFrame){
-		logger("[as_loadSprite]: Error loading sprite %s", fileName);
-		return false;
-	}
-	
-	sprite->bmpData = loadedFrame->bmpData;
-	sprite->maskColor = maskColor;
-	
-    // loadedFrame itself was a temporary wrapper. 
-    // In arena mode, we don't individual free.
-	return true;
+bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor)
+{
+    BMPfile *loadedFrame = NULL;
+
+    if (!sprite || !fileName) {
+        return false;
+    }
+
+    loadedFrame = as_loadBMPfile(fileName);
+    if (!loadedFrame) {
+        logger("[as_loadSprite]: Error loading sprite %s", fileName);
+        return false;
+    }
+
+    sprite->bmpData = loadedFrame->bmpData;
+    sprite->maskColor = (char)maskColor;
+    return true;
 }
 
-void as_loadAnimationFrames(Animation *animation, char **frameArray, unsigned char maskColor){
-	Sprite *sprite = NULL; 
-	int i;
+void as_loadAnimationFrames(
+    Animation *animation,
+    char **frameArray,
+    unsigned char maskColor
+) {
+    int i = 0;
+    Sprite *sprite = NULL;
 
-	if (!frameArray) return;
-	if (frameArray[0] == NULL) return;
+    if (!frameArray || frameArray[0] == NULL) {
+        return;
+    }
 
-	if(animation == NULL){
-		animation = as_createAnimation();
-	}
-	
-	for(i = 0; frameArray[i] != NULL && i < GM_ANIMATION_MAX_FRAMES; i++){
-		sprite = as_createSprite();
-		if(!as_loadSprite(sprite, frameArray[i], maskColor)){
-			logger("[as_loadAnimationFrames]: Error loading frame sprite %s", frameArray[i]);
-			continue;
-		}
+    if (animation == NULL) {
+        animation = as_createAnimation();
+    }
 
-		animation->frames[i] = sprite;
-		animation->length++;
+    for (i = 0; frameArray[i] != NULL && i < GM_ANIMATION_MAX_FRAMES; i++) {
+        sprite = as_createSprite();
+        if (!as_loadSprite(sprite, frameArray[i], maskColor)) {
+            logger(
+                "[as_loadAnimationFrames]: Error loading frame sprite %s",
+                frameArray[i]
+            );
+            continue;
+        }
 
-		logger("[as_loadAnimationFrames]: Loaded frame %s", frameArray[i]);
-	}
+        animation->frames[i] = sprite;
+        animation->length++;
+
+        logger("[as_loadAnimationFrames]: Loaded frame %s", frameArray[i]);
+    }
 }
 
-BMPfile *as_loadBMPfile(char *fileName){
-	FILE *fp = NULL;
-	BMPfile *newFile = NULL;
-	char *id = (char *)calloc(3, sizeof(char));
-	int padding = 0;
-	int y;
-	
-	fp = fopen(fileName, "rb");
-	
-	if (!fp){
-		logger("[as_loadBMPfile]: Error, file not found!");
-		return NULL;
-	}
+BMPfile *as_loadBMPfile(char *fileName)
+{
+    int padding = 0;
+    int y = 0;
+    FILE *fp = NULL;
+    BMPfile *newFile = NULL;
+    char *id = NULL;
 
-	logger("[as_loadBMPfile]: Loading %s ", fileName);
+    if (!fileName) {
+        return NULL;
+    }
 
-	newFile = (BMPfile *)mem_arena_alloc(gameSessionArena, sizeof(BMPfile));
-	newFile->bmpData = (BMPdata *)mem_arena_alloc(gameSessionArena, sizeof(BMPdata));
-	newFile->bmpData->bmp = NULL;
-	newFile->bmpData->palette = (Color *)mem_arena_alloc(gameSessionArena, 256 * sizeof(Color));
+    fp = fopen(fileName, "rb");
+    if (!fp) {
+        logger("[as_loadBMPfile]: Error, file not found!");
+        return NULL;
+    }
 
-	if (newFile == NULL || newFile->bmpData == NULL || newFile->bmpData->palette == NULL){
-		logger("[as_loadBMPfile]: Memory allocation failed");
-		return NULL;
-	}
+    logger("[as_loadBMPfile]: Loading %s ", fileName);
+
+    id = (char *)calloc(3, sizeof(char));
+    if (!id) {
+        fclose(fp);
+        return NULL;
+    }
+
+    newFile = (BMPfile *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(BMPfile)
+    );
+    if (!newFile) {
+        free(id);
+        fclose(fp);
+        return NULL;
+    }
+
+    newFile->bmpData = (BMPdata *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(BMPdata)
+    );
+    if (!newFile->bmpData) {
+        free(id);
+        fclose(fp);
+        return NULL;
+    }
+
+    newFile->bmpData->bmp = NULL;
+    newFile->bmpData->palette = (Color *)mem_arena_alloc(
+        gameSessionArena,
+        256 * sizeof(Color)
+    );
+
+    if (newFile->bmpData->palette == NULL) {
+        logger("[as_loadBMPfile]: Memory allocation failed");
+        free(id);
+        fclose(fp);
+        return NULL;
+    }
     memset(newFile->bmpData->palette, 0, 256 * sizeof(Color));
 
-	fread(id, 2, 1, fp);
+    if (fread(id, 2, 1, fp) != 1) {
+        logger("[as_loadBMPfile]: Failed reading magic header");
+        free(id);
+        fclose(fp);
+        return NULL;
+    }
 
-	if (strcmp(id, "BM") != 0){
-		logger("[as_loadBMPfile]: Invalid file. %s", id);
-		free(newFile);
-		return NULL;
-	}
+    if (strcmp(id, "BM") != 0) {
+        logger("[as_loadBMPfile]: Invalid file. %s", id);
+        free(id);
+        fclose(fp);
+        return NULL;
+    }
 
-	strncpy(newFile->fh.id, id, 2);
+    strncpy((char *)newFile->fh.id, id, 2);
+    free(id);
+    id = NULL;
 
-	fread(&(newFile->fh), 12, 1, fp);
-	fread(&(newFile->ih), 40, 1, fp);
+    if (fread(&(newFile->fh.size), 12, 1, fp) != 1) {
+        fclose(fp);
+        return NULL;
+    }
+    if (fread(&(newFile->ih), 40, 1, fp) != 1) {
+        fclose(fp);
+        return NULL;
+    }
 
-	logger("[as_loadBMPfile]: %s [ X : %ld, Y : %ld ]", fileName, newFile->ih.x, newFile->ih.y);
+    logger(
+        "[as_loadBMPfile]: %s [ X : %ld, Y : %ld ]",
+        fileName,
+        newFile->ih.x,
+        newFile->ih.y
+    );
 
-	newFile->bmpData->width = newFile->ih.x;
-	newFile->bmpData->height = newFile->ih.y;
+    newFile->bmpData->width = newFile->ih.x;
+    newFile->bmpData->height = newFile->ih.y;
 
-	/* Lectura de paleta */
+    /* Read Palette */
+    if (fread(newFile->bmpData->palette, 1024, 1, fp) != 1) {
+        fclose(fp);
+        return NULL;
+    }
 
-	fread((newFile->bmpData->palette), 1024, 1, fp);
+    /* Read Bitmap Image */
+    newFile->bmpData->bmp = (unsigned char **)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(unsigned char *) * newFile->ih.y
+    );
 
-	/* Lectura de imagen */
+    if (newFile->bmpData->bmp == NULL) {
+        logger("[as_loadBMPfile]: Could not allocate bmp height.");
+        fclose(fp);
+        return NULL;
+    }
 
-	newFile->bmpData->bmp = (unsigned char **)mem_arena_alloc(gameSessionArena, sizeof(unsigned char *) * newFile->ih.y);
+    while ((newFile->ih.x + padding) % 4 != 0) {
+        padding++;
+    }
 
-	if (newFile->bmpData->bmp == NULL){
-		logger("[as_loadBMPfile]: Could not allocate bmp height.");
-		return NULL;
-	}
+    for (y = (int)newFile->ih.y - 1; y >= 0; y--) {
+        newFile->bmpData->bmp[y] = (unsigned char *)mem_arena_alloc(
+            gameSessionArena,
+            sizeof(unsigned char) * (newFile->ih.x + padding)
+        );
 
-	while ((newFile->ih.x + padding) % 4 != 0){
-		padding++;
-	};
+        if (newFile->bmpData->bmp[y] == NULL) {
+            logger(
+                "[as_loadBMPfile]: Could not allocate width on index %d",
+                y
+            );
+            fclose(fp);
+            return NULL;
+        }
 
-	for (y = (int) newFile->ih.y - 1; y >= 0; y--){
-		newFile->bmpData->bmp[y] = (unsigned char *)mem_arena_alloc(gameSessionArena, sizeof(unsigned char) * (newFile->ih.x + padding));
+        if (fread(
+                newFile->bmpData->bmp[y],
+                newFile->ih.x + padding,
+                1,
+                fp
+            ) != 1) {
+            fclose(fp);
+            return NULL;
+        }
+    }
 
-		if (newFile->bmpData->bmp[y] == NULL)
-		{
-			logger("[as_loadBMPfile]: Could not allocate bitmap width on loop index : %d", y);
-			return NULL;
-		}
-		else
-		{
-			fread(newFile->bmpData->bmp[y], newFile->ih.x + padding, 1, fp);
-		}
-	}
-
-	fclose(fp);
-	return newFile;
+    fclose(fp);
+    return newFile;
 }
 
-void as_drawBitmap(BMPdata **bmpData, int x, int y, int maskcolor){
-	int i, j;
-	unsigned char color = 0;
-	unsigned char **bmp = (*bmpData)->bmp;
-	int width = (int)(*bmpData)->width;
-	int height = (int)(*bmpData)->height;
-    int x_start = 0, y_start = 0;
-    int x_end = width, y_end = height;
+void as_drawBitmap(
+    BMPdata **bmpData,
+    int x,
+    int y,
+    int maskcolor,
+    bool hflip
+) {
+    int i = 0;
+    int j = 0;
+    int width = 0;
+    int height = 0;
+    int x_start = 0;
+    int y_start = 0;
+    int x_end = 0;
+    int y_end = 0;
+    unsigned char color = 0;
+    unsigned char **bmp = NULL;
 
-	if (bmp == NULL) return;
+    if (bmpData == NULL || *bmpData == NULL) {
+        return;
+    }
 
-    /* Adjust for CENTER - as_drawBitmap */
+    bmp = (*bmpData)->bmp;
+    width = (int)(*bmpData)->width;
+    height = (int)(*bmpData)->height;
+
+    if (bmp == NULL) {
+        return;
+    }
+
+    /* Adjust for CENTER */
     x = x - (width >> 1);
     y = y - (height >> 1);
 
-    /* Clipping for as_drawBitmap */
-    if (y < 0) { y_start = -y; }
-    if (y + height > 200) y_end = 200 - y;
-    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+    x_end = width;
+    y_end = height;
 
-    if (x < 0) { x_start = -x; }
-    if (x + width > 320) x_end = 320 - x;
-    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+    /* Clipping */
+    if (y < 0) {
+        y_start = -y;
+    }
+    if (y + height > 200) {
+        y_end = 200 - y;
+    }
+    if (y_start >= y_end || y >= 200 || y + height <= 0) {
+        return;
+    }
 
-    for (i = y_start; i < y_end; i++){
-        for (j = x_start; j < x_end; j++){
-            color = bmp[i][j];
-            if (color != (unsigned char)maskcolor){
-                v_putPixelX(x + j, y + i, color);
+    if (x < 0) {
+        x_start = -x;
+    }
+    if (x + width > 320) {
+        x_end = 320 - x;
+    }
+    if (x_start >= x_end || x >= 320 || x + width <= 0) {
+        return;
+    }
+
+    if (hflip == false) {
+        for (i = y_start; i < y_end; i++) {
+            for (j = x_start; j < x_end; j++) {
+                color = bmp[i][j];
+                if (color != (unsigned char)maskcolor) {
+                    hal_vid_putPixelX(x + j, y + i, color);
+                }
+            }
+        }
+    } else {
+        for (i = y_start; i < y_end; i++) {
+            for (j = x_start; j < x_end; j++) {
+                color = bmp[i][width - 1 - j];
+                if (color != (unsigned char)maskcolor) {
+                    hal_vid_putPixelX(x + j, y + i, color);
+                }
             }
         }
     }
 }
 
 /* Optimized Plane-batched drawing */
-void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
-	int i, j, plane;
-	unsigned char color = 0;
-	unsigned char **bmp = (*bmpData)->bmp;
-	int width = (int)(*bmpData)->width;
-	int height = (int)(*bmpData)->height;
-    unsigned long page_offs = pageOffsets[nextPage];
-    unsigned long row_offs;
-    int x_start = 0, y_start = 0;
-    int x_end = width, y_end = height;
+void as_drawBitmapPlaneBatch(
+    BMPdata **bmpData,
+    int x,
+    int y,
+    int maskcolor
+) {
+    int i = 0;
+    int j = 0;
+    int plane = 0;
+    int start_j = 0;
+    int width = 0;
+    int height = 0;
+    int x_start = 0;
+    int y_start = 0;
+    int x_end = 0;
+    int y_end = 0;
+    unsigned char color = 0;
+    unsigned long page_offs = 0;
+    unsigned long row_offs = 0;
+    unsigned char **bmp = NULL;
 
-	if (bmp == NULL) return;
+    if (bmpData == NULL || *bmpData == NULL) {
+        return;
+    }
 
-    /* Adjust for CENTER - as_drawBitmapPlaneBatch */
+    bmp = (*bmpData)->bmp;
+    width = (int)(*bmpData)->width;
+    height = (int)(*bmpData)->height;
+    page_offs = pageOffsets[nextPage];
+
+    if (bmp == NULL) {
+        return;
+    }
+
+    /* Adjust for CENTER */
     x = x - (width >> 1);
     y = y - (height >> 1);
 
-    /* Clipping for as_drawBitmapPlaneBatch */
-    if (y < 0) { y_start = -y; }
-    if (y + height > 200) y_end = 200 - y;
-    if (y_start >= y_end || y >= 200 || y + height <= 0) return;
+    x_end = width;
+    y_end = height;
 
-    if (x < 0) { x_start = -x; }
-    if (x + width > 320) x_end = 320 - x;
-    if (x_start >= x_end || x >= 320 || x + width <= 0) return;
+    /* Clipping */
+    if (y < 0) {
+        y_start = -y;
+    }
+    if (y + height > 200) {
+        y_end = 200 - y;
+    }
+    if (y_start >= y_end || y >= 200 || y + height <= 0) {
+        return;
+    }
+
+    if (x < 0) {
+        x_start = -x;
+    }
+    if (x + width > 320) {
+        x_end = 320 - x;
+    }
+    if (x_start >= x_end || x >= 320 || x + width <= 0) {
+        return;
+    }
 
     for (plane = 0; plane < 4; plane++) {
-        int start_j;
-        outPortb(SEQU_ADDR, 0x02);
-        outPortb(SEQU_ADDR + 1, 0x01 << plane);
+        hal_modx_selectPlane((unsigned char)plane);
 
-        // Find first j >= x_start such that (x + j) % 4 == plane
         start_j = x_start + ((plane - ((x + x_start) % 4) + 4) % 4);
 
         for (i = y_start; i < y_end; i++) {
@@ -239,71 +413,110 @@ void as_drawBitmapPlaneBatch(BMPdata **bmpData, int x, int y, int maskcolor){
     }
 }
 
-/* This will draw an image distorted/rotated using Fixed Point Math (8.8) 
-   OPTIMIZED: Inverse Mapping + Plane Batching + Loop Increments */
-void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int angle){
-    unsigned char **bmp = (*bmpData)->bmp;
-    unsigned int width = (*bmpData)->width;
-    unsigned int height = (*bmpData)->height;
-    unsigned long page_offs = pageOffsets[nextPage];
-    
-    long angcos, angsin;
-    long halfw = (long)width << 7;
-    long halfh = (long)height << 7;
-    int screen_x, screen_y, plane;
-    long dx, dy, u_fixed, v_fixed;
-    long du, dv;
-    int u, v;
-    unsigned char color;
-    unsigned long dest_offs;
-    
-    // Bounding Box (A bit loose for rotation safety)
-    int min_x = (int)x - (int)(width >> 1);
-    int max_x = (int)x + (int)width + (int)(width >> 1);
-    int min_y = (int)y - (int)(height >> 1);
-    int max_y = (int)y + (int)height + (int)(height >> 1);
+/* Fixed Point Math (8.8) transform drawing */
+void as_drawBitmapTransform(
+    BMPdata **bmpData,
+    int x,
+    int y,
+    int maskcolor,
+    int angle,
+    bool hflip
+) {
+    int min_x = 0;
+    int max_x = 0;
+    int min_y = 0;
+    int max_y = 0;
+    int screen_x = 0;
+    int screen_y = 0;
+    int start_x = 0;
+    int plane = 0;
+    int u = 0;
+    int v = 0;
+    int src_u = 0;
+    unsigned int width = 0;
+    unsigned int height = 0;
+    long angcos = 0;
+    long angsin = 0;
+    long halfw = 0;
+    long halfh = 0;
+    long dx = 0;
+    long dy = 0;
+    long u_fixed = 0;
+    long v_fixed = 0;
+    long du = 0;
+    long dv = 0;
+    unsigned char color = 0;
+    unsigned long page_offs = 0;
+    unsigned long dest_offs = 0;
+    unsigned char **bmp = NULL;
 
-    if (min_x < 0) min_x = 0;
-    if (max_x > 320) max_x = 320;
-    if (min_y < 0) min_y = 0;
-    if (max_y > 200) max_y = 200;
+    if (bmpData == NULL || *bmpData == NULL) {
+        return;
+    }
 
-    // Early exit
-    if (min_x >= max_x || min_y >= max_y) return;
+    bmp = (*bmpData)->bmp;
+    width = (unsigned int)(*bmpData)->width;
+    height = (unsigned int)(*bmpData)->height;
+    page_offs = pageOffsets[nextPage];
+
+    if (bmp == NULL) {
+        return;
+    }
+
+    halfw = (long)width << 7;
+    halfh = (long)height << 7;
+
+    min_x = x - (int)(width >> 1);
+    max_x = x + (int)width + (int)(width >> 1);
+    min_y = y - (int)(height >> 1);
+    max_y = y + (int)height + (int)(height >> 1);
+
+    if (min_x < 0) { min_x = 0; }
+    if (max_x > 320) { max_x = 320; }
+    if (min_y < 0) { min_y = 0; }
+    if (max_y > 200) { max_y = 200; }
+
+    if (min_x >= max_x || min_y >= max_y) {
+        return;
+    }
 
     angle %= 360;
-    if (angle < 0) angle += 360;
+    if (angle < 0) {
+        angle += 360;
+    }
     angcos = m_costable[angle];
     angsin = m_sintable[angle];
 
-    if (angcos == -2147483648L || angsin == -2147483648L) return;
+    if (angcos == -2147483647L - 1L || angsin == -2147483647L - 1L) {
+        return;
+    }
 
     du = angcos << 2;
     dv = -angsin << 2;
 
     for (plane = 0; plane < 4; plane++) {
-        int start_x = min_x + ((plane - (min_x % 4) + 4) % 4);
-        outPortb(SEQU_ADDR, 0x02);
-        outPortb(SEQU_ADDR + 1, 0x01 << plane);
-        
+        start_x = min_x + ((plane - (min_x % 4) + 4) % 4);
+        hal_modx_selectPlane((unsigned char)plane);
+
         for (screen_y = min_y; screen_y < max_y; screen_y++) {
             dy = ((long)screen_y - ((long)y + (height >> 1))) << 8;
             dx = ((long)start_x - ((long)x + (width >> 1))) << 8;
-            
-            // Calculate initial u, v for the start of the row
+
             u_fixed = ((dx * angcos + dy * angsin) >> 8) + halfw;
             v_fixed = ((-dx * angsin + dy * angcos) >> 8) + halfh;
-            
-            // Optimization: running destination offset
-            dest_offs = page_offs + (unsigned long)screen_y * 80 + (start_x >> 2);
-            
+
+            dest_offs = page_offs +
+                (unsigned long)screen_y * 80 + (start_x >> 2);
+
             for (screen_x = start_x; screen_x < max_x; screen_x += 4) {
                 u = (int)(u_fixed >> 8);
                 v = (int)(v_fixed >> 8);
-                
-                if (u >= 0 && u < width && v >= 0 && v < height) {
-                    color = bmp[v][u];
-                    if (color != maskcolor) {
+
+                if (u >= 0 && (unsigned int)u < width &&
+                    v >= 0 && (unsigned int)v < height) {
+                    src_u = hflip ? (int)(width - 1 - u) : u;
+                    color = bmp[v][src_u];
+                    if (color != (unsigned char)maskcolor) {
                         v_putPixelASM(dest_offs, color);
                     }
                 }
@@ -315,83 +528,227 @@ void as_drawBitmapTransform(BMPdata **bmpData, int x, int y, int maskcolor, int 
     }
 }
 
-bool as_addTransformation(Animation *animation, Transformation *transformation){
-	int i;
+void as_drawBox(Shape *boxShape, int x, int y)
+{
+    int i = 0;
+    int j = 0;
+    int plane = 0;
+    int start_j = 0;
+    int width = 0;
+    int height = 0;
+    int x_start = 0;
+    int y_start = 0;
+    int x_end = 0;
+    int y_end = 0;
+    unsigned long page_offs = 0;
+    unsigned long row_offs = 0;
+    Box *box = NULL;
 
-	if(!animation || !transformation) return false;
-	
-	for(i = 0; i < GM_ANIMATION_MAX_TRANSFORMATIONS; i++){
-		if(animation->transformationList[i] == NULL){
-			animation->transformationList[i] = transformation;
-			logger("\nAdded transformation at slot %d", i);
-			return true;
-		}
-	}
+    if (boxShape == NULL || boxShape->shapeObject == NULL) {
+        return;
+    }
 
-	logger("[as_addTransformation]: Error: Transformation list full");
-	return false;
+    box = (Box *)boxShape->shapeObject;
+    width = (int)box->width;
+    height = (int)box->height;
+    page_offs = pageOffsets[nextPage];
+
+    x = x - (width >> 1);
+    y = y - (height >> 1);
+
+    x_end = width;
+    y_end = height;
+
+    if (y < 0) {
+        y_start = -y;
+    }
+    if (y + height > 200) {
+        y_end = 200 - y;
+    }
+    if (y_start >= y_end || y >= 200 || y + height <= 0) {
+        return;
+    }
+
+    if (x < 0) {
+        x_start = -x;
+    }
+    if (x + width > 320) {
+        x_end = 320 - x;
+    }
+    if (x_start >= x_end || x >= 320 || x + width <= 0) {
+        return;
+    }
+
+    for (plane = 0; plane < 4; plane++) {
+        hal_modx_selectPlane((unsigned char)plane);
+
+        start_j = x_start + ((plane - ((x + x_start) % 4) + 4) % 4);
+
+        for (i = y_start; i < y_end; i++) {
+            row_offs = page_offs + (unsigned long)(y + i) * 80;
+            for (j = start_j; j < x_end; j += 4) {
+                v_putPixelASM(
+                    row_offs + ((x + j) >> 2),
+                    boxShape->color
+                );
+            }
+        }
+    }
 }
 
-bool as_removeTransformation(Animation *animation, int index){
-	if(!animation || index < 0 || index >= GM_ANIMATION_MAX_TRANSFORMATIONS) return false;
+bool as_addTransformation(
+    Animation *animation,
+    Transformation *transformation
+) {
+    int i = 0;
 
-	animation->transformationList[index] = NULL;
-	return true;
+    if (!animation || !transformation) {
+        return false;
+    }
+
+    for (i = 0; i < GM_ANIMATION_MAX_TRANSFORMATIONS; i++) {
+        if (animation->transformationList[i] == NULL) {
+            animation->transformationList[i] = transformation;
+            logger("\nAdded transformation at slot %d", i);
+            return true;
+        }
+    }
+
+    logger("[as_addTransformation]: Error: Transformation list full");
+    return false;
 }
 
-RotationTransformation *as_createRotationTransformation(int angle, int current){
-	RotationTransformation *newRotationTransformation = NULL;
+bool as_removeTransformation(Animation *animation, int index)
+{
+    if (!animation ||
+        index < 0 ||
+        index >= GM_ANIMATION_MAX_TRANSFORMATIONS) {
+        return false;
+    }
 
-	newRotationTransformation = (RotationTransformation *)malloc(sizeof(RotationTransformation));
-	if (!newRotationTransformation){
-		logger("[as_createRotationTransformation]: Could not allocate memory for new transformation");
-		return NULL;
-	}
-	newRotationTransformation->angle = angle;
-	newRotationTransformation->current = current;
-
-	logger("[as_createRotationTransformation]: Created rotation transformation");
-	return newRotationTransformation;
+    animation->transformationList[index] = NULL;
+    return true;
 }
 
-bool as_addRotationTransformation(Animation *animation, RotationTransformation *transformation){
-	Transformation *newTransformation = NULL;
-	RotationTransformation *newRotationTransformation = NULL;
+RotationTransformation *as_createRotationTransformation(
+    int angle,
+    int current
+) {
+    RotationTransformation *newRotationTransformation = NULL;
 
-	if (!animation){
-		return false;
-	}
+    newRotationTransformation = (RotationTransformation *)malloc(
+        sizeof(RotationTransformation)
+    );
+    if (!newRotationTransformation) {
+        logger("[as_createRotationTransformation]: Allocation failed");
+        return NULL;
+    }
+    newRotationTransformation->angle = angle;
+    newRotationTransformation->current = current;
 
-    /* If no transformation provided, create a default one */
-	if (!transformation){
-		newRotationTransformation = (RotationTransformation *)malloc(sizeof(RotationTransformation));
-		if (!newRotationTransformation){
-			logger("[as_addRotationTransformation]: Could not allocate memory for new internal rotation data");
-			return false;
-		}
+    logger("[as_createRotationTransformation]: Created transformation");
+    return newRotationTransformation;
+}
+
+bool as_addRotationTransformation(
+    Animation *animation,
+    RotationTransformation *transformation
+) {
+    Transformation *newTransformation = NULL;
+    RotationTransformation *newRotationTransformation = NULL;
+
+    if (!animation) {
+        return false;
+    }
+
+    if (!transformation) {
+        newRotationTransformation = (RotationTransformation *)malloc(
+            sizeof(RotationTransformation)
+        );
+        if (!newRotationTransformation) {
+            logger("[as_addRotationTransformation]: Allocation failed");
+            return false;
+        }
         newRotationTransformation->angle = 0;
         newRotationTransformation->current = 0;
-	} else {
+    } else {
         newRotationTransformation = transformation;
     }
 
-	newTransformation = (Transformation *)mem_arena_alloc(gameSessionArena, sizeof(Transformation));
-	
-	if (!newTransformation){
-		logger("[as_addRotationTransformation]: Could not allocate memory for new transformation wrapper");
-		return false;
-	}
+    newTransformation = (Transformation *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Transformation)
+    );
 
-	newTransformation->type = TR_ROTATION;
-	newTransformation->data = (void *)newRotationTransformation;
+    if (!newTransformation) {
+        logger("[as_addRotationTransformation]: Wrapper alloc failed");
+        return false;
+    }
 
-	if (!as_addTransformation(animation, newTransformation)){
-		logger("[as_addRotationTransformation]: Could not add transformation to animation");
-        free(newTransformation);
-        if (!transformation) free(newRotationTransformation);
-		return false;
-	}
+    newTransformation->type = TR_ROTATION;
+    newTransformation->data = (void *)newRotationTransformation;
 
-	logger("[as_addRotationTransformation]: Added rotation transformation to animation");
-	return true;
+    if (!as_addTransformation(animation, newTransformation)) {
+        logger("[as_addRotationTransformation]: Could not add to anim");
+        return false;
+    }
+
+    logger("[as_addRotationTransformation]: Added rotation transformation");
+    return true;
+}
+
+Shape *as_createShape(
+    void *shapeObject,
+    unsigned char color,
+    unsigned char type,
+    bool isVisible
+) {
+    Shape *newShape = NULL;
+
+    newShape = (Shape *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Shape)
+    );
+    if (!newShape) {
+        logger("[as_createShape]: Could not allocate memory for new shape");
+        return NULL;
+    }
+
+    if (type == GM_SHAPE_TYPE_BOX && shapeObject != NULL) {
+        logger(
+            "\n[as_createShape]: Box shape: color:%d, w:%d h:%d d:%d",
+            color,
+            ((Box *)shapeObject)->width,
+            ((Box *)shapeObject)->height,
+            ((Box *)shapeObject)->depth
+        );
+    }
+
+    newShape->shapeObject = shapeObject;
+    newShape->color = color;
+    newShape->type = type;
+    newShape->isVisible = isVisible;
+
+    return newShape;
+}
+
+Box *as_createBox(unsigned int width, unsigned int height, unsigned int depth)
+{
+    Box *newBox = NULL;
+
+    newBox = (Box *)mem_arena_alloc(
+        gameSessionArena,
+        sizeof(Box)
+    );
+
+    if (!newBox) {
+        logger("[as_createBox]: Could not allocate memory for new box");
+        return NULL;
+    }
+
+    newBox->width = width;
+    newBox->height = height;
+    newBox->depth = depth;
+
+    return newBox;
 }

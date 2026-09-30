@@ -4,11 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <conio.h>
 #include <math.h>
-#include <dos.h>
 #include <time.h>
 #include <ctype.h>
+
+#if defined(__WATCOMC__) || defined(__MSDOS__) || defined(DOS)
+#include <conio.h>
+#include <dos.h>
+#endif
 
 #ifndef __cplusplus
 typedef unsigned char bool;

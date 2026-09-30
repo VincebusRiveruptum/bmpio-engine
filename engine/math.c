@@ -82,7 +82,9 @@ long m_costable[360] = {
 
 int m_trigInitialized = 1;
 
-void m_initTrig() {
-    // Already initialized statically
+void m_initTrig(void)
+{
+    /* Already initialized statically */
     logger("\n[MATH] Trig tables loaded from static arrays.");
 }
+

@@ -3,13 +3,13 @@
 
 #include "engine.h"
 
-/* Cl stands for Collision*/
+/* Collision types */
 #define CL_TYPE_ACTOR 0x01
 #define CL_TYPE_ENVIRONMENT 0x02
 #define CL_TYPE_DEFAULT 0x04
 
-/* ACTION TYPES*/
-#define GM_ACTION_DEFAULT 0x01	// GENERIC TEST ACTION
+/* ACTION TYPES */
+#define GM_ACTION_DEFAULT 0x01
 #define GM_ACTION_IDLE 0x02
 #define GM_ACTION_WALK 0x03
 #define GM_ACTION_RUN 0x04
@@ -18,129 +18,129 @@
 #define GM_ACTION_DIE 0x07
 
 #define MAX_COLLISIONS 8
-
 #define GM_MAX_ACTIONS 16
 
-/* TYPES ===================================================================================*/
+#define GM_SHAPE_TYPE_BOX 0x01
+#define GM_SHAPE_TYPE_SPHERE 0x02
+#define GM_SHAPE_TYPE_CYLINDER 0x03
 
-typedef struct Stats{
-	int health;
-	int maxHealth;
-	int attack;
-	int defense;
-	int speed;
-	int intelligence;
-	int agility;
-	int luck;
-	int experience;
-	int level;
-}Stats;
+/* TYPES =================================================================== */
 
-typedef struct Collision{
-	void *collidable;
-	unsigned char type;
-}Collision;
+typedef struct Stats {
+    int health;
+    int maxHealth;
+    int attack;
+    int defense;
+    int speed;
+    int intelligence;
+    int agility;
+    int luck;
+    int experience;
+    int level;
+} Stats;
 
-typedef struct Action{
-	unsigned int index;
-	char name[32];
-	unsigned char type; 
+typedef struct Collision {
+    void *collidable;
+    unsigned char type;
+} Collision;
 
-	struct Animation *animation;
+typedef struct Action {
+    unsigned int index;
+    char name[32];
+    unsigned char type; 
 
-	void (*update)(struct Asset *self);
-}Action;
+    struct Animation *animation;
 
-/*
-	I'm thinking on how i can determine an Actors animation frames bettween actions
-	Like, if an actor is idle, it should load the idle sprites or assets involved 
-	
-	But, at some point an action is an action. An actor sohuld react by Behavour? Events? Condsitions?
+    void (*update)(struct Asset *self);
+} Action;
 
-	Also, when an actor can be playeble by the user?
-
-	I have many questions.
-
-	Check colissions sohuld nbe on the main loop, this meythod detects if an actor object collides with another actor object.
-	To each actor involved, returns a list of actors that co;lided with it.
-
-	COLLISION IDEA:
-
-		- implement checkCollision() and call it in main loop
-		= ActorPlaying has a collision array and if checkCollision find one between actors or objects it will
-		send the collision to the actor's action system and store it in collisions array
-	
-	IF a actor is playable it must have :
-		- Is playable flag enabled
-		- Have an input map/system
-		- In single player mode, the playable actor will be stored in a single global variable
-
-*/
-
-/*
-	Actions describe what is happening.
-	Logic decides when to change actions.
-	Rendering only cares about the current action.
-*/
-
-/* Actor data that is constant and loaded after the game starts*/
-typedef struct Actor{
-	char name[32];
-	char description[256];
+typedef struct Actor {
+    char name[32];
+    char description[256];
     
     struct Stats *stats;
-	struct Action *actions[GM_MAX_ACTIONS];  // Array or list of possible actions
-	struct Action *currentAction;
-}Actor;
+    struct Action *actions[GM_MAX_ACTIONS];
+    struct Action *currentAction;
+} Actor;
 
-/* This cound be an actor instance that is currently playing */
-typedef struct Asset{
-	unsigned long id;
-	struct Actor *actor;
+typedef struct Asset {
+    unsigned long id;
+    struct Actor *actor;
+    struct Shape *shape;
 
-	struct Coordinates *coordinates;
-	struct Collision collisions[MAX_COLLISIONS];
+    struct Coordinates *coordinates;
+    struct Coordinates *pointingTo;
 
-	// Stuff for culling
-	unsigned char vis_prevX;
-	unsigned char vis_prevY;
-	unsigned char vis_prevZ;
+    struct Asset *collisions[MAX_COLLISIONS];
 
-	unsigned char vis_currentX;
-	unsigned char vis_currentY;
-	unsigned char vis_currentZ;
-}Asset;
+    /* Culling tracking */
+    unsigned char vis_prevX;
+    unsigned char vis_prevY;
+    unsigned char vis_prevZ;
 
-typedef struct AssetList{
-	struct List *assets;
-}AssetList;
+    unsigned char vis_currentX;
+    unsigned char vis_currentY;
+    unsigned char vis_currentZ;
+} Asset;
 
+typedef struct AssetList {
+    struct List *assets;
+} AssetList;
 
-/* 	GLOBAL VARIABLES ===========================================================================*/
-extern Asset *player;
+/* GLOBAL VARIABLES ======================================================= */
 
-/* PROTOYPES ===========================================================================*/
+extern struct Asset *renderQueue[SP_MAX_RENDER_ASSETS];
+extern Asset *gm_player;
 
-/* Possible actionns 
-	idle
-	walk
-	attack
-	defend
-*/
+#define player gm_player
 
-Asset *gm_createAsset(Actor *actor, Coordinates *coordinates);
+/* PROTOTYPES ============================================================== */
+
+Asset *gm_createAsset(
+    Actor *actor,
+    Shape *shape,
+    Coordinates *coordinates
+);
 void gm_insertAsset(Asset *asset);
-Asset *gm_getAssetByIndex(unsigned char vis_x, unsigned char vis_y, unsigned char vis_z, unsigned int index);
+Asset *gm_getAssetByIndex(
+    unsigned char vis_x,
+    unsigned char vis_y,
+    unsigned char vis_z,
+    unsigned int index
+);
 void gm_destroyAsset(Asset *asset);
 
-/* ACTOR METHODS ===========================================================================*/
-Stats *gm_createStats(int health, int maxHealth, int attack, int defense, int speed);
-Action *gm_createAction(char *name, unsigned char type, Animation *animation, void (*update)(struct Asset *self));
-Actor *gm_createActor(char *name, char *description, Stats *stats, Action *actions[]);
+/* ACTOR METHODS =========================================================== */
 
-void gm_listenEvents();
-void gm_kbdInput();
+Stats *gm_createStats(
+    int health,
+    int maxHealth,
+    int attack,
+    int defense,
+    int speed
+);
+Action *gm_createAction(
+    char *name,
+    unsigned char type,
+    Animation *animation,
+    void (*update)(struct Asset *self)
+);
+Actor *gm_createActor(
+    char *name,
+    char *description,
+    Stats *stats,
+    Action *actions[]
+);
+
+void gm_listenEvents(void);
+void gm_kbdInput(void);
 
 bool gm_setCurrentAction(Actor *actor, unsigned char actionType);
+void gm_addCollisions(Asset *asset, Asset *otherAsset);
+void gm_checkCollisions(Asset *asset);
+void gm_clearCollisions(Asset *asset);
+bool gm_isColliding(Asset *asset);
+
+void gm_cameraMove(int x, int y, int z);
 
 #endif

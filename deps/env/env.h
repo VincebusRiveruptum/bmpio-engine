@@ -10,7 +10,6 @@
 #include <stdarg.h>
 #include <ctype.h>
 
-#define ENV_FILENAME ".env"
 #define S_FILENAME "default.cfg"
 
 #define ENV_TYPE_STRING 0

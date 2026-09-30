@@ -149,16 +149,13 @@ Config *loadEnv() {
   // Parse the contents of the .env
   // Return the Config type object
 
-  FILE *fp = fopen(ENV_FILENAME, "r");
+  FILE *fp = fopen(S_FILENAME, "r");
   char tmpBuffer[256];
   char *key;
   char *value;
   unsigned char type;
   int i = 0;
 
-  if (!fp)
-    fp = fopen(S_FILENAME, "r");
-  
   if (!fp)
     return NULL;
   

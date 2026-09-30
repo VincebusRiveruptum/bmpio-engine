@@ -14,29 +14,27 @@
 
 int main(int argc, char *argv[]){
     log_init(); // OPEN LOG FILE ONCE
-    loadEnv();
+    s_loadSettings();
     mem_init(); // CRITICAL: Initialize memory FIRST
     
-    logger("[main]: ENV and Memory initialized!");
-   
     t_initTests();
 
     m_initTrig();
     v_set200pxMode();
     eng_setPalette(testPalette);
-    sp_initCameras();
-    initKeyboard();
+    sp_init_cameras();
+    hal_inp_initKeyboard();
     
-    while (keyboardTable[KEY_ESC] == false){
+    while (hal_inp_isKeyDown(HAL_KEY_ESC) == false){
         gm_listenEvents();
-        sp_checkCameras();
+        sp_check_cameras();
         eng_renderFrame(gameTicks);
         if(ENABLE_PAGE_FLIPPING == 1){
-            v_flipPage(); 
+            hal_vid_flipPage(); 
         }
         gameTicks++;
     }
-    closeKeyboard();
+    hal_inp_closeKeyboard();
     
     v_setTXTMode();
     mem_shutdown();
@@ -44,7 +42,7 @@ int main(int argc, char *argv[]){
     printf("\n96 Tears...");
 
     if(globalPalette) free(globalPalette);
-    if(globalCamera) sp_destroyCamera(globalCamera);
+    if(sp_globalCamera) sp_destroyCamera(sp_globalCamera);
     log_shutdown();
     return 0;
 }
