@@ -4,17 +4,17 @@
 Actor *gm_player = NULL;
 static unsigned long _gm_assetIdCounter = 1;
 
-Actor *gm_createAsset(Asset *actor, Shape *shape, Coordinates *coordinates){
-    Actor *newAsset = NULL;
+Actor *gm_createActor(Asset *asset, Shape *shape, Coordinates *coordinates){
+    Actor *newActor = NULL;
     Coordinates *pointingTo = NULL;
 
-    newAsset = (Actor *)mem_arena_alloc(sceneArena, sizeof(Actor));
+    newActor = (Actor *)mem_arena_alloc(sceneArena, sizeof(Actor));
 
-    if (!newAsset) {
+    if (!newActor) {
         return NULL;
     }
 
-    memset(newAsset, 0, sizeof(Actor));
+    memset(newActor, 0, sizeof(Actor));
 
     pointingTo = (Coordinates *)mem_arena_alloc(
         sceneArena,
@@ -27,55 +27,55 @@ Actor *gm_createAsset(Asset *actor, Shape *shape, Coordinates *coordinates){
     pointingTo->y = 0;
     pointingTo->z = 0;
 
-    newAsset->id = _gm_assetIdCounter++;
-    newAsset->actor = actor;
-    newAsset->shape = shape;
-    newAsset->coordinates = coordinates;
-    newAsset->pointingTo = pointingTo;
+    newActor->id = _gm_assetIdCounter++;
+    newActor->asset = asset;
+    newActor->shape = shape;
+    newActor->coordinates = coordinates;
+    newActor->pointingTo = pointingTo;
 
-    return newAsset;
+    return newActor;
 }
 
-void gm_insertAsset(Actor *asset)
+void gm_insertActor(Actor *actor)
 {
     int vis_x = 0;
     int vis_y = 0;
     int vis_z = 0;
 
-    if (!asset || !asset->coordinates) {
-        logger("[gm_insertAsset]: Error, asset or coordinates NULL");
+    if (!actor || !actor->coordinates) {
+        logger("[gm_insertActor]: Error, actor or coordinates NULL");
         return;
     }
 
-    vis_x = (int)(asset->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
-    vis_y = (int)(asset->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
-    vis_z = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
+    vis_x = (int)(actor->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    vis_y = (int)(actor->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    vis_z = (int)(actor->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
 
     if (vis_x < 0 || vis_x >= SP_GRID_SIZE ||
         vis_y < 0 || vis_y >= SP_GRID_SIZE ||
         vis_z < 0 || vis_z >= SP_GRID_SIZE) {
-        logger("[gm_insertAsset]: Error, asset out of bounds");
+        logger("[gm_insertActor]: Error, actor out of bounds");
         return;
     }
 
-    asset->vis_currentX = (unsigned char)vis_x;
-    asset->vis_currentY = (unsigned char)vis_y;
-    asset->vis_currentZ = (unsigned char)vis_z;
+    actor->vis_currentX = (unsigned char)vis_x;
+    actor->vis_currentY = (unsigned char)vis_y;
+    actor->vis_currentZ = (unsigned char)vis_z;
 
-    asset->vis_prevX = (unsigned char)vis_x;
-    asset->vis_prevY = (unsigned char)vis_y;
-    asset->vis_prevZ = (unsigned char)vis_z;
+    actor->vis_prevX = (unsigned char)vis_x;
+    actor->vis_prevY = (unsigned char)vis_y;
+    actor->vis_prevZ = (unsigned char)vis_z;
 
     logger(
-        "[gm_insertAsset]: Inserting asset at %d, %d, %d",
+        "[gm_insertActor]: Inserting actor at %d, %d, %d",
         vis_x,
         vis_y,
         vis_z
     );
-    sp_addAssetToVisGrid(asset);
+    sp_addActorToVisGrid(actor);
 }
 
-Actor *gm_getAssetByIndex(
+Actor *gm_getActorByIndex(
     unsigned char vis_x,
     unsigned char vis_y,
     unsigned char vis_z,
@@ -95,9 +95,9 @@ Actor *gm_getAssetByIndex(
     return (Actor *)node->data;
 }
 
-void gm_destroyAsset(Actor *asset)
+void gm_destroyActor(Actor *actor)
 {
-    if (!asset) {
+    if (!actor) {
         return;
     }
     /* Assets are released when sceneArena is reset */
@@ -166,51 +166,51 @@ Action *gm_createAction(
     return newAction;
 }
 
-Asset *gm_createActor(
+Asset *gm_createAsset(
     char *name,
     char *description,
     Stats *stats,
     Action *actions[]
 ) {
     int i = 0;
-    Asset *newActor = NULL;
+    Asset *newAsset = NULL;
     Action *genericAction = NULL;
 
-    newActor = (Asset *)mem_arena_alloc(
+    newAsset = (Asset *)mem_arena_alloc(
         gameSessionArena,
         sizeof(Asset)
     );
-    if (!newActor) {
+    if (!newAsset) {
         return NULL;
     }
 
     if (name) {
-        strncpy(newActor->name, name, 31);
-        newActor->name[31] = '\0';
+        strncpy(newAsset->name, name, 31);
+        newAsset->name[31] = '\0';
     } else {
-        newActor->name[0] = '\0';
+        newAsset->name[0] = '\0';
     }
 
     if (description) {
-        strncpy(newActor->description, description, 255);
-        newActor->description[255] = '\0';
+        strncpy(newAsset->description, description, 255);
+        newAsset->description[255] = '\0';
     } else {
-        newActor->description[0] = '\0';
+        newAsset->description[0] = '\0';
     }
 
-    newActor->stats = stats;
+    newAsset->stats = stats;
 
     for (i = 0; i < GM_MAX_ACTIONS; i++) {
-        newActor->actions[i] = NULL;
+        newAsset->actions[i] = NULL;
     }
 
     if (actions) {
         for (i = 0; i < GM_MAX_ACTIONS && actions[i] != NULL; i++) {
-            newActor->actions[i] = actions[i];
+            newAsset->actions[i] = actions[i];
         }
     }
 
-    if (newActor->actions[0] == NULL) {
+    if (newAsset->actions[0] == NULL) {
         logger("[gm_createActor]: Generic action assigned");
         genericAction = gm_createAction(
             "Generic",
@@ -218,25 +218,25 @@ Asset *gm_createActor(
             NULL,
             NULL
         );
-        newActor->actions[0] = genericAction;
+        newAsset->actions[0] = genericAction;
     }
 
-    newActor->currentAction = newActor->actions[0];
-    return newActor;
+    newAsset->currentAction = newAsset->actions[0];
+    return newAsset;
 }
 
-bool gm_setCurrentAction(Asset *actor, unsigned char actionType)
+bool gm_setCurrentAction(Asset *asset, unsigned char actionType)
 {
     int i = 0;
 
-    if (!actor) {
+    if (!asset) {
         return false;
     }
 
     for (i = 0; i < GM_MAX_ACTIONS; i++) {
-        if (actor->actions[i] != NULL &&
-            actor->actions[i]->type == actionType) {
-            actor->currentAction = actor->actions[i];
+        if (asset->actions[i] != NULL &&
+            asset->actions[i]->type == actionType) {
+            asset->currentAction = asset->actions[i];
             return true;
  
         }
@@ -245,7 +245,7 @@ bool gm_setCurrentAction(Asset *actor, unsigned char actionType)
     logger(
         "[gm_setCurrentAction]: Action type %d not found for %s",
         actionType,
-        actor->name
+        asset->name
     );
     return false;
 }
@@ -324,10 +324,10 @@ void gm_kbdInput(void)
     }
 
     if (hal_inp_isKeyDown(HAL_KEY_SPACE)) {
-        gm_setCurrentAction(gm_player->actor, GM_ACTION_JUMP);
+        gm_setCurrentAction(gm_player->asset, GM_ACTION_JUMP);
         gm_player->coordinates->z += 4;
     } else {
-        gm_setCurrentAction(gm_player->actor, GM_ACTION_IDLE);
+        gm_setCurrentAction(gm_player->asset, GM_ACTION_IDLE);
     }
 
     sp_checkCollisions(gm_player);

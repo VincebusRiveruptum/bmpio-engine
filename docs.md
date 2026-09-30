@@ -35,7 +35,7 @@ The engine uses three distinct coordinate spaces:
 
 - Refactored from single pointers to **Linked Lists**.
 - Allows multiple assets (players, enemies, decorations) to occupy the same grid cell.
-- Managed via `gm_insertAsset` and `sp_removeAssetFromsp_visgrid`.
+- Managed via `gm_insertActor` and `sp_removeAssetFromsp_visgrid`.
 
 ### 2.2 Render Queue (`renderQueue`)
 

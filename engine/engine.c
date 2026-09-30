@@ -37,7 +37,7 @@ void eng_renderFrame(unsigned long gametick)
     int totalAngle = 0;
     bool hflip = false;
 
-    Asset *actor = NULL;
+    Asset *asset = NULL;
     Action *action = NULL;
     Animation *actionAnimation = NULL;
     Sprite *actorSprite = NULL;
@@ -57,16 +57,16 @@ void eng_renderFrame(unsigned long gametick)
             continue;
         }
 
-        actor = renderQueue[i]->actor;
-        if (!actor) {
-            logger("[eng_renderFrame]: Render queue %lu actor is NULL", i);
+        asset = renderQueue[i]->asset;
+        if (!asset) {
+            logger("[eng_renderFrame]: Render queue %lu asset is NULL", i);
             continue;
         }
 
-        action = actor->currentAction;
+        action = asset->currentAction;
         if (action == NULL) {
             logger(
-                "[eng_renderFrame]: Render queue %lu actor action is NULL",
+                "[eng_renderFrame]: Render queue %lu asset action is NULL",
                 i
             );
             continue;

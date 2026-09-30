@@ -108,8 +108,8 @@ void t_createRenamon(void)
     Animation *renamonCrouch = NULL;
     Transformation *transformation = NULL;
 
-    Asset *renamonActor = NULL;
-    Actor *renamonAsset = NULL;
+    Asset *renamonAsset = NULL;
+    Actor *renamonActor = NULL;
     Stats *renamonStats = NULL;
     Shape *renamonShape = NULL;
     Box *renamonBox = NULL;
@@ -170,7 +170,7 @@ void t_createRenamon(void)
 
     /* Renamon actor */
     renamonStats = gm_createStats(100, 100, 10, 10, 10);
-    renamonActor = gm_createActor(
+    renamonAsset = gm_createAsset(
         "Renamon", 
         "A yellow fox-like digimon", 
         renamonStats,
@@ -186,14 +186,14 @@ void t_createRenamon(void)
     );
     renamonPos = sp_createCoordinates(0, 0, 0);
 
-    renamonAsset = gm_createAsset(
-        renamonActor,
+    renamonActor = gm_createActor(
+        renamonAsset,
         renamonShape,
         renamonPos
     );
 
     logger("[t_createRenamon]: Inserting asset");
-    gm_insertAsset(renamonAsset);
+    gm_insertActor(renamonActor);
 
     testPalette = renamonFile->bmpData->palette;   
 
@@ -205,8 +205,8 @@ void t_createRenamon(void)
         )
     );
 
-    if (renamonAsset) {
-        gm_player = renamonAsset;
+    if (renamonActor) {
+        gm_player = renamonActor;
     }
 }
 
@@ -217,15 +217,15 @@ void t_freeRenamonTest(void)
 
 void t_testFloor(void)
 {
-    Actor *floorAsset = NULL;
-    Asset *floorActor = NULL;
+    Actor *floorActor = NULL;
+    Asset *floorAsset = NULL;
     Shape *floorShape = NULL;
     Box *floorBox = NULL;
     Coordinates *floorCoordinates = NULL;
     Stats *floorStats = NULL;
 
     floorStats = gm_createStats(100, 100, 10, 10, 10);
-    floorActor = gm_createActor(
+    floorAsset = gm_createAsset(
         "Floor", 
         "A floor", 
         floorStats,
@@ -241,26 +241,26 @@ void t_testFloor(void)
     );
     floorCoordinates = sp_createCoordinates(105, 0, 0);
 
-    floorAsset = gm_createAsset(
-        floorActor,
+    floorActor = gm_createActor(
+        floorAsset,
         floorShape,
         floorCoordinates
     );
 
-    gm_insertAsset(floorAsset);
+    gm_insertActor(floorActor);
 }
 
 void t_testFloor2(void)
 {
-    Actor *floorAsset = NULL;
-    Asset *floorActor = NULL;
+    Actor *floorActor = NULL;
+    Asset *floorAsset = NULL;
     Shape *floorShape = NULL;
     Box *floorBox = NULL;
     Coordinates *floorCoordinates = NULL;
     Stats *floorStats = NULL;
 
     floorStats = gm_createStats(100, 100, 10, 10, 10);
-    floorActor = gm_createActor(
+    floorAsset = gm_createAsset(
         "Floor 2", 
         "A floor 2", 
         floorStats,
@@ -276,21 +276,21 @@ void t_testFloor2(void)
     );
     floorCoordinates = sp_createCoordinates(-10, 10, 0);
 
-    floorAsset = gm_createAsset(
-        floorActor,
+    floorActor = gm_createActor(
+        floorAsset,
         floorShape,
         floorCoordinates
     );
 
-    gm_insertAsset(floorAsset);
+    gm_insertActor(floorActor);
 }
 
 void t_cokeCanTest(void)
 {
     int i = 0;
     Action *cokeCanActions[GM_MAX_ACTIONS];
-    Actor *cokeCanAsset = NULL;
-    Asset *cokeCanActor = NULL;
+    Actor *cokeCanActor = NULL;
+    Asset *cokeCanAsset = NULL;
     Animation *cokeCanAnimation = NULL;
     Shape *cokeCanShape = NULL;
     Box *cokeCanBox = NULL;
@@ -320,7 +320,7 @@ void t_cokeCanTest(void)
     );
 
     cokeCanStats = gm_createStats(100, 100, 10, 10, 10);
-    cokeCanActor = gm_createActor(
+    cokeCanAsset = gm_createAsset(
         "Coke Can", 
         "A coke can", 
         cokeCanStats,
@@ -337,13 +337,13 @@ void t_cokeCanTest(void)
         false
     );
 
-    cokeCanAsset = gm_createAsset(
-        cokeCanActor,
+    cokeCanActor = gm_createActor(
+        cokeCanAsset,
         cokeCanShape,
         cokeCanCoordinates
     );
 
-    gm_insertAsset(cokeCanAsset);    
+    gm_insertActor(cokeCanActor);    
 }
 
 void t_skullBgTest(void)
@@ -351,8 +351,8 @@ void t_skullBgTest(void)
     int i = 0;
     Animation *skullAnimation = NULL;
     Action *skullBgActions[GM_MAX_ACTIONS];
-    Actor *skullAsset = NULL;
-    Asset *skullActor = NULL;
+    Actor *skullActor = NULL;
+    Asset *skullAsset = NULL;
     Stats *skullStats = NULL;
 
     for (i = 0; i < GM_MAX_ACTIONS; i++) {
@@ -374,19 +374,19 @@ void t_skullBgTest(void)
     );
 
     skullStats = gm_createStats(100, 100, 10, 10, 10);
-    skullActor = gm_createActor(
+    skullAsset = gm_createAsset(
         "Skulls Background", 
         "An impaled skulls background", 
         skullStats, 
         skullBgActions
     );
 
-    skullAsset = gm_createAsset(
-        skullActor,
+    skullActor = gm_createActor(
+        skullAsset,
         NULL,
         sp_createCoordinates(0, 0, -5)
     );
 
     logger("[t_skullBgTest]: Inserting asset");
-    gm_insertAsset(skullAsset);       
+    gm_insertActor(skullActor);       
 }

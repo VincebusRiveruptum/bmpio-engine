@@ -61,7 +61,7 @@ typedef struct Asset {
 
 typedef struct Actor {
     unsigned long id;
-    struct Asset *actor;
+    struct Asset *asset;
     struct Shape *shape;
 
     struct Coordinates *coordinates;
@@ -92,19 +92,20 @@ extern Actor *gm_player;
 
 /* PROTOTYPES ============================================================== */
 
-Actor *gm_createAsset(
-    Asset *actor,
+Actor *gm_createActor(
+    Asset *asset,
     Shape *shape,
     Coordinates *coordinates
 );
-void gm_insertAsset(Actor *asset);
-Actor *gm_getAssetByIndex(
+void gm_insertActor(Actor *actor);
+
+Actor *gm_getActorByIndex(
     unsigned char vis_x,
     unsigned char vis_y,
     unsigned char vis_z,
     unsigned int index
 );
-void gm_destroyAsset(Actor *asset);
+void gm_destroyActor(Actor *actor);
 
 /* ACTOR METHODS =========================================================== */
 
@@ -121,7 +122,7 @@ Action *gm_createAction(
     Animation *animation,
     void (*update)(struct Actor *self)
 );
-Asset *gm_createActor(
+Asset *gm_createAsset(
     char *name,
     char *description,
     Stats *stats,
@@ -131,7 +132,7 @@ Asset *gm_createActor(
 void gm_listenEvents(void);
 void gm_kbdInput(void);
 
-bool gm_setCurrentAction(Asset *actor, unsigned char actionType);
+bool gm_setCurrentAction(Asset *asset, unsigned char actionType);
 void gm_cameraMove(int x, int y, int z);
 
 

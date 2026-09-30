@@ -98,20 +98,20 @@ void sp_calculateTranslation(
 
 /* Culling ================================================================ */
 
-bool sp_addAssetToVisGrid(struct Actor *asset)
+bool sp_addActorToVisGrid(struct Actor *actor)
 {
     int gx = 0;
     int gy = 0;
     int gz = 0;
 
-    if (!asset || !asset->coordinates) {
+    if (!actor || !actor->coordinates) {
         logger("\nError: Actor or coordinates NULL");
         return false;
     }
 
-    gx = (int)(asset->coordinates->x + SP_GRID_HALF);
-    gy = (int)(asset->coordinates->y + SP_GRID_HALF);
-    gz = (int)(asset->coordinates->z + SP_GRID_HALF);
+    gx = (int)(actor->coordinates->x + SP_GRID_HALF);
+    gy = (int)(actor->coordinates->y + SP_GRID_HALF);
+    gz = (int)(actor->coordinates->z + SP_GRID_HALF);
 
     /* Normalize coordinates to grid size and check bounds */
     if (gx < 0 || gx >= SP_GRID_SIZE ||
@@ -121,11 +121,11 @@ bool sp_addAssetToVisGrid(struct Actor *asset)
         return false;
     }
 
-    addGenericNode(&sp_visgrid[gx][gy][gz], (void *)asset, sceneArena);
+    addGenericNode(&sp_visgrid[gx][gy][gz], (void *)actor, sceneArena);
     return true;
 }
 
-bool sp_removeAssetFromVisGrid(
+bool sp_removeActorFromVisGrid(
     unsigned char vis_x,
     unsigned char vis_y,
     unsigned char vis_z,
@@ -237,9 +237,9 @@ void sp_initCameras(void)
     int j = 0;
     int k = 0;
     int qIndex = 0;
-    List *assetList = NULL;
+    List *actorList = NULL;
     Node *node = NULL;
-    Actor *asset = NULL;
+    Actor *actor = NULL;
 
     if (!sp_globalCamera) {
         logger("[sp_initCameras]: Error, Global camera is NULL");
@@ -261,25 +261,25 @@ void sp_initCameras(void)
                     continue;
                 }
 
-                assetList = sp_visgrid[i][j][k];
-                if (assetList == NULL) {
+                actorList = sp_visgrid[i][j][k];
+                if (actorList == NULL) {
                     continue;
                 }
 
-                node = assetList->firstNode;
+                node = actorList->firstNode;
                 while (node != NULL) {
-                    asset = (Actor *)node->data;
+                    actor = (Actor *)node->data;
 
-                    asset->vis_prevX = asset->vis_currentX;
-                    asset->vis_prevY = asset->vis_currentY;
-                    asset->vis_prevZ = asset->vis_currentZ;
+                    actor->vis_prevX = actor->vis_currentX;
+                    actor->vis_prevY = actor->vis_currentY;
+                    actor->vis_prevZ = actor->vis_currentZ;
 
-                    asset->vis_currentX = i;
-                    asset->vis_currentY = j;
-                    asset->vis_currentZ = k;
+                    actor->vis_currentX = i;
+                    actor->vis_currentY = j;
+                    actor->vis_currentZ = k;
 
                     if (qIndex < SP_MAX_RENDER_ASSETS) {
-                        renderQueue[qIndex] = asset;
+                        renderQueue[qIndex] = actor;
                         qIndex++;
                     }
                     node = node->next;
@@ -382,7 +382,7 @@ void sp_renderQueueApplyZOrdering(int length)
         return;
     }
 
-    /* Insertion sort algorithm limited to active assets */
+    /* Insertion sort algorithm limited to active actors */
     for (i = 0; i < length; i++) {
         if (renderQueue[i] == NULL) {
             continue;
@@ -403,38 +403,38 @@ void sp_renderQueueApplyZOrdering(int length)
 
 
 // Collisions
-void sp_addCollisions(Actor *asset, Actor *otherAsset)
+void sp_addCollisions(Actor *actor, Actor *otherActor)
 {
     int i = 0;
 
-    if (!asset || !otherAsset) {
+    if (!actor || !otherActor) {
         return;
     }
 
     for (i = 0; i < MAX_COLLISIONS; i++) {
-        if (asset->collisions[i] == NULL) {
-            asset->collisions[i] = otherAsset;
+        if (actor->collisions[i] == NULL) {
+            actor->collisions[i] = otherActor;
             return;
         }
     }
 }
 
 void sp_bounceBack(
-    Actor *asset,
+    Actor *actor,
     int prevX,
     int prevY,
     int prevZ
 ) {
-    if (!asset || !asset->coordinates) {
+    if (!actor || !actor->coordinates) {
         return;
     }
 
-    asset->coordinates->x = prevX;
-    asset->coordinates->y = prevY;
-    asset->coordinates->z = prevZ;
+    actor->coordinates->x = prevX;
+    actor->coordinates->y = prevY;
+    actor->coordinates->z = prevZ;
 }
 
-void sp_checkCollisions(Actor *asset)
+void sp_checkCollisions(Actor *actor)
 {
     int i = 0;
     int j = 0;
@@ -446,15 +446,15 @@ void sp_checkCollisions(Actor *asset)
     Node *node = NULL;
     Actor *other = NULL;
 
-    if (!asset || !asset->coordinates) {
+    if (!actor || !actor->coordinates) {
         return;
     }
 
-    gridX = (int)(asset->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
-    gridY = (int)(asset->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
-    gridZ = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridX = (int)(actor->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridY = (int)(actor->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridZ = (int)(actor->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
 
-    sp_clearCollisions(asset);
+    sp_clearCollisions(actor);
 
     for (i = gridX - 1; i <= gridX + 1; i++) {
         for (j = gridY - 1; j <= gridY + 1; j++) {
@@ -473,14 +473,14 @@ void sp_checkCollisions(Actor *asset)
                 node = list->firstNode;
                 while (node != NULL) {
                     other = (Actor *)node->data;
-                    if (other && other != asset) {
-                        if (abs((int)(asset->coordinates->x -
+                    if (other && other != actor) {
+                        if (abs((int)(actor->coordinates->x -
                                      other->coordinates->x)) < 50 &&
-                            abs((int)(asset->coordinates->y -
+                            abs((int)(actor->coordinates->y -
                                      other->coordinates->y)) < 50 &&
-                            abs((int)(asset->coordinates->z -
+                            abs((int)(actor->coordinates->z -
                                      other->coordinates->z)) < 50) {
-                            sp_addCollisions(asset, other);
+                            sp_addCollisions(actor, other);
                         }
                     }
                     node = node->next;
@@ -490,23 +490,23 @@ void sp_checkCollisions(Actor *asset)
     }
 }
 
-void sp_clearCollisions(Actor *asset)
+void sp_clearCollisions(Actor *actor)
 {
     int i = 0;
 
-    if (!asset) {
+    if (!actor) {
         return;
     }
 
     for (i = 0; i < MAX_COLLISIONS; i++) {
-        asset->collisions[i] = NULL;
+        actor->collisions[i] = NULL;
     }
 }
 
-bool sp_isColliding(Actor *asset)
+bool sp_isColliding(Actor *actor)
 {
-    if (!asset) {
+    if (!actor) {
         return false;
     }
-    return (asset->collisions[0] != NULL);
+    return (actor->collisions[0] != NULL);
 }

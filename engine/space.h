@@ -70,8 +70,8 @@ void sp_calculateTranslation(
     long *totalOffsetY,
     unsigned long gametick
 );
-bool sp_addAssetToVisGrid(struct Actor *asset);
-bool sp_removeAssetFromVisGrid(
+bool sp_addActorToVisGrid(struct Actor *actor);
+bool sp_removeActorFromVisGrid(
     unsigned char vis_x,
     unsigned char vis_y,
     unsigned char vis_z,
@@ -98,21 +98,21 @@ bool sp_isShapeInFrustrum(int screenX, int screenY, struct Shape *shape);
 void sp_renderQueueApplyZOrdering(int length);
 
 // Collision
-void sp_addCollisions(struct Actor *asset, struct Actor *otherAsset);
-void sp_checkCollisions(struct Actor *asset);
-void sp_clearCollisions(struct Actor *asset);
-bool sp_isColliding(struct Actor *asset);
+void sp_addCollisions(struct Actor *actor, struct Actor *otherActor);
+void sp_checkCollisions(struct Actor *actor);
+void sp_clearCollisions(struct Actor *actor);
+bool sp_isColliding(struct Actor *actor);
 
 void sp_bounceBack(
-    struct Actor *asset,
+    struct Actor *actor,
     int prevX,
     int prevY,
     int prevZ
 );
 
 /* Backward compatibility aliases */
-#define sp_addAssetTosp_visgrid sp_addAssetToVisGrid
-#define sp_removeAssetFromsp_visgrid sp_removeAssetFromVisGrid
+#define sp_addAssetTosp_visgrid sp_addActorToVisGrid
+#define sp_removeAssetFromsp_visgrid sp_removeActorFromVisGrid
 #define sp_setsp_globalCamera sp_setGlobalCamera
 #define sp_init_cameras sp_initCameras
 #define sp_check_cameras sp_checkCameras
