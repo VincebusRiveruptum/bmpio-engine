@@ -2,7 +2,7 @@
 
 It's BMPTEST but took further away, it has the same features (VGA, Double buffering, data structures) and more on its way, i plan on writting the following features:
     - Configuration files (.env or .cfg)
-    - Asset handling: A data structure for handling assets such as images, sound, files, etc.
+    - Actor handling: A data structure for handling assets such as images, sound, files, etc.
     - Better VGA perfomance.
     - KB & Mice input
 

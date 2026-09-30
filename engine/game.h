@@ -47,27 +47,27 @@ typedef struct Action {
 
     struct Animation *animation;
 
-    void (*update)(struct Asset *self);
+    void (*update)(struct Actor *self);
 } Action;
 
-typedef struct Actor {
+typedef struct Asset {
     char name[32];
     char description[256];
     
     struct Stats *stats;
     struct Action *actions[GM_MAX_ACTIONS];
     struct Action *currentAction;
-} Actor;
+} Asset;
 
-typedef struct Asset {
+typedef struct Actor {
     unsigned long id;
-    struct Actor *actor;
+    struct Asset *actor;
     struct Shape *shape;
 
     struct Coordinates *coordinates;
     struct Coordinates *pointingTo;
 
-    struct Asset *collisions[MAX_COLLISIONS];
+    struct Actor *collisions[MAX_COLLISIONS];
 
     /* Culling tracking */
     unsigned char vis_prevX;
@@ -77,7 +77,7 @@ typedef struct Asset {
     unsigned char vis_currentX;
     unsigned char vis_currentY;
     unsigned char vis_currentZ;
-} Asset;
+} Actor;
 
 typedef struct AssetList {
     struct List *assets;
@@ -85,26 +85,26 @@ typedef struct AssetList {
 
 /* GLOBAL VARIABLES ======================================================= */
 
-extern struct Asset *renderQueue[SP_MAX_RENDER_ASSETS];
-extern Asset *gm_player;
+extern struct Actor *renderQueue[SP_MAX_RENDER_ASSETS];
+extern Actor *gm_player;
 
 #define player gm_player
 
 /* PROTOTYPES ============================================================== */
 
-Asset *gm_createAsset(
-    Actor *actor,
+Actor *gm_createAsset(
+    Asset *actor,
     Shape *shape,
     Coordinates *coordinates
 );
-void gm_insertAsset(Asset *asset);
-Asset *gm_getAssetByIndex(
+void gm_insertAsset(Actor *asset);
+Actor *gm_getAssetByIndex(
     unsigned char vis_x,
     unsigned char vis_y,
     unsigned char vis_z,
     unsigned int index
 );
-void gm_destroyAsset(Asset *asset);
+void gm_destroyAsset(Actor *asset);
 
 /* ACTOR METHODS =========================================================== */
 
@@ -119,9 +119,9 @@ Action *gm_createAction(
     char *name,
     unsigned char type,
     Animation *animation,
-    void (*update)(struct Asset *self)
+    void (*update)(struct Actor *self)
 );
-Actor *gm_createActor(
+Asset *gm_createActor(
     char *name,
     char *description,
     Stats *stats,
@@ -131,7 +131,7 @@ Actor *gm_createActor(
 void gm_listenEvents(void);
 void gm_kbdInput(void);
 
-bool gm_setCurrentAction(Actor *actor, unsigned char actionType);
+bool gm_setCurrentAction(Asset *actor, unsigned char actionType);
 void gm_cameraMove(int x, int y, int z);
 
 

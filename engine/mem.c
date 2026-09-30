@@ -151,11 +151,11 @@ int main(int argc, char *argv[])
         type_size = sizeof(Action);
         printf("\nstruct Action: %u bytes", (unsigned int)type_size);
 
-        type_size = sizeof(Actor);
-        printf("\nstruct Actor: %u bytes", (unsigned int)type_size);
-
         type_size = sizeof(Asset);
         printf("\nstruct Asset: %u bytes", (unsigned int)type_size);
+
+        type_size = sizeof(Actor);
+        printf("\nstruct Actor: %u bytes", (unsigned int)type_size);
 
         type_size = sizeof(AssetList);
         printf("\nstruct AssetList: %u bytes", (unsigned int)type_size);

@@ -3,7 +3,7 @@
 #include "mem.h"
 
 struct List *sp_visgrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
-struct Asset *renderQueue[SP_MAX_RENDER_ASSETS] = {NULL};
+struct Actor *renderQueue[SP_MAX_RENDER_ASSETS] = {NULL};
 struct Camera *sp_globalCamera = NULL;
 struct Camera *sp_cameras[SP_GRID_SIZE] = {NULL};
 
@@ -98,14 +98,14 @@ void sp_calculateTranslation(
 
 /* Culling ================================================================ */
 
-bool sp_addAssetToVisGrid(struct Asset *asset)
+bool sp_addAssetToVisGrid(struct Actor *asset)
 {
     int gx = 0;
     int gy = 0;
     int gz = 0;
 
     if (!asset || !asset->coordinates) {
-        logger("\nError: Asset or coordinates NULL");
+        logger("\nError: Actor or coordinates NULL");
         return false;
     }
 
@@ -117,7 +117,7 @@ bool sp_addAssetToVisGrid(struct Asset *asset)
     if (gx < 0 || gx >= SP_GRID_SIZE ||
         gy < 0 || gy >= SP_GRID_SIZE ||
         gz < 0 || gz >= SP_GRID_SIZE) {
-        logger("\nError: Asset coordinates are out of bounds");
+        logger("\nError: Actor coordinates are out of bounds");
         return false;
     }
 
@@ -139,7 +139,7 @@ bool sp_removeAssetFromVisGrid(
     }
 
     if (sp_visgrid[vis_x][vis_y][vis_z] == NULL) {
-        logger("\nError: Asset list is NULL");
+        logger("\nError: Actor list is NULL");
         return false;
     }
 
@@ -239,7 +239,7 @@ void sp_initCameras(void)
     int qIndex = 0;
     List *assetList = NULL;
     Node *node = NULL;
-    Asset *asset = NULL;
+    Actor *asset = NULL;
 
     if (!sp_globalCamera) {
         logger("[sp_initCameras]: Error, Global camera is NULL");
@@ -268,7 +268,7 @@ void sp_initCameras(void)
 
                 node = assetList->firstNode;
                 while (node != NULL) {
-                    asset = (Asset *)node->data;
+                    asset = (Actor *)node->data;
 
                     asset->vis_prevX = asset->vis_currentX;
                     asset->vis_prevY = asset->vis_currentY;
@@ -376,7 +376,7 @@ void sp_renderQueueApplyZOrdering(int length)
 {
     int i = 0;
     int j = 0;
-    Asset *temp = NULL;
+    Actor *temp = NULL;
 
     if (!renderQueue || length <= 0) {
         return;
@@ -403,7 +403,7 @@ void sp_renderQueueApplyZOrdering(int length)
 
 
 // Collisions
-void sp_addCollisions(Asset *asset, Asset *otherAsset)
+void sp_addCollisions(Actor *asset, Actor *otherAsset)
 {
     int i = 0;
 
@@ -420,7 +420,7 @@ void sp_addCollisions(Asset *asset, Asset *otherAsset)
 }
 
 void sp_bounceBack(
-    Asset *asset,
+    Actor *asset,
     int prevX,
     int prevY,
     int prevZ
@@ -434,7 +434,7 @@ void sp_bounceBack(
     asset->coordinates->z = prevZ;
 }
 
-void sp_checkCollisions(Asset *asset)
+void sp_checkCollisions(Actor *asset)
 {
     int i = 0;
     int j = 0;
@@ -444,7 +444,7 @@ void sp_checkCollisions(Asset *asset)
     int gridZ = 0;
     List *list = NULL;
     Node *node = NULL;
-    Asset *other = NULL;
+    Actor *other = NULL;
 
     if (!asset || !asset->coordinates) {
         return;
@@ -472,7 +472,7 @@ void sp_checkCollisions(Asset *asset)
 
                 node = list->firstNode;
                 while (node != NULL) {
-                    other = (Asset *)node->data;
+                    other = (Actor *)node->data;
                     if (other && other != asset) {
                         if (abs((int)(asset->coordinates->x -
                                      other->coordinates->x)) < 50 &&
@@ -490,7 +490,7 @@ void sp_checkCollisions(Asset *asset)
     }
 }
 
-void sp_clearCollisions(Asset *asset)
+void sp_clearCollisions(Actor *asset)
 {
     int i = 0;
 
@@ -503,7 +503,7 @@ void sp_clearCollisions(Asset *asset)
     }
 }
 
-bool sp_isColliding(Asset *asset)
+bool sp_isColliding(Actor *asset)
 {
     if (!asset) {
         return false;

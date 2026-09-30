@@ -6,7 +6,7 @@
 
 /* Forward declarations to avoid circular dependencies */
 struct Sprite;
-struct Asset;
+struct Actor;
 struct Transformation;
 struct Shape;
 
@@ -56,7 +56,7 @@ typedef struct Collision {
 /* Culling grid system ===================================================== */
 
 extern struct List *sp_visgrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];
-extern struct Asset *renderQueue[SP_MAX_RENDER_ASSETS];	
+extern struct Actor *renderQueue[SP_MAX_RENDER_ASSETS];	
 extern struct Camera *sp_globalCamera;
 extern struct Camera *sp_cameras[SP_GRID_SIZE];
 
@@ -70,7 +70,7 @@ void sp_calculateTranslation(
     long *totalOffsetY,
     unsigned long gametick
 );
-bool sp_addAssetToVisGrid(struct Asset *asset);
+bool sp_addAssetToVisGrid(struct Actor *asset);
 bool sp_removeAssetFromVisGrid(
     unsigned char vis_x,
     unsigned char vis_y,
@@ -98,13 +98,13 @@ bool sp_isShapeInFrustrum(int screenX, int screenY, struct Shape *shape);
 void sp_renderQueueApplyZOrdering(int length);
 
 // Collision
-void sp_addCollisions(struct Asset *asset, struct Asset *otherAsset);
-void sp_checkCollisions(struct Asset *asset);
-void sp_clearCollisions(struct Asset *asset);
-bool sp_isColliding(struct Asset *asset);
+void sp_addCollisions(struct Actor *asset, struct Actor *otherAsset);
+void sp_checkCollisions(struct Actor *asset);
+void sp_clearCollisions(struct Actor *asset);
+bool sp_isColliding(struct Actor *asset);
 
 void sp_bounceBack(
-    struct Asset *asset,
+    struct Actor *asset,
     int prevX,
     int prevY,
     int prevZ

@@ -63,7 +63,7 @@ help to determine if the object is inside the viewport of the camera, so will be
 the issue of the render queue, as we can calculate the rendering order based on the grid position of the object.
 
 Ok, the grid system and actor system is OK. I created a test module also, which i create a simple 'Renamon'
-actor with two action states 'idle' and 'jumping', enough for creating a full Asset. The next step is 
+actor with two action states 'idle' and 'jumping', enough for creating a full Actor. The next step is 
 the render pipeline, where we need to calculate the rendering order based on the grid position of the object. 
 But, before that, i need to implement a camera object to be able to define a test viewport and rendering the
 'Renamon' actor on screen. I need your validation first to continue with the camera implementation.
@@ -131,7 +131,7 @@ Next steps would be:
 	- Items
 	- Props
 	- Enemys
-	- Asset scanning and updating: This opens to a bunch of questions, visible assets are the ones the camera can see, so,
+	- Actor scanning and updating: This opens to a bunch of questions, visible assets are the ones the camera can see, so,
 	these are the ones that are in the same sp_visgrid position as the camera, at the moment, the visible ones are the only
 	to be updated, but what happen to the rest that are no visible? They will be static until the player sees them?.
 	The asset scanner will listen the environment and depending on it will detect if assets are moving, are mid-action, 

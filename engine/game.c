@@ -1,20 +1,20 @@
 #include "game.h"
 #include "mem.h"
 
-Asset *gm_player = NULL;
+Actor *gm_player = NULL;
 static unsigned long _gm_assetIdCounter = 1;
 
-Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates){
-    Asset *newAsset = NULL;
+Actor *gm_createAsset(Asset *actor, Shape *shape, Coordinates *coordinates){
+    Actor *newAsset = NULL;
     Coordinates *pointingTo = NULL;
 
-    newAsset = (Asset *)mem_arena_alloc(sceneArena, sizeof(Asset));
+    newAsset = (Actor *)mem_arena_alloc(sceneArena, sizeof(Actor));
 
     if (!newAsset) {
         return NULL;
     }
 
-    memset(newAsset, 0, sizeof(Asset));
+    memset(newAsset, 0, sizeof(Actor));
 
     pointingTo = (Coordinates *)mem_arena_alloc(
         sceneArena,
@@ -36,7 +36,7 @@ Asset *gm_createAsset(Actor *actor, Shape *shape, Coordinates *coordinates){
     return newAsset;
 }
 
-void gm_insertAsset(Asset *asset)
+void gm_insertAsset(Actor *asset)
 {
     int vis_x = 0;
     int vis_y = 0;
@@ -75,7 +75,7 @@ void gm_insertAsset(Asset *asset)
     sp_addAssetToVisGrid(asset);
 }
 
-Asset *gm_getAssetByIndex(
+Actor *gm_getAssetByIndex(
     unsigned char vis_x,
     unsigned char vis_y,
     unsigned char vis_z,
@@ -92,10 +92,10 @@ Asset *gm_getAssetByIndex(
         return NULL;
     }
 
-    return (Asset *)node->data;
+    return (Actor *)node->data;
 }
 
-void gm_destroyAsset(Asset *asset)
+void gm_destroyAsset(Actor *asset)
 {
     if (!asset) {
         return;
@@ -140,7 +140,7 @@ Action *gm_createAction(
     char *name,
     unsigned char type,
     Animation *animation,
-    void (*update)(struct Asset *self)
+    void (*update)(struct Actor *self)
 ) {
     Action *newAction = NULL;
 
@@ -166,19 +166,19 @@ Action *gm_createAction(
     return newAction;
 }
 
-Actor *gm_createActor(
+Asset *gm_createActor(
     char *name,
     char *description,
     Stats *stats,
     Action *actions[]
 ) {
     int i = 0;
-    Actor *newActor = NULL;
+    Asset *newActor = NULL;
     Action *genericAction = NULL;
 
-    newActor = (Actor *)mem_arena_alloc(
+    newActor = (Asset *)mem_arena_alloc(
         gameSessionArena,
-        sizeof(Actor)
+        sizeof(Asset)
     );
     if (!newActor) {
         return NULL;
@@ -225,7 +225,7 @@ Actor *gm_createActor(
     return newActor;
 }
 
-bool gm_setCurrentAction(Actor *actor, unsigned char actionType)
+bool gm_setCurrentAction(Asset *actor, unsigned char actionType)
 {
     int i = 0;
 
@@ -251,7 +251,7 @@ bool gm_setCurrentAction(Actor *actor, unsigned char actionType)
 }
 
 
-void gm_mainPlayerWalk(Asset *self)
+void gm_mainPlayerWalk(Actor *self)
 {
     if (!self || !self->coordinates) {
         return;
@@ -259,7 +259,7 @@ void gm_mainPlayerWalk(Asset *self)
     self->coordinates->x += 2;
 }
 
-void gm_mainPlayerJump(Asset *self)
+void gm_mainPlayerJump(Actor *self)
 {
     if (!self || !self->coordinates) {
         return;
@@ -267,7 +267,7 @@ void gm_mainPlayerJump(Asset *self)
     self->coordinates->z += 5;
 }
 
-void gm_mainPlayerIdle(Asset *self)
+void gm_mainPlayerIdle(Actor *self)
 {
     if (!self) {
         return;
@@ -275,7 +275,7 @@ void gm_mainPlayerIdle(Asset *self)
     /* Idle tick update logic */
 }
 /*
-void gm_cameraMove(Asset *self)
+void gm_cameraMove(Actor *self)
 {
     if (!self || !sp_globalCamera || !sp_globalCamera->position) {
         return;

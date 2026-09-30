@@ -37,7 +37,7 @@ void eng_renderFrame(unsigned long gametick)
     int totalAngle = 0;
     bool hflip = false;
 
-    Actor *actor = NULL;
+    Asset *actor = NULL;
     Action *action = NULL;
     Animation *actionAnimation = NULL;
     Sprite *actorSprite = NULL;

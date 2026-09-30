@@ -108,8 +108,8 @@ void t_createRenamon(void)
     Animation *renamonCrouch = NULL;
     Transformation *transformation = NULL;
 
-    Actor *renamonActor = NULL;
-    Asset *renamonAsset = NULL;
+    Asset *renamonActor = NULL;
+    Actor *renamonAsset = NULL;
     Stats *renamonStats = NULL;
     Shape *renamonShape = NULL;
     Box *renamonBox = NULL;
@@ -217,8 +217,8 @@ void t_freeRenamonTest(void)
 
 void t_testFloor(void)
 {
-    Asset *floorAsset = NULL;
-    Actor *floorActor = NULL;
+    Actor *floorAsset = NULL;
+    Asset *floorActor = NULL;
     Shape *floorShape = NULL;
     Box *floorBox = NULL;
     Coordinates *floorCoordinates = NULL;
@@ -252,8 +252,8 @@ void t_testFloor(void)
 
 void t_testFloor2(void)
 {
-    Asset *floorAsset = NULL;
-    Actor *floorActor = NULL;
+    Actor *floorAsset = NULL;
+    Asset *floorActor = NULL;
     Shape *floorShape = NULL;
     Box *floorBox = NULL;
     Coordinates *floorCoordinates = NULL;
@@ -289,8 +289,8 @@ void t_cokeCanTest(void)
 {
     int i = 0;
     Action *cokeCanActions[GM_MAX_ACTIONS];
-    Asset *cokeCanAsset = NULL;
-    Actor *cokeCanActor = NULL;
+    Actor *cokeCanAsset = NULL;
+    Asset *cokeCanActor = NULL;
     Animation *cokeCanAnimation = NULL;
     Shape *cokeCanShape = NULL;
     Box *cokeCanBox = NULL;
@@ -351,8 +351,8 @@ void t_skullBgTest(void)
     int i = 0;
     Animation *skullAnimation = NULL;
     Action *skullBgActions[GM_MAX_ACTIONS];
-    Asset *skullAsset = NULL;
-    Actor *skullActor = NULL;
+    Actor *skullAsset = NULL;
+    Asset *skullActor = NULL;
     Stats *skullStats = NULL;
 
     for (i = 0; i < GM_MAX_ACTIONS; i++) {

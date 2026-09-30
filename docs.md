@@ -29,7 +29,7 @@ The engine uses three distinct coordinate spaces:
 
 ## 2. Architecture Components
 
-### 2.1 Multi-Asset Grid (`sp_visgrid`)
+### 2.1 Multi-Actor Grid (`sp_visgrid`)
 
 `struct List *sp_visgrid[63][63][63];`
 
@@ -39,7 +39,7 @@ The engine uses three distinct coordinate spaces:
 
 ### 2.2 Render Queue (`renderQueue`)
 
-`struct Asset *renderQueue[256];`
+`struct Actor *renderQueue[256];`
 
 - Capacity increased to **256 assets** (`SP_MAX_RENDER_ASSETS`).
 - Populated each frame by scanning cells within the camera's `gridBounds`.
@@ -81,6 +81,6 @@ The frame life cycle follows these steps:
 
 ## 5. Development Tips
 
-- **Backgrounds**: Always create an Actor/Asset for backgrounds and set Z to a low value.
+- **Backgrounds**: Always create an Asset/Actor for backgrounds and set Z to a low value.
 - **C89**: Maintain all variable declarations at the start of blocks for Watcom compatibility.
 - **Memory**: Always `free()` ephemeral `ScreenCoordinates` objects returned by projection functions.
