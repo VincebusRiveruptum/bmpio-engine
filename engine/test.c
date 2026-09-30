@@ -126,7 +126,7 @@ void t_createRenamon(void)
         settings.TEST_ASSETS_PATH
     );
 
-    renamonFile = as_loadBMPfile(renamonPath);
+    renamonFile = loadBMPfile(renamonPath, gameSessionArena);
     if (!renamonFile) {
         logger("[t_createRenamon]: Error: renamonFile is NULL");
         return;

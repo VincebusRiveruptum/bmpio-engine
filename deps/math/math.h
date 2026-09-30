@@ -1,7 +1,13 @@
-#ifndef ENGINE_MATH_H
-#define ENGINE_MATH_H
+#ifndef MATH_H
+#define MATH_H
 
-#include "std.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <limits.h>
+
 #include "../deps/log/log.h"
 
 /* CONSTANTS =============================================================== */
@@ -13,12 +19,10 @@
 /* PROTOTYPES ============================================================== */
 
 int m_round(float x);
-void m_initTrig(void);
 
 /* GLOBAL VARS ============================================================= */
 
 extern long m_sintable[360];
 extern long m_costable[360];
-extern int m_trigInitialized;
 
 #endif

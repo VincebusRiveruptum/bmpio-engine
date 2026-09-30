@@ -79,12 +79,3 @@ long m_costable[360] = {
     240, 241, 243, 244, 246, 247, 248, 249, 250, 251,
     252, 253, 253, 254, 255, 255, 255
 };
-
-int m_trigInitialized = 1;
-
-void m_initTrig(void)
-{
-    /* Already initialized statically */
-    logger("\n[MATH] Trig tables loaded from static arrays.");
-}
-

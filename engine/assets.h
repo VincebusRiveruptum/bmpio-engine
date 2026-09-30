@@ -10,6 +10,8 @@
 #include "space.h"
 #include "../hal/hal_vid.h"
 #include "../deps/data/data.h"
+#include "../deps/math/math.h"
+#include "../deps/imgfile/imgfile.h"
 
 /* CONSTANTS */
 
@@ -39,46 +41,6 @@ typedef enum AssetType {
     A_BACKGROUND
 } AssetType;
 
-typedef struct Color {
-    unsigned char b;
-    unsigned char g;
-    unsigned char r;
-    unsigned char i;
-} Color;
-
-typedef struct FileHeader {
-    unsigned char id[2];
-    long size;
-    int res1[2];
-    long offset;	
-} FileHeader;
-
-typedef struct InfoHeader {
-    long hsize;
-    long x;
-    long y;
-    int numColorPlanes;
-    int bitsPerPixel;
-    long compressionMethod;
-    long imgSize;
-    long resX;
-    long resY;
-    long numColors;
-    long numImportantColors;
-} InfoHeader;
-
-typedef struct BMPfile {
-    struct FileHeader fh;
-    struct InfoHeader ih;
-    struct BMPdata *bmpData;
-} BMPfile;
-
-typedef struct BMPdata {
-    unsigned char **bmp;
-    struct Color *palette;
-    long width;
-    long height;
-} BMPdata;
 
 typedef struct Box {
     unsigned int width;
@@ -125,7 +87,6 @@ typedef struct Transformation {
 
 /* PROTOTYPES ============================================================== */
 
-BMPfile *as_loadBMPfile(char *fileName);
 Animation *as_createAnimation(void);
 Sprite *as_createSprite(void);
 

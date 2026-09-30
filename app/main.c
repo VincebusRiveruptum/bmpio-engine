@@ -18,8 +18,7 @@ int main(int argc, char *argv[]){
     mem_init(); // CRITICAL: Initialize memory FIRST
     
     t_initTests();
-
-    m_initTrig();
+    
     v_set200pxMode();
     eng_setPalette(testPalette);
     sp_init_cameras();
