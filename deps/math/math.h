@@ -10,8 +10,35 @@
 
 #include "../deps/log/log.h"
 
-/* CONSTANTS =============================================================== */
+// Coordinate system
+typedef struct Coordinates {
+    long x;     /* 16.16 Fixed Point */
+    long y;     /* 16.16 Fixed Point */
+    int z;
+} Coordinates;
 
+typedef struct ScreenCoordinates {
+    int x;
+    int y;
+} ScreenCoordinates;
+
+// Transformations
+typedef struct RotationTransformation {
+    int angle;
+    int current;
+} RotationTransformation;
+
+typedef struct TranslationTransformation {
+    struct Coordinates *dest;
+    bool loop;
+} TranslationTransformation;
+
+typedef struct Transformation {
+    unsigned char type;
+    void *data;
+} Transformation;
+
+/* CONSTANTS =============================================================== */
 
 #define PI 3.14159265358979323846
 #define DEG2RAD (PI / 180.0)

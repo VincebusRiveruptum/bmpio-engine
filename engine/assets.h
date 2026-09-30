@@ -69,21 +69,6 @@ typedef struct Animation {
         transformationList[GM_ANIMATION_MAX_TRANSFORMATIONS];
 } Animation;
 
-typedef struct RotationTransformation {
-    int angle;
-    int current;
-} RotationTransformation;
-
-typedef struct TranslationTransformation {
-    struct Coordinates *dest;
-    bool loop;
-} TranslationTransformation;
-
-typedef struct Transformation {
-    unsigned char type;
-    void *data;
-} Transformation;
-
 /* PROTOTYPES ============================================================== */
 
 Animation *as_createAnimation(void);

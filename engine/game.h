@@ -3,11 +3,6 @@
 
 #include "engine.h"
 
-/* Collision types */
-#define CL_TYPE_ACTOR 0x01
-#define CL_TYPE_ENVIRONMENT 0x02
-#define CL_TYPE_DEFAULT 0x04
-
 /* ACTION TYPES */
 #define GM_ACTION_DEFAULT 0x01
 #define GM_ACTION_IDLE 0x02
@@ -38,7 +33,6 @@ typedef struct Stats {
     int experience;
     int level;
 } Stats;
-
 
 typedef struct Action {
     unsigned int index;

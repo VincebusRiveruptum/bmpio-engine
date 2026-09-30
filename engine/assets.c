@@ -53,8 +53,7 @@ Sprite *as_createSprite(void)
     return newSprite;
 }
 
-bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor)
-{
+bool as_loadSprite(Sprite *sprite, char *fileName, unsigned char maskColor){
     BMPfile *loadedFrame = NULL;
 
     if (!sprite || !fileName) {
@@ -380,8 +379,7 @@ void as_drawBitmapTransform(
     }
 }
 
-void as_drawBox(Shape *boxShape, int x, int y)
-{
+void as_drawBox(Shape *boxShape, int x, int y){
     int i = 0;
     int j = 0;
     int plane = 0;

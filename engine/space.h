@@ -3,14 +3,22 @@
 
 #include "std.h"
 #include "mem.h"
+#include "../deps/math/math.h"
 
 /* Forward declarations to avoid circular dependencies */
 struct Sprite;
 struct Actor;
+struct Coordinates;
+struct ScreenCoordinates;
 struct Transformation;
 struct Shape;
 
 /* CONSTANTS =============================================================== */
+
+/* Collision types */
+#define CL_TYPE_ACTOR 0x01
+#define CL_TYPE_ENVIRONMENT 0x02
+#define CL_TYPE_DEFAULT 0x04
 
 #define SP_GRID_SIZE 63
 #define SP_GRID_HALF (SP_GRID_SIZE / 2)
@@ -19,19 +27,6 @@ struct Shape;
 #define SP_MAX_RENDER_ASSETS 256
 
 /* TRANSFORMATIONS ========================================================= */
-
-/* SPACE COORDINATES */
-typedef struct Coordinates {
-    long x;     /* 16.16 Fixed Point */
-    long y;     /* 16.16 Fixed Point */
-    int z;
-} Coordinates;
-
-/* SCREEN COORDINATES */
-typedef struct ScreenCoordinates {
-    int x;
-    int y;
-} ScreenCoordinates;
 
 /* 2D - ORTHOGONAL CAMERA FOR NOW */
 typedef struct Camera {
