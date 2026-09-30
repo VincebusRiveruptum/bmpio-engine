@@ -400,3 +400,113 @@ void sp_renderQueueApplyZOrdering(int length)
         }
     }
 }
+
+
+// Collisions
+void sp_addCollisions(Asset *asset, Asset *otherAsset)
+{
+    int i = 0;
+
+    if (!asset || !otherAsset) {
+        return;
+    }
+
+    for (i = 0; i < MAX_COLLISIONS; i++) {
+        if (asset->collisions[i] == NULL) {
+            asset->collisions[i] = otherAsset;
+            return;
+        }
+    }
+}
+
+void sp_bounceBack(
+    Asset *asset,
+    int prevX,
+    int prevY,
+    int prevZ
+) {
+    if (!asset || !asset->coordinates) {
+        return;
+    }
+
+    asset->coordinates->x = prevX;
+    asset->coordinates->y = prevY;
+    asset->coordinates->z = prevZ;
+}
+
+void sp_checkCollisions(Asset *asset)
+{
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int gridX = 0;
+    int gridY = 0;
+    int gridZ = 0;
+    List *list = NULL;
+    Node *node = NULL;
+    Asset *other = NULL;
+
+    if (!asset || !asset->coordinates) {
+        return;
+    }
+
+    gridX = (int)(asset->coordinates->x / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridY = (int)(asset->coordinates->y / SP_GRID_SCALE) + SP_GRID_HALF;
+    gridZ = (int)(asset->coordinates->z / SP_GRID_SCALE) + SP_GRID_HALF;
+
+    sp_clearCollisions(asset);
+
+    for (i = gridX - 1; i <= gridX + 1; i++) {
+        for (j = gridY - 1; j <= gridY + 1; j++) {
+            for (k = gridZ - 1; k <= gridZ + 1; k++) {
+                if (i < 0 || i >= SP_GRID_SIZE ||
+                    j < 0 || j >= SP_GRID_SIZE ||
+                    k < 0 || k >= SP_GRID_SIZE) {
+                    continue;
+                }
+
+                list = sp_visgrid[i][j][k];
+                if (!list) {
+                    continue;
+                }
+
+                node = list->firstNode;
+                while (node != NULL) {
+                    other = (Asset *)node->data;
+                    if (other && other != asset) {
+                        if (abs((int)(asset->coordinates->x -
+                                     other->coordinates->x)) < 50 &&
+                            abs((int)(asset->coordinates->y -
+                                     other->coordinates->y)) < 50 &&
+                            abs((int)(asset->coordinates->z -
+                                     other->coordinates->z)) < 50) {
+                            sp_addCollisions(asset, other);
+                        }
+                    }
+                    node = node->next;
+                }
+            }
+        }
+    }
+}
+
+void sp_clearCollisions(Asset *asset)
+{
+    int i = 0;
+
+    if (!asset) {
+        return;
+    }
+
+    for (i = 0; i < MAX_COLLISIONS; i++) {
+        asset->collisions[i] = NULL;
+    }
+}
+
+bool sp_isColliding(Asset *asset)
+{
+    if (!asset) {
+        return false;
+    }
+    return (asset->collisions[0] != NULL);
+}

@@ -92,6 +92,19 @@ bool sp_isInFrustrum(int screenX, int screenY, struct Sprite *sprite);
 bool sp_isShapeInFrustrum(int screenX, int screenY, struct Shape *shape);
 void sp_renderQueueApplyZOrdering(int length);
 
+// Collision
+void sp_addCollisions(struct Asset *asset, struct Asset *otherAsset);
+void sp_checkCollisions(struct Asset *asset);
+void sp_clearCollisions(struct Asset *asset);
+bool sp_isColliding(struct Asset *asset);
+
+void sp_bounceBack(
+    struct Asset *asset,
+    int prevX,
+    int prevY,
+    int prevZ
+);
+
 /* Backward compatibility aliases */
 #define sp_addAssetTosp_visgrid sp_addAssetToVisGrid
 #define sp_removeAssetFromsp_visgrid sp_removeAssetFromVisGrid
