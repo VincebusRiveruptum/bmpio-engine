@@ -48,6 +48,11 @@ typedef struct Camera {
     unsigned char gridMaxZ;
 } Camera;
 
+typedef struct Collision {
+    void *collidable;
+    unsigned char type;
+} Collision;
+
 /* Culling grid system ===================================================== */
 
 extern struct List *sp_visgrid[SP_GRID_SIZE][SP_GRID_SIZE][SP_GRID_SIZE];

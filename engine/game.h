@@ -39,10 +39,6 @@ typedef struct Stats {
     int level;
 } Stats;
 
-typedef struct Collision {
-    void *collidable;
-    unsigned char type;
-} Collision;
 
 typedef struct Action {
     unsigned int index;

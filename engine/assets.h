@@ -41,7 +41,6 @@ typedef enum AssetType {
     A_BACKGROUND
 } AssetType;
 
-
 typedef struct Box {
     unsigned int width;
     unsigned int height;
@@ -134,6 +133,7 @@ bool as_addRotationTransformation(
 bool as_removeTransformation(Animation *animation, int index);
 
 void as_drawBox(Shape *boxShape, int x, int y);
+
 RotationTransformation *as_createRotationTransformation(
     int angle,
     int current

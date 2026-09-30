@@ -106,7 +106,6 @@ void as_loadAnimationFrames(
 }
 
 
-
 void as_drawBitmap(
     BMPdata **bmpData,
     int x,
